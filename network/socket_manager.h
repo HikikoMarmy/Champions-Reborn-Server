@@ -1,5 +1,5 @@
 #pragma once
-
+/*
 #include <vector>
 #include <set>
 #include <thread>
@@ -53,4 +53,4 @@ private:
 
 	void UDP_TryReadData( sptr_socket s );
 	void UDP_TryWriteData( sptr_socket s );
-};
+};*/

@@ -1,5 +1,6 @@
 #pragma once
 
+/*
 #include <memory>
 #include "socket.h"
 
@@ -77,9 +78,11 @@ public:
 	uint32_t write_position;
 	uint32_t read_position;
 };
+*/
 
-typedef std::shared_ptr< PacketBuffer > sptr_packet;
-
+//typedef std::shared_ptr< PacketBuffer > sptr_packet;
+/*
 sptr_packet make_packet( uint16_t command, uint32_t event_id, uint32_t hint_size );
 sptr_packet make_packet( sptr_packet request );
 void process_networking();
+*/

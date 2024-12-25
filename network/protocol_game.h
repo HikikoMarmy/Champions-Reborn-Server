@@ -7,9 +7,7 @@
 // ║ ╦╠═╣║║║║╣   ╠═╝╠╦╝║ ║ ║ ║ ║║  ║ ║║  
 // ╚═╝╩ ╩╩ ╩╚═╝  ╩  ╩╚═╚═╝ ╩ ╚═╝╚═╝╚═╝╩═╝
 
-#include "packet.h"
-#include "socket.h"
-
+/*
 namespace Protocol::Game
 {
 	void process_request( sptr_socket s, sptr_packet r );	// Process incoming packets
@@ -25,4 +23,4 @@ namespace Protocol::Game
 	void ReqGetEncryptionKey( sptr_client client, sptr_packet request );	// 2700
 	void ReqGetRules( sptr_client client, sptr_packet request );			// 4200
 	void ReqUpdateGameData( sptr_client client, sptr_packet request );		// 4400
-}
+}*/

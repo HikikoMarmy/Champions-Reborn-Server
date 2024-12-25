@@ -1,0 +1,46 @@
+#pragma once
+
+#include <memory>
+
+class GatewayServer
+{
+	static inline std::shared_ptr< GatewayServer > m_instance;
+public:
+
+	static std::shared_ptr< GatewayServer > Get()
+	{
+		if( m_instance == nullptr )
+		{
+			m_instance = std::make_shared< GatewayServer >();
+		}
+
+		return m_instance;
+	}
+
+	GatewayServer();
+	~GatewayServer();
+
+	void Start( std::string ip, int32_t port );
+	void Stop();
+	bool isRunning() const
+	{
+		return m_running;
+	}
+
+private:
+
+	Timer m_timer;
+	std::atomic< bool > m_running;
+	std::thread m_thread;
+
+	SOCKET m_listenSocket;
+	std::vector< sptr_tcp_socket > m_clientSockets;
+	std::vector< uint8_t > m_recvBuffer;
+
+	void Run();
+	void AcceptNewClient();
+
+	void ReadSocket( sptr_tcp_socket socket );
+	void WriteSocket( sptr_tcp_socket socket );
+	void HandleRequest( sptr_tcp_socket socket, sptr_byte_stream stream );
+};

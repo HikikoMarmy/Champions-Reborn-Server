@@ -76,17 +76,19 @@
     <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
     <TargetName>NorrathServer</TargetName>
     <OutDir>.\bin\</OutDir>
+    <IncludePath>$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>.\bin\</OutDir>
-    <TargetName>MasterServer</TargetName>
+    <TargetName>NorrathServer_64</TargetName>
     <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>.\bin\</OutDir>
     <TargetName>NorrathServer</TargetName>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -96,7 +98,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE; LTC_RIJNDAEL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
@@ -123,18 +125,19 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\dependency\wolfssl;..\dependency\boost;..\dependency\json;..\dependency\clementine_ui\include;..\tools\src\;..\dependency\asio\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>odbc32.lib;ws2_32.lib;wolfssl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>.\lib</AdditionalLibraryDirectories>
-      <OutputFile>.\bin\MasterServer64.exe</OutputFile>
+      <OutputFile>.\bin\NorrathServer_64.exe</OutputFile>
     </Link>
     <PostBuildEvent>
-      <Command>echo F|xcopy /y /f "$(SolutionDir)../dependency/clementine_ui/bin/clementine_ui.dll" "$(TargetDir)/clementine_ui.dll"  </Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -182,51 +185,85 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="configuration.h" />
-    <ClInclude Include="game\client.h" />
-    <ClInclude Include="game\client_manager.h" />
+    <ClInclude Include="Crypto\NorrathCrypt.h" />
+    <ClInclude Include="Discovery Server\DiscoveryServer.h" />
+    <ClInclude Include="Discovery Server\DiscoverySession.h" />
+    <ClInclude Include="Game\RealmUser.h" />
+    <ClInclude Include="Game\RealmUserManager.h" />
+    <ClInclude Include="Game\GameSession.h" />
+    <ClInclude Include="Game\GameSessionManager.h" />
+    <ClInclude Include="Gateway Server\EventHandlers\GatewayEvents.h" />
+    <ClInclude Include="Gateway Server\EventHandlers\GetServerAddressEvent.h" />
+    <ClInclude Include="Gateway Server\GatewayServer.h" />
     <ClInclude Include="global_define.h" />
-    <ClInclude Include="misc\AES.h" />
+    <ClInclude Include="Lobby Server\EventLookup.h" />
+    <ClInclude Include="Lobby Server\Event\NotifyClientDiscovered.h" />
+    <ClInclude Include="Lobby Server\Event\NotifyClientReqConnect.h" />
+    <ClInclude Include="Lobby Server\Event\NotifyGameDiscovered.h" />
+    <ClInclude Include="Lobby Server\Event\RequestCancelGame.h" />
+    <ClInclude Include="Lobby Server\Event\RequestCreateAccount.h" />
+    <ClInclude Include="Lobby Server\Event\RequestCreatePrivateGame.h" />
+    <ClInclude Include="Lobby Server\Event\RequestCreatePublicGame.h" />
+    <ClInclude Include="Lobby Server\Event\RequestDoClientDiscovery.h" />
+    <ClInclude Include="Lobby Server\Event\RequestGetEncryptionKey.h" />
+    <ClInclude Include="Lobby Server\Event\RequestGetRules.h" />
+    <ClInclude Include="Lobby Server\Event\RequestLogin.h" />
+    <ClInclude Include="Lobby Server\Event\RequestLogout.h" />
+    <ClInclude Include="Lobby Server\Event\RequestMatchGame.h" />
+    <ClInclude Include="Lobby Server\Event\RequestTouchSession.h" />
+    <ClInclude Include="Lobby Server\LobbyServer.h" />
+    <ClInclude Include="logging.h" />
     <ClInclude Include="misc\ByteStream.h" />
-    <ClInclude Include="misc\Encryptor.h" />
+    <ClInclude Include="misc\RealmCrypt.h" />
     <ClInclude Include="misc\math.h" />
     <ClInclude Include="misc\threadsafe_queue.hpp" />
     <ClInclude Include="misc\Timer.h" />
-    <ClInclude Include="network\protocol_broker.h" />
-    <ClInclude Include="network\protocol_game.h" />
-    <ClInclude Include="network\packet.h" />
-    <ClInclude Include="network\protocol_gateway.h" />
-    <ClInclude Include="network\socket.h" />
-    <ClInclude Include="network\socket_manager.h" />
+    <ClInclude Include="Network\GenericNetMessage.hpp" />
+    <ClInclude Include="Network\GenericNetRequest.hpp" />
+    <ClInclude Include="Network\GenericNetResponse.hpp" />
+    <ClInclude Include="network\RealmSocket.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="ui\logging.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="configuration.cpp" />
-    <ClCompile Include="game\client.cpp" />
-    <ClCompile Include="game\client_manager.cpp" />
+    <ClCompile Include="Crypto\NorrathCrypt.cpp" />
+    <ClCompile Include="Discovery Server\DiscoveryServer.cpp" />
+    <ClCompile Include="Discovery Server\DiscoverySession.cpp" />
+    <ClCompile Include="Game\RealmUser.cpp" />
+    <ClCompile Include="Game\RealmUserManager.cpp" />
+    <ClCompile Include="Game\GameSession.cpp" />
+    <ClCompile Include="Game\GameSessionManager.cpp" />
+    <ClCompile Include="Gateway Server\EventHandlers\GetServerAddressEvent.cpp" />
+    <ClCompile Include="Gateway Server\GatewayServer.cpp" />
     <ClCompile Include="global_define.cpp" />
-    <ClCompile Include="misc\AES.cpp" />
+    <ClCompile Include="Lobby Server\Event\NotifyClientDiscovered.cpp" />
+    <ClCompile Include="Lobby Server\Event\NotifyClientReqConnect.cpp" />
+    <ClCompile Include="Lobby Server\Event\NotifyGameDiscovered.cpp" />
+    <ClCompile Include="Lobby Server\Event\RequestCancelGame.cpp" />
+    <ClCompile Include="Lobby Server\Event\RequestCreateAccount.cpp" />
+    <ClCompile Include="Lobby Server\Event\RequestCreatePrivateGame.cpp" />
+    <ClCompile Include="Lobby Server\Event\RequestCreatePublicGame.cpp" />
+    <ClCompile Include="Lobby Server\Event\RequestDoClientDiscovery.cpp" />
+    <ClCompile Include="Lobby Server\Event\RequestGetEncryptionKey.cpp" />
+    <ClCompile Include="Lobby Server\Event\RequestGetRules.cpp" />
+    <ClCompile Include="Lobby Server\Event\RequestLogin.cpp" />
+    <ClCompile Include="Lobby Server\Event\RequestLogout.cpp" />
+    <ClCompile Include="Lobby Server\Event\RequestMatchGame.cpp" />
+    <ClCompile Include="Lobby Server\Event\RequestTouchSession.cpp" />
+    <ClCompile Include="Lobby Server\LobbyServer.cpp" />
+    <ClCompile Include="logging.cpp" />
     <ClCompile Include="misc\ByteStream.cpp" />
-    <ClCompile Include="misc\Encryptor.cpp" />
+    <ClCompile Include="misc\RealmCrypt.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="misc\math.cpp" />
-    <ClCompile Include="misc\Timer.cpp" />
-    <ClCompile Include="network\protocol_broker.cpp" />
-    <ClCompile Include="network\protocol_game.cpp" />
-    <ClCompile Include="network\protocol_gateway.cpp" />
-    <ClCompile Include="network\packet.cpp" />
-    <ClCompile Include="network\socket.cpp" />
-    <ClCompile Include="network\socket_manager.cpp" />
+    <ClCompile Include="network\RealmSocket.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="ui\logging.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Norrath Server.rc" />

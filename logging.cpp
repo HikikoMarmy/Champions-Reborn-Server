@@ -1,4 +1,5 @@
-#include "../global_define.h"
+
+#include "logging.h"
 
 static const char* LOG_PATH[] = {
 	"./generic",
@@ -6,19 +7,16 @@ static const char* LOG_PATH[] = {
 	"./error"
 };
 
-#include <mutex>
-static std::mutex log_lock;
-
-void command_callback( void* ptr, size_t len )
+Log::Log()
 {
-	const wchar_t* p = reinterpret_cast< const wchar_t* >( ptr );
-	std::wstring command( p, p + len );
-
-	// Temp
-	logging.information( "Server command: %S", command.c_str() );
+	current_open_hour = 0;
 }
 
-const char* CLogManager::get_time_stamp()
+Log::~Log()
+{
+}
+
+const char *Log::GetTimeStamp()
 {
 	static char timestamp[ 64 ] = "";
 
@@ -38,7 +36,7 @@ const char* CLogManager::get_time_stamp()
 	return timestamp;
 }
 
-void CLogManager::check_file_status( LOG_TYPE type )
+void Log::CheckFileStatus( LOG_TYPE type )
 {
 	time_t t; time( &t );
 	struct tm date_tm;
@@ -68,7 +66,7 @@ void CLogManager::check_file_status( LOG_TYPE type )
 	}
 }
 
-void CLogManager::write_log( LOG_TYPE type, std::string format )
+void Log::WriteToLog( LOG_TYPE type, std::string format )
 {
 	log_lock.lock();
 
@@ -79,6 +77,7 @@ void CLogManager::write_log( LOG_TYPE type, std::string format )
 	{
 		case LOG_TYPE::log_generic: printf( "[INFO]: " ); break;
 		case LOG_TYPE::log_debug: printf( "[DEBUG]: " ); break;
+		case LOG_TYPE::log_warn: printf( "[WARN]: " ); break;
 		case LOG_TYPE::log_error: printf( "[ERROR]: " ); break;
 	}
 	
@@ -86,13 +85,13 @@ void CLogManager::write_log( LOG_TYPE type, std::string format )
 
 	printf( "%s\n", format.c_str() );
 
-	check_file_status( type );
-	file_stream[ type ] << get_time_stamp() << format << '\n';
+	CheckFileStatus( type );
+	file_stream[ type ] << GetTimeStamp() << format << '\n';
 	file_stream[ type ].close();
 	log_lock.unlock();
 }
 
-void CLogManager::information( std::string format, ... )
+void Log::Info( std::string format, ... )
 {
 	std::vector< char > buf( 512 );
 	va_list args;
@@ -100,10 +99,10 @@ void CLogManager::information( std::string format, ... )
 	vsnprintf_s( &buf[ 0 ], buf.size(), buf.size() + strlen( format.c_str() ), format.c_str(), args );
 	va_end( args );
 
-	write_log( log_generic, &buf[ 0 ] );
+	WriteToLog( log_generic, &buf[ 0 ] );
 }
 
-void CLogManager::debug( std::string format, ... )
+void Log::Warn( std::string format, ... )
 {
 	std::vector< char > buf( 512 );
 	va_list args;
@@ -111,10 +110,10 @@ void CLogManager::debug( std::string format, ... )
 	vsnprintf_s( &buf[ 0 ], buf.size(), buf.size() + strlen( format.c_str() ), format.c_str(), args );
 	va_end( args );
 
-	write_log( log_debug, &buf[ 0 ] );
+	WriteToLog( log_warn, &buf[ 0 ] );
 }
 
-void CLogManager::error( std::string format, ... )
+void Log::Debug( std::string format, ... )
 {
 	std::vector< char > buf( 512 );
 	va_list args;
@@ -122,10 +121,21 @@ void CLogManager::error( std::string format, ... )
 	vsnprintf_s( &buf[ 0 ], buf.size(), buf.size() + strlen( format.c_str() ), format.c_str(), args );
 	va_end( args );
 
-	write_log( log_error, &buf[ 0 ] );
+	WriteToLog( log_debug, &buf[ 0 ] );
 }
 
-void CLogManager::packet( std::vector< uint8_t > p, bool send )
+void Log::Error( std::string format, ... )
+{
+	std::vector< char > buf( 512 );
+	va_list args;
+	va_start( args, format );
+	vsnprintf_s( &buf[ 0 ], buf.size(), buf.size() + strlen( format.c_str() ), format.c_str(), args );
+	va_end( args );
+
+	WriteToLog( log_error, &buf[ 0 ] );
+}
+
+void Log::Packet( std::vector< uint8_t > p, bool send )
 {
 	log_lock.lock();
 
@@ -191,7 +201,7 @@ void CLogManager::packet( std::vector< uint8_t > p, bool send )
 	log_lock.unlock();
 }
 
-void CLogManager::packet( std::vector<uint8_t> p, uint32_t size, bool send )
+void Log::Packet( std::vector<uint8_t> p, uint32_t size, bool send )
 {
 	log_lock.lock();
 
@@ -255,3 +265,4 @@ void CLogManager::packet( std::vector<uint8_t> p, uint32_t size, bool send )
 	log_lock.unlock();
 
 }
+

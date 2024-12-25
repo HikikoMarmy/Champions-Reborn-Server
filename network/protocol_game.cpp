@@ -1,4 +1,4 @@
-﻿
+﻿/*
 #include "../global_define.h"
 
 using namespace Protocol::Game;
@@ -38,7 +38,7 @@ void Protocol::Game::process_request( sptr_socket socket, sptr_packet request )
 		auto protocol_iter = GAME_PROTOCOL.find( request->get_command() );
 		if( protocol_iter == GAME_PROTOCOL.end() )
 		{
-			logging.error( "UNDEFINED PROTOCOL: %02X", request->get_command() );
+			Log::Error( "UNDEFINED PROTOCOL: %02X", request->get_command() );
 			logging.packet( request->buffer, false );
 			return;
 		}
@@ -210,3 +210,4 @@ void Protocol::Game::ReqUpdateGameData( sptr_client client, sptr_packet request 
 	}
 	client->socket->send( res );
 }
+*/

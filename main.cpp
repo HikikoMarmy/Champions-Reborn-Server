@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "global_define.h"
 
-void ShowStartup()
+static void ShowStartup()
 {
 	printf
 	(
@@ -16,23 +16,47 @@ int main()
 {
 	ShowStartup();
 
-	if( false == ServerConfig::Get().Load( "config.json" ) )
+	WORD wVersionRequest = MAKEWORD( 2, 2 );
+	WSADATA wsaData;
+
+	if( WSAStartup( wVersionRequest, &wsaData ) != 0 )
 	{
+		Log::Error( "WSAStartup() failed" );
 		return 0;
 	}
 
-	Initialize_Global();
+	Log::Info( "Server Start..." );
 
-	logging.information( "Server Start..." );
+	auto gateway_server = GatewayServer::Get();
+	gateway_server->Start( "192.168.1.248", 40801 );
+
+	LobbyServer::Get().Start( "192.168.1.248", 40810 );
+	DiscoveryServer::Get().Start( "192.168.1.248", 40820 );
 
 	while( true )
 	{
-		server_time->Tick();
+		if( !gateway_server->isRunning() )
+		{
+			Log::Error( "Gateway Server is not running. Exiting." );
+			break;
+		}
 
-		process_networking();
+		//if( !lobby_server.isRunning() )
+		//{
+		//	Log::Error( "Lobby Server is not running. Exiting." );
+		//	break;
+		//}
+		//
+		//if( !discovery_server.isRunning() )
+		//{
+		//	Log::Error( "Discovery Server is not running. Exiting." );
+		//	break;
+		//}
 
 		std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
 	}
+
+	gateway_server->Stop();
 
     return 0;
 }

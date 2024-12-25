@@ -1,4 +1,4 @@
-﻿
+﻿/*
 #include "../global_define.h"
 
 #include "protocol_gateway.h"
@@ -23,7 +23,7 @@ void Protocol::Gateway::process_request( sptr_socket socket, sptr_packet request
 	auto protocol_iter = GATEWAY_PROTOCOL.find( request->get_command() );
 	if( protocol_iter == GATEWAY_PROTOCOL.end() )
 	{
-		logging.error( "UNDEFINED PROTOCOL: %02X", request->get_command() );
+		Log::Error( "UNDEFINED PROTOCOL: %02X", request->get_command() );
 		logging.packet( request->buffer, false );
 		return;
 	}
@@ -57,3 +57,4 @@ void Protocol::Gateway::ReqGetServerAddress( sptr_socket socket, sptr_packet req
 	}
 	socket->send( res );
 }
+*/

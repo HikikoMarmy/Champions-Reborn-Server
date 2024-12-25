@@ -1,3 +1,4 @@
+/*
 #include "../global_define.h"
 
 PacketBuffer::PacketBuffer( uint16_t command, uint32_t event_seq, uint32_t hint_size )
@@ -259,3 +260,4 @@ void process_networking()
 		}
 	}
 }
+*/

@@ -1,4 +1,4 @@
-
+/*
 #include "../global_define.h"
 #include "socket_manager.h"
 
@@ -67,7 +67,7 @@ bool CSocketManager::open_tcp_listener( std::string ip, uint16_t port, RealmChan
 
 	if( bind( socket->fd, ( LPSOCKADDR )&addr, sizeof( addr ) ) != 0 )
 	{
-		logging.error( "Could not open socket on %s:%d", ip.c_str(), port );
+		Log::Error( "Could not open socket on %s:%d", ip.c_str(), port );
 		return false;
 	}
 
@@ -84,7 +84,7 @@ bool CSocketManager::open_tcp_listener( std::string ip, uint16_t port, RealmChan
 
 	socket_list.push_back( socket );
 
-	logging.information( "Open TCP Listener on %s:%d", ip.c_str(), port );
+	Log::Info( "Open TCP Listener on %s:%d", ip.c_str(), port );
 
 	return true;
 }
@@ -108,7 +108,7 @@ bool CSocketManager::open_udp_listener( std::string ip, uint16_t port, RealmChan
 
 	if( bind( socket->fd, ( LPSOCKADDR )&addr, sizeof( addr ) ) != 0 )
 	{
-		logging.error( "Could not open socket on %s:%d", ip.c_str(), port );
+		Log::Error( "Could not open socket on %s:%d", ip.c_str(), port );
 		return false;
 	}
 
@@ -123,7 +123,7 @@ bool CSocketManager::open_udp_listener( std::string ip, uint16_t port, RealmChan
 
 	socket_list.push_back( socket );
 
-	logging.information( "Open UDP Listener on %s:%d", ip.c_str(), port );
+	Log::Info( "Open UDP Listener on %s:%d", ip.c_str(), port );
 
 	return false;
 }
@@ -166,11 +166,11 @@ void CSocketManager::accept_new_tcp( sptr_socket from_socket )
 
 	if( from_socket->channel == RealmChannelType::GATEWAY )
 	{
-		logging.information( "[GATEWAY] : New connection from %s", ( *new_socket ).peer_ip_address.c_str() );
+		Log::Info( "[GATEWAY] : New connection from %s", ( *new_socket ).peer_ip_address.c_str() );
 	}
 	else if( from_socket->channel == RealmChannelType::GAME )
 	{
-		logging.information( "[GAME] : New connection from %s", ( *new_socket ).peer_ip_address.c_str() );
+		Log::Info( "[GAME] : New connection from %s", ( *new_socket ).peer_ip_address.c_str() );
 	}
 	
 	new_socket->last_recv_time = net_time.GetAppMilliTime();
@@ -306,7 +306,7 @@ void CSocketManager::TCP_TryReadData( sptr_socket socket )
 		{
 			case WSAECONNRESET:
 			{
-				logging.information( "Connection %s reset by peer.", socket->peer_ip_address.c_str() );
+				Log::Info( "Connection %s reset by peer.", socket->peer_ip_address.c_str() );
 			} break;
 		}
 
@@ -465,3 +465,4 @@ void CSocketManager::UDP_TryWriteData( sptr_socket s )
 
 	s->write_mutex.unlock();
 }
+*/

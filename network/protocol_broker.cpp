@@ -1,4 +1,4 @@
-﻿
+﻿/*
 #include "../global_define.h"
 
 #include "protocol_broker.h"
@@ -22,7 +22,7 @@ void Protocol::Broker::process_request( sptr_socket socket, sptr_packet request 
 	auto protocol_iter = BROKER_PROTOCOL.find( request->get_command() );
 	if( protocol_iter == BROKER_PROTOCOL.end() )
 	{
-		logging.error( "UNDEFINED PROTOCOL: %02X", request->get_command() );
+		Log::Error( "UNDEFINED PROTOCOL: %02X", request->get_command() );
 		logging.packet( request->buffer, false );
 		return;
 	}
@@ -46,3 +46,4 @@ void Protocol::Broker::process_notice( sptr_socket s, sptr_packet r )
 		} break;
 	}
 }
+*/
