@@ -206,11 +206,13 @@
     <ClInclude Include="Lobby Server\Event\RequestCreatePublicGame.h" />
     <ClInclude Include="Lobby Server\Event\RequestDoClientDiscovery.h" />
     <ClInclude Include="Lobby Server\Event\RequestGetEncryptionKey.h" />
+    <ClInclude Include="Lobby Server\Event\RequestGetRealmStats.h" />
     <ClInclude Include="Lobby Server\Event\RequestGetRules.h" />
     <ClInclude Include="Lobby Server\Event\RequestLogin.h" />
     <ClInclude Include="Lobby Server\Event\RequestLogout.h" />
     <ClInclude Include="Lobby Server\Event\RequestMatchGame.h" />
     <ClInclude Include="Lobby Server\Event\RequestTouchSession.h" />
+    <ClInclude Include="Lobby Server\Event\RequestUpdateGameData.h" />
     <ClInclude Include="Lobby Server\LobbyServer.h" />
     <ClInclude Include="logging.h" />
     <ClInclude Include="misc\ByteStream.h" />
@@ -246,11 +248,13 @@
     <ClCompile Include="Lobby Server\Event\RequestCreatePublicGame.cpp" />
     <ClCompile Include="Lobby Server\Event\RequestDoClientDiscovery.cpp" />
     <ClCompile Include="Lobby Server\Event\RequestGetEncryptionKey.cpp" />
+    <ClCompile Include="Lobby Server\Event\RequestGetRealmStats.cpp" />
     <ClCompile Include="Lobby Server\Event\RequestGetRules.cpp" />
     <ClCompile Include="Lobby Server\Event\RequestLogin.cpp" />
     <ClCompile Include="Lobby Server\Event\RequestLogout.cpp" />
     <ClCompile Include="Lobby Server\Event\RequestMatchGame.cpp" />
     <ClCompile Include="Lobby Server\Event\RequestTouchSession.cpp" />
+    <ClCompile Include="Lobby Server\Event\RequestUpdateGameData.cpp" />
     <ClCompile Include="Lobby Server\LobbyServer.cpp" />
     <ClCompile Include="logging.cpp" />
     <ClCompile Include="misc\ByteStream.cpp" />

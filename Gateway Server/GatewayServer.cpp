@@ -51,9 +51,8 @@ void GatewayServer::Start( std::string ip, int32_t port )
 	sockaddr_in service;
 	service.sin_family = AF_INET;
 	service.sin_port = htons( port );
-	service.sin_addr.s_addr = inet_addr( ip.c_str() );
+	service.sin_addr.s_addr = ADDR_ANY;
 	
-
 	if( bind( m_listenSocket, ( SOCKADDR * )&service, sizeof( service ) ) == SOCKET_ERROR )
 	{
 		Log::Error( "bind() failed" );
@@ -87,7 +86,6 @@ void GatewayServer::Run()
 {
 	FD_SET readSet;
 	FD_SET writeSet;
-	FD_SET exceptSet;
 
 	timeval timeout = { 0, 1000 };
 
@@ -97,7 +95,6 @@ void GatewayServer::Run()
 	{
 		FD_ZERO( &readSet );
 		FD_ZERO( &writeSet );
-		FD_ZERO( &exceptSet );
 
 		FD_SET( m_listenSocket, &readSet );
 
@@ -106,10 +103,9 @@ void GatewayServer::Run()
 		{
 			FD_SET( client->fd, &readSet );
 			FD_SET( client->fd, &writeSet );
-			FD_SET( client->fd, &exceptSet );
 		}
 
-		auto result = select( 0, &readSet, &writeSet, &exceptSet, &timeout );
+		auto result = select( 0, &readSet, &writeSet, NULL, &timeout );
 
 		if( result == SOCKET_ERROR )
 		{
@@ -132,11 +128,6 @@ void GatewayServer::Run()
 			if( FD_ISSET( client->fd, &writeSet ) )
 			{
 				WriteSocket( client );
-			}
-
-			if( FD_ISSET( client->fd, &exceptSet ) )
-			{
-				// Handle exception
 			}
 		}
 	}

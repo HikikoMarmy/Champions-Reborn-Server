@@ -69,7 +69,7 @@ void ByteStream::write_utf8( const std::string &value )
 
 void ByteStream::write_utf16( const std::wstring &value )
 {
-	write_u32( value.size() );
+	write_u32( value.size() + 1 );
 
 	std::vector< uint8_t > utf16;
 	for( auto c : value )
@@ -79,6 +79,7 @@ void ByteStream::write_utf16( const std::wstring &value )
 	}
 
 	write_bytes( utf16 );
+	write_u16( 0 );
 }
 
 void ByteStream::write_sz_utf8( const std::string &value )

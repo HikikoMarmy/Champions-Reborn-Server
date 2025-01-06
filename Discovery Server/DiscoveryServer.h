@@ -6,6 +6,12 @@
 
 #include "DiscoverySession.h"
 
+struct UserDiscoveryInfo {
+	std::string m_ip;
+	int32_t m_port;
+	uint64_t m_lastUpdateTime;
+};
+
 class DiscoveryServer
 {
 public:
@@ -33,31 +39,21 @@ public:
 		return m_running;
 	}
 
-private:
-	bool OpenDiscoverySocket( std::string ip, int32_t port );
-	sptr_udp_socket CreateDiscoverySocket( sockaddr_in *clientAddr );
-
-	sptr_discovery_record CreateNewDiscoveryRecord( sockaddr_in *clientAddr, std::wstring sessionId );
-	sptr_discovery_record GetDiscoveryRecord( sockaddr_in *clientAddr );
-	std::wstring GetSessionId( sptr_byte_stream stream );
-
-	void AcceptNewClient( sockaddr_in *clientAddr, sptr_byte_stream stream );
-	void ReadSocket( sptr_udp_socket socket );
-	void WriteSocket( sptr_udp_socket socket );
-	void HandleRequest( sockaddr_in *clientAddr, sptr_byte_stream stream );
-
-	void SendDiscoveryClientHandshake( sptr_discovery_record record, sptr_byte_stream stream );
-	void SendDiscoveryClientPing( sptr_discovery_record record, sptr_byte_stream stream );
+	void UpdateDiscoveryInfo( std::wstring sessionId, std::string ip, int32_t port );
+	std::optional<UserDiscoveryInfo> GetDiscoveryInfo( const std::wstring &sessionId ) const;
 
 private:
+	void ReadSocket();
+	void HandleDiscoveryUpdate( sockaddr_in *clientAddr, sptr_byte_stream stream );
+
 	static inline std::unique_ptr< DiscoveryServer > m_instance;
 	static inline std::mutex m_mutex;
-	Timer m_timer;
 
 	std::atomic< bool > m_running;
 	std::thread m_thread;
 
-	sptr_udp_socket m_socket;
+	SOCKET m_socket;
 	std::vector< uint8_t > m_recvBuffer;
-	std::unordered_map< sockaddr_in, sptr_discovery_record, sockaddr_in_hash, sockaddr_in_equal> m_sessionMap;
+
+	std::unordered_map< std::wstring, UserDiscoveryInfo > m_userDiscoveryInfo;
 };

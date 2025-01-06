@@ -4,17 +4,17 @@
 
 class GatewayServer
 {
-	static inline std::shared_ptr< GatewayServer > m_instance;
+	static inline std::unique_ptr< GatewayServer > m_instance;
 public:
 
-	static std::shared_ptr< GatewayServer > Get()
+	static GatewayServer& Get()
 	{
 		if( m_instance == nullptr )
 		{
-			m_instance = std::make_shared< GatewayServer >();
+			m_instance.reset( new GatewayServer() );
 		}
 
-		return m_instance;
+		return *m_instance;
 	}
 
 	GatewayServer();
