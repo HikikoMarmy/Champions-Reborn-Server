@@ -41,8 +41,10 @@ sptr_generic_response RequestCreatePublicGame::ProcessRequest( sptr_tcp_socket s
 
 	Log::Info( "[%S] Create Public Game: %S", m_sessionId.c_str(), m_gameName.c_str() );
 
+	user->m_state = RealmUser::UserState::InGameLobby;
+
 	// Send the discovery server information to the client
-	return std::make_shared< ResultCreatePublicGame >( this, CREATE_REPLY::SUCCESS, "192.168.1.248", 40820 );
+	return std::make_shared< ResultCreatePublicGame >( this, CREATE_REPLY::SUCCESS, "192.168.1.248", 3008 );
 }
 
 ResultCreatePublicGame::ResultCreatePublicGame( GenericRequest *request, int32_t reply, std::string discoveryIp, int32_t discoveryPort ) : GenericResponse( *request )

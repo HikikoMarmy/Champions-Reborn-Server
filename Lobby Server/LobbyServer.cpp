@@ -36,7 +36,7 @@ void LobbyServer::Start( std::string ip, int32_t port )
 	sockaddr_in service;
 	service.sin_family = AF_INET;
 	service.sin_port = htons( port );
-	service.sin_addr.s_addr = inet_addr( ip.c_str() );
+	service.sin_addr.s_addr = ADDR_ANY;
 
 	if( bind( m_listenSocket, ( SOCKADDR * )&service, sizeof( service ) ) == SOCKET_ERROR )
 	{
@@ -241,6 +241,7 @@ void LobbyServer::HandleRequest( sptr_tcp_socket socket, sptr_byte_stream stream
 	if( it == LOBBY_REQUEST_EVENT.end() )
 	{
 		Log::Error( "[LOBBY] Unknown packet id : 0x%04X", packetId );
+		Log::Packet( stream->data, stream->data.size(), false );
 		return;
 	}
 	

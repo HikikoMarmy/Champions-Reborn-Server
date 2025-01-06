@@ -1,6 +1,7 @@
 #include "../../global_define.h"
 #include "RequestDoClientDiscovery.h"
-#include "NotifyClientReqConnect.h"
+#include "NotifyClientDiscovered.h"
+#include "NotifyGameDiscovered.h"
 
 void RequestDoClientDiscovery::Deserialize( sptr_tcp_socket socket, sptr_byte_stream stream )
 {
@@ -28,15 +29,22 @@ sptr_generic_response RequestDoClientDiscovery::ProcessRequest( sptr_tcp_socket 
 		return std::make_shared< ResultDoClientDiscovery >( this, DISCOVERY_REPLY::FATAL_ERROR, "", 0 );
 	}
 
-	auto result = GameSessionManager::Get().UserJoinGame( m_gameId, user );
+	auto result = GameSessionManager::Get().CreatePublicGameSession( user, L"test", 0, 9999 );
 
-	if( result == false )
-	{
-		Log::Error( "Failed to join game! [%d]", m_gameId );
-		return std::make_shared< ResultDoClientDiscovery >( this, DISCOVERY_REPLY::GAME_FULL, "", 0 );
-	}
+	//auto result = GameSessionManager::Get().UserJoinGame( m_gameId, user );
 
-	return std::make_shared< ResultDoClientDiscovery >( this, DISCOVERY_REPLY::SUCCESS, "192.168.1.248", 40820 );
+	//if( result == false )
+	//{
+	//	Log::Error( "Failed to join game! [%d]", m_gameId );
+	//	return std::make_shared< ResultDoClientDiscovery >( this, DISCOVERY_REPLY::GAME_FULL, "", 0 );
+	//}
+
+	//NotifyClientDiscovered notify1( "192.168.1.248", 47115 );
+	//NotifyGameDiscovered notify2( "192.168.1.248", 47115 );
+	//socket->send( notify1 );
+	//socket->send( notify2 );
+
+	return std::make_shared< ResultDoClientDiscovery >( this, DISCOVERY_REPLY::SUCCESS, "192.168.1.248", 3008 );
 }
 
 ResultDoClientDiscovery::ResultDoClientDiscovery( GenericRequest *request, int32_t reply, std::string ip, int32_t port ) : GenericResponse( *request )

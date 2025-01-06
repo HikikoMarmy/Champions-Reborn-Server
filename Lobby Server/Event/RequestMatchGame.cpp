@@ -53,35 +53,42 @@ ByteStream &ResultMatchGame::Serialize()
 {
 	m_stream.write_u16( m_packetId );
 	m_stream.write_u32( m_requestId );
-	m_stream.write_u32( 0 );		// Connection State
+	m_stream.write_u32( 0 );
 
-	m_stream.write_u32( 5 );
+	m_stream.write_u32( 2 );
 
-	for( int i = 0; i < 5; i++ )
+	for( int i = 0; i < 2; i++ )
 	{
 		m_stream.write_utf16( L"Unknown_A " + std::to_wstring( i ) );
 	}
 
-	m_stream.write_u32( 5 );
+	m_stream.write_u32( 2 );
 
-	for( int i = 0; i < 5; i++ )
+	for( int i = 0; i < 2; i++ )
 	{
 		m_stream.write_utf16( L"Game Name " + std::to_wstring( i ) );
 	}
 
-	m_stream.write_u32( 5 );
+	m_stream.write_u32( 2 );
 
-	for( int i = 0; i < 5; i++ )
+	for( int i = 0; i < 2; i++ )
 	{
 		m_stream.write_utf16( L"Unknown_B " + std::to_wstring( i ) );
 	}
 
-
 	// Room Unique ID (Used when selecting)
-	m_stream.write_u32( 5 );
-	for( int i = 0; i < 5; i++ )
+	m_stream.write_u32( 2 );
+	for( int i = 0; i < 2; i++ )
 	{
 		m_stream.write_u32( i );
+	}
+
+	// "GameBlob"
+	m_stream.write_u32( 1 );
+	for( int i = 0; i < 1; i++ )
+	{
+		std::vector< uint8_t > bytes( 256, 0 );
+		m_stream.write_bytes( bytes );
 	}
 
 	return m_stream;

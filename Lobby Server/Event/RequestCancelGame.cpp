@@ -12,11 +12,18 @@ sptr_generic_response RequestCancelGame::ProcessRequest( sptr_tcp_socket socket,
 {
 	Deserialize( socket, stream );
 
-	// TODO:
-	// Cancel the game
-	// Notify the players via the Discovery Server
+	auto user = RealmUserManager::Get().GetUser( socket );
 
-	Log::Debug( "RequestCancelGame : %S", m_sessionId.c_str() );
+	if( user == nullptr )
+	{
+		Log::Error( "User not found! [%S]", m_sessionId.c_str() );
+		return std::make_shared< ResultCancelGame >( this );
+	}
+
+	GameSessionManager::Get().CancelGameSession( m_sessionId );
+
+	// TODO:
+	// Notify the players via the Discovery Server
 
 	return std::make_shared< ResultCancelGame >( this );
 }

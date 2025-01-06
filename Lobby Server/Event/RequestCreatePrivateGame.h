@@ -11,6 +11,7 @@ private:
 		FATAL_ERROR,
 		GENERAL_ERROR,
 	};
+
 public:
 	static std::unique_ptr< RequestCreatePrivateGame > Create()
 	{
