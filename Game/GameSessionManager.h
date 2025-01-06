@@ -28,14 +28,18 @@ public:
 		return *m_instance;
 	}
 
-public:
+	void Process();
+	void ProcessGameSession( sptr_game_session gameSession );
 
 	bool CreatePublicGameSession( sptr_user owner, std::wstring gameName, int32_t minimumLevel, int32_t maximumLevel );
 	bool CreatePrivateGameSession( sptr_user owner, std::wstring gameName, int32_t minimumLevel, int32_t maximumLevel );
-	bool UpdateGameSessionDiscovery( sptr_user owner, std::string hostIp, int32_t hostPort );
+	bool CancelGameSession( std::wstring sessionId );
 
 	sptr_game_session FindGame( const std::wstring sessionId );
 	sptr_game_session FindGame( const int32_t gameId );
 
 	bool UserJoinGame( const int32_t gameId, sptr_user joiningUser );
+
+private:
+	void HandleJoinDiscovery( sptr_game_session gameSession, sptr_user joiningUser );
 };

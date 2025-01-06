@@ -34,7 +34,6 @@ public:
 
 	sptr_user GetUser( const std::wstring &sessionId );
 	sptr_user GetUser( sptr_tcp_socket socket );
-	sptr_user GetUser( sptr_udp_socket socket );
 
 private:
 };

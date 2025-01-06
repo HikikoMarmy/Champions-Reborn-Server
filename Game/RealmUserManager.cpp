@@ -90,16 +90,3 @@ sptr_user RealmUserManager::GetUser( sptr_tcp_socket socket )
 
 	return nullptr;
 }
-
-sptr_user RealmUserManager::GetUser( sptr_udp_socket socket )
-{
-	for( auto &user : m_users )
-	{
-		if( user->m_discoverySocket == socket )
-		{
-			return user;
-		}
-	}
-
-	return nullptr;
-}
