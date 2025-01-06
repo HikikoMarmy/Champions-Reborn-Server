@@ -8,6 +8,8 @@
 class GenericResponse;
 typedef std::shared_ptr< GenericResponse > sptr_generic_response;
 
+class GenericMessage;
+
 class RealmSocket
 {
 public:
@@ -55,8 +57,6 @@ public:
 	std::mutex read_mutex;
 
 	std::vector< uint8_t >		read_buffer;
-	//std::list< sptr_packet >	read_queue;
-	//std::list< sptr_packet >	write_queue;
 };
 
 class RealmTCPSocket : public RealmSocket
@@ -83,6 +83,7 @@ public:
 	void send( const sptr_byte_stream stream ) override;
 	void send( const ByteStream &stream ) override;
 	void send( const sptr_generic_response response );
+	void send( GenericMessage &message );
 
 public:
 	std::vector< uint8_t > m_pendingWriteBuffer;

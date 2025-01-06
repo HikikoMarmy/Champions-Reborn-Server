@@ -83,6 +83,17 @@ void RealmTCPSocket::send( const sptr_generic_response response )
 	//Log::Packet( stream->data, packetSize, true );
 }
 
+void RealmTCPSocket::send( GenericMessage &message )
+{
+	auto &stream = message.Serialize();
+	auto netSize = htonl( stream.get_position() + 4 );
+
+	m_pendingWriteBuffer.insert( m_pendingWriteBuffer.end(), ( uint8_t * )&netSize, ( uint8_t * )&netSize + 4 );
+	m_pendingWriteBuffer.insert( m_pendingWriteBuffer.end(), stream.data.begin(), stream.data.end() );
+
+	//Log::Packet( stream.data, stream.get_position(), true );
+}
+
 RealmUDPSocket::RealmUDPSocket()
 {
 }
