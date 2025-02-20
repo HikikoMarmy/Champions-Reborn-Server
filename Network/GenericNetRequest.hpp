@@ -14,14 +14,23 @@ public:
 
 	virtual ~GenericRequest() = default;
 
-	virtual sptr_generic_response ProcessRequest( sptr_tcp_socket socket, sptr_byte_stream stream ) = 0;
+	virtual sptr_generic_response ProcessRequest(sptr_user user, sptr_byte_stream stream)
+	{
+		return nullptr;
+	};
+
+	virtual sptr_generic_response ProcessRequest( sptr_byte_stream stream )
+	{
+		return nullptr;
+	};
+
 	void DeserializeHeader( sptr_byte_stream stream )
 	{
 		m_packetId = stream->read_u16();
 		m_requestId = stream->read_u32();
-		auto _ = stream->read_u32();	// Always 2 from client.
+		auto ver = stream->read_u32();	// Called Version in the game, but is always 2 for CON and RTA
 	};
-	virtual void Deserialize( sptr_tcp_socket socket, sptr_byte_stream stream ) = 0;
+	virtual void Deserialize( sptr_byte_stream stream ) = 0;
 };
 
 typedef std::shared_ptr< GenericRequest > sptr_generic_request;

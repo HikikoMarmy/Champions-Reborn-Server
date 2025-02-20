@@ -40,12 +40,15 @@ public:
 	}
 
 	SOCKET fd;
-	uint16_t port;
-	sockaddr_in local_address;
-	sockaddr_in remote_address;
 
-	std::string peer_ip_address;
-	int32_t peer_port;
+	sockaddr_in local_addr;
+	sockaddr_in remote_addr;
+
+	std::string local_ip;
+	int32_t local_port;
+
+	std::string remote_ip;
+	int32_t remote_port;
 
 	uint32_t last_write_position;
 

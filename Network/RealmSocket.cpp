@@ -5,9 +5,14 @@ RealmSocket::RealmSocket()
 {
 	fd = INVALID_SOCKET;
 
-	memset( &local_address, 0, sizeof( local_address ) );
-	memset( &remote_address, 0, sizeof( remote_address ) );
-	port = 0;
+	memset( &local_addr, 0, sizeof( local_addr ) );
+	memset( &remote_addr, 0, sizeof( remote_addr ) );
+
+	local_ip = "";
+	local_port = 0;
+
+	remote_ip = "";
+	remote_port = 0;
 
 	flag.disconnected = 0;
 	flag.is_listener = 0;
@@ -30,9 +35,14 @@ RealmSocket::~RealmSocket()
 
 	fd = INVALID_SOCKET;
 
-	memset( &local_address, 0, sizeof( local_address ) );
-	memset( &remote_address, 0, sizeof( remote_address ) );
-	port = 0;
+	memset( &local_addr, 0, sizeof( local_addr ) );
+	memset( &remote_addr, 0, sizeof( remote_addr ) );
+
+	local_ip = "";
+	local_port = 0;
+
+	remote_ip = "";
+	remote_port = 0;
 
 	flag.disconnected = 0;
 	flag.is_listener = 0;
@@ -104,10 +114,10 @@ RealmUDPSocket::~RealmUDPSocket()
 
 void RealmUDPSocket::send( const sptr_byte_stream stream )
 {
-	m_pendingWriteQueue.push( stream );
+	sendto( fd, ( char * )stream->data.data(), stream->get_position(), 0, ( sockaddr * )&remote_addr, sizeof( remote_addr ) );
 }
 
 void RealmUDPSocket::send( const ByteStream &stream )
 {
-	m_pendingWriteQueue.push( std::make_shared< ByteStream >( stream ) );
+	sendto( fd, ( char * )stream.data.data(), stream.get_position(), 0, ( sockaddr * )&remote_addr, sizeof( remote_addr ) );
 }
