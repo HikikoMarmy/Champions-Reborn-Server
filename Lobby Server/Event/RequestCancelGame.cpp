@@ -1,18 +1,16 @@
 #include "../../global_define.h"
 #include "RequestCancelGame.h"
 
-void RequestCancelGame::Deserialize( sptr_tcp_socket socket, sptr_byte_stream stream )
+void RequestCancelGame::Deserialize( sptr_byte_stream stream )
 {
 	DeserializeHeader( stream );
 
 	m_sessionId = stream->read_encrypted_utf16();
 }
 
-sptr_generic_response RequestCancelGame::ProcessRequest( sptr_tcp_socket socket, sptr_byte_stream stream )
+sptr_generic_response RequestCancelGame::ProcessRequest( sptr_user user, sptr_byte_stream stream )
 {
-	Deserialize( socket, stream );
-
-	auto user = RealmUserManager::Get().GetUser( socket );
+	Deserialize( stream );
 
 	if( user == nullptr )
 	{
@@ -20,7 +18,7 @@ sptr_generic_response RequestCancelGame::ProcessRequest( sptr_tcp_socket socket,
 		return std::make_shared< ResultCancelGame >( this );
 	}
 
-	GameSessionManager::Get().CancelGameSession( m_sessionId );
+	GameSessionManager::Get().CancelGameSession( user );
 
 	// TODO:
 	// Notify the players via the Discovery Server

@@ -74,6 +74,7 @@ private:
 	std::vector< uint8_t > m_recvBuffer;
 
 	void Run();
+	void CheckSocketProblem();
 	void AcceptNewClient();
 	void ReadSocket( sptr_tcp_socket socket );
 	void WriteSocket( sptr_tcp_socket socket );

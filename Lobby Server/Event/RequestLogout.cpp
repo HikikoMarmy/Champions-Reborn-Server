@@ -1,30 +1,18 @@
 #include "../../global_define.h"
 #include "RequestLogout.h"
 
-void RequestLogout::Deserialize( sptr_tcp_socket socket, sptr_byte_stream stream )
+void RequestLogout::Deserialize( sptr_byte_stream stream )
 {
 	DeserializeHeader( stream );
 	m_sessionId = stream->read_encrypted_utf16();
 }
 
-sptr_generic_response RequestLogout::ProcessRequest( sptr_tcp_socket socket, sptr_byte_stream stream )
+sptr_generic_response RequestLogout::ProcessRequest( sptr_user user, sptr_byte_stream stream )
 {
-	Deserialize( socket, stream );
-
-	auto &userMng = RealmUserManager::Get();
-
-	auto user = userMng.GetUser( m_sessionId );
-
-	if( nullptr == user )
-	{
-		Log::Error( "RequestLogout::ProcessRequest() - User not found!" );
-		return std::make_shared< ResultLogout >( this, 1 );
-	}
+	Deserialize( stream );
 
 	// TODO: Any other cleanup here?
 	Log::Debug( "[%S] Logout", m_sessionId.c_str() );
-
-	userMng.RemoveUser( m_sessionId );
 
 	return std::make_shared< ResultLogout >( this, 0 );
 }

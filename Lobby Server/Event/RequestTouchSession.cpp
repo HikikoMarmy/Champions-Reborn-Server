@@ -1,16 +1,16 @@
 #include "../../global_define.h"
 #include "RequestTouchSession.h"
 
-void RequestTouchSession::Deserialize( sptr_tcp_socket socket, sptr_byte_stream stream )
+void RequestTouchSession::Deserialize( sptr_byte_stream stream )
 {
 	DeserializeHeader( stream );
 
 	m_sessionId = stream->read_encrypted_utf16();
 }
 
-sptr_generic_response RequestTouchSession::ProcessRequest( sptr_tcp_socket socket, sptr_byte_stream stream )
+sptr_generic_response RequestTouchSession::ProcessRequest( sptr_user user, sptr_byte_stream stream )
 {
-	Deserialize( socket, stream );
+	Deserialize( stream );
 
 	Log::Debug( "RequestTouchSession : %S", m_sessionId.c_str() );
 

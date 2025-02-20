@@ -1,16 +1,16 @@
 #include "../../global_define.h"
 #include "RequestGetRules.h"
 
-void RequestGetRules::Deserialize( sptr_tcp_socket socket, sptr_byte_stream stream )
+void RequestGetRules::Deserialize( sptr_byte_stream stream )
 {
 	DeserializeHeader( stream );
 
 	m_language = stream->read_sz_utf8();
 }
 
-sptr_generic_response RequestGetRules::ProcessRequest( sptr_tcp_socket socket, sptr_byte_stream stream )
+sptr_generic_response RequestGetRules::ProcessRequest( sptr_user user, sptr_byte_stream stream )
 {
-	Deserialize( socket, stream );
+	Deserialize( stream );
 
 	// TODO: Get rules/eula based on language
 	std::wstring rules = L"Welcome to the Norrath Emulated Server!\n\n";

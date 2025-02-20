@@ -2,7 +2,7 @@
 
 #include "RequestCreatePrivateGame.h"
 
-void RequestCreatePrivateGame::Deserialize( sptr_tcp_socket socket, sptr_byte_stream stream )
+void RequestCreatePrivateGame::Deserialize( sptr_byte_stream stream )
 {
 	DeserializeHeader( stream );
 
@@ -10,21 +10,11 @@ void RequestCreatePrivateGame::Deserialize( sptr_tcp_socket socket, sptr_byte_st
 	m_gameName = stream->read_utf16();
 }
 
-sptr_generic_response RequestCreatePrivateGame::ProcessRequest( sptr_tcp_socket socket, sptr_byte_stream stream )
+sptr_generic_response RequestCreatePrivateGame::ProcessRequest( sptr_user user, sptr_byte_stream stream )
 {
-	Deserialize( socket, stream );
+	Deserialize( stream );
 
-	auto user = RealmUserManager::Get().GetUser( socket );
-
-	if( user == nullptr )
-	{
-		Log::Error( "User not found! [%S]", m_sessionId.c_str() );
-		return std::make_shared< ResultCreatePrivateGame >( this, CREATE_REPLY::FATAL_ERROR, "", 0 );
-	}
-
-	auto &game_manager = GameSessionManager::Get();
-
-	auto result = game_manager.CreatePrivateGameSession( user, m_gameName, 0, 9999 );
+	auto result = GameSessionManager::Get().CreatePrivateGameSession( user, m_gameName, 0, 9999 );
 
 	if( !result )
 	{
@@ -34,10 +24,7 @@ sptr_generic_response RequestCreatePrivateGame::ProcessRequest( sptr_tcp_socket 
 
 	Log::Info( "[%S] Create Private Game: %S", m_sessionId.c_str(), m_gameName.c_str() );
 
-	user->m_state = RealmUser::UserState::InGameLobby;
-
-	// Send the discovery server information to the client
-	return std::make_shared< ResultCreatePrivateGame >( this, CREATE_REPLY::SUCCESS, "192.168.1.248", 3008 );
+	return std::make_shared< ResultCreatePrivateGame >( this, CREATE_REPLY::SUCCESS, Config::service_ip, Config::discovery_port );
 }
 
 ResultCreatePrivateGame::ResultCreatePrivateGame( GenericRequest *request, int32_t reply, std::string discoveryIp, int32_t discoveryPort ) : GenericResponse( *request )

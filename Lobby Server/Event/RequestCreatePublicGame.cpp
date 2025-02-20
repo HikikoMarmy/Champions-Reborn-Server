@@ -1,8 +1,11 @@
 #include "../../global_define.h"
 
 #include "RequestCreatePublicGame.h"
+#include "NotifyGameDiscovered.h"
+#include "NotifyClientDiscovered.h"
 
-void RequestCreatePublicGame::Deserialize( sptr_tcp_socket socket, sptr_byte_stream stream )
+// Request
+void RequestCreatePublicGame::Deserialize( sptr_byte_stream stream )
 {
 	DeserializeHeader( stream );
 
@@ -17,21 +20,11 @@ void RequestCreatePublicGame::Deserialize( sptr_tcp_socket socket, sptr_byte_str
 	m_gameName = stream->read_utf16();
 }
 
-sptr_generic_response RequestCreatePublicGame::ProcessRequest( sptr_tcp_socket socket, sptr_byte_stream stream )
+sptr_generic_response RequestCreatePublicGame::ProcessRequest( sptr_user user, sptr_byte_stream stream )
 {
-	Deserialize( socket, stream );
+	Deserialize( stream );
 
-	auto user = RealmUserManager::Get().GetUser( socket );
-
-	if( user == nullptr )
-	{
-		Log::Error( "User not found! [%S]", m_sessionId.c_str() );
-		return std::make_shared< ResultCreatePublicGame >( this, CREATE_REPLY::FATAL_ERROR, "", 0 );
-	}
-
-	auto &game_manager = GameSessionManager::Get();
-
-	auto result = game_manager.CreatePublicGameSession( user, m_gameName, 0, 9999 );
+	auto result = GameSessionManager::Get().CreatePublicGameSession( user, m_gameName, 0, 9999 );
 
 	if( !result )
 	{
@@ -41,12 +34,12 @@ sptr_generic_response RequestCreatePublicGame::ProcessRequest( sptr_tcp_socket s
 
 	Log::Info( "[%S] Create Public Game: %S", m_sessionId.c_str(), m_gameName.c_str() );
 
-	user->m_state = RealmUser::UserState::InGameLobby;
+	user->player_level = 999;
 
-	// Send the discovery server information to the client
-	return std::make_shared< ResultCreatePublicGame >( this, CREATE_REPLY::SUCCESS, "192.168.1.248", 3008 );
+	return std::make_shared< ResultCreatePublicGame >(this, CREATE_REPLY::SUCCESS, Config::service_ip, Config::discovery_port);
 }
 
+// Result
 ResultCreatePublicGame::ResultCreatePublicGame( GenericRequest *request, int32_t reply, std::string discoveryIp, int32_t discoveryPort ) : GenericResponse( *request )
 {
 	m_reply = reply;

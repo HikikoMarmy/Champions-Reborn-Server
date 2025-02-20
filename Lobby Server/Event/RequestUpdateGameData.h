@@ -12,8 +12,8 @@ public:
 	{
 		return std::make_unique< RequestUpdateGameData >();
 	}
-	sptr_generic_response ProcessRequest( sptr_tcp_socket socket, sptr_byte_stream stream ) override;
-	void Deserialize( sptr_tcp_socket socket, sptr_byte_stream stream ) override;
+	sptr_generic_response ProcessRequest( sptr_user user, sptr_byte_stream stream ) override;
+	void Deserialize( sptr_byte_stream stream ) override;
 };
 
 class ResultUpdateGameData : public GenericResponse {

@@ -1,7 +1,7 @@
 #include "../../global_define.h"
 #include "RequestCreateAccount.h"
 
-void RequestCreateAccount::Deserialize( sptr_tcp_socket socket, sptr_byte_stream stream )
+void RequestCreateAccount::Deserialize( sptr_byte_stream stream )
 {
 	DeserializeHeader( stream );
 
@@ -11,14 +11,11 @@ void RequestCreateAccount::Deserialize( sptr_tcp_socket socket, sptr_byte_stream
 	auto dateOfBirth = stream->read_encrypted_utf16();
 }
 
-sptr_generic_response RequestCreateAccount::ProcessRequest( sptr_tcp_socket socket, sptr_byte_stream stream )
+sptr_generic_response RequestCreateAccount::ProcessRequest( sptr_user user, sptr_byte_stream stream )
 {
-	Deserialize( socket, stream );
+	Deserialize( stream );
 
 	Log::Debug( "Account creation isn't supported. Random SessionID generated." );
-
-	auto &userMng = RealmUserManager::Get();
-	auto user = userMng.CreateUser( socket, L"foo", L"bar" );
 
 	if( nullptr == user )
 	{
@@ -26,7 +23,7 @@ sptr_generic_response RequestCreateAccount::ProcessRequest( sptr_tcp_socket sock
 		return std::make_shared< ResultCreateAccount >( this, CREATE_ACCOUNT_REPLY::ERROR_FATAL, L"" );
 	}
 
-	return std::make_shared< ResultCreateAccount >( this, CREATE_ACCOUNT_REPLY::SUCCESS, user->m_sessionId );
+	return std::make_shared< ResultCreateAccount >( this, CREATE_ACCOUNT_REPLY::SUCCESS, user->session_id );
 }
 
 ResultCreateAccount::ResultCreateAccount( GenericRequest *request, int32_t reply, std::wstring sessionId ) : GenericResponse( *request )

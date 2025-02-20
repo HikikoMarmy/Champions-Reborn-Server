@@ -1,14 +1,14 @@
 #include "../../global_define.h"
 #include "RequestGetEncryptionKey.h"
 
-void RequestGetEncryptionKey::Deserialize( sptr_tcp_socket socket, sptr_byte_stream stream )
+void RequestGetEncryptionKey::Deserialize( sptr_byte_stream stream )
 {
 	DeserializeHeader( stream );
 }
 
-sptr_generic_response RequestGetEncryptionKey::ProcessRequest( sptr_tcp_socket socket, sptr_byte_stream stream )
+sptr_generic_response RequestGetEncryptionKey::ProcessRequest( sptr_user user, sptr_byte_stream stream )
 {
-	Deserialize( socket, stream );
+	Deserialize( stream );
 
 	auto publicKey = stream->read_utf8();
 	auto unknown = stream->read_u32();

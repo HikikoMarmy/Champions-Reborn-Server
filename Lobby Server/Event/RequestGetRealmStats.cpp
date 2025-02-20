@@ -1,14 +1,14 @@
 #include "../../global_define.h"
 #include "RequestGetRealmStats.h"
 
-void RequestGetRealmStats::Deserialize( sptr_tcp_socket socket, sptr_byte_stream stream )
+void RequestGetRealmStats::Deserialize( sptr_byte_stream stream )
 {
 	DeserializeHeader( stream );
 }
 
-sptr_generic_response RequestGetRealmStats::ProcessRequest( sptr_tcp_socket socket, sptr_byte_stream stream )
+sptr_generic_response RequestGetRealmStats::ProcessRequest( sptr_user user, sptr_byte_stream stream )
 {
-	Deserialize( socket, stream );
+	Deserialize( stream );
 
 	return std::make_shared< ResultGetRealmStats >( this );
 }
@@ -24,13 +24,13 @@ ByteStream &ResultGetRealmStats::Serialize()
 	m_stream.write_u32( m_requestId );
 	m_stream.write_u32( 0 );
 
-	m_stream.write_u32( 1 );
-	m_stream.write_u32( 2 );
-	m_stream.write_u32( 3 );
-	m_stream.write_u32( 4 );
-	m_stream.write_u32( 5 );
-	m_stream.write_u32( 6 );
-	m_stream.write_u32( 7 );
-	m_stream.write_u32( 8 );
+	m_stream.write_u32( 1 );	// Users Logged In Game
+	m_stream.write_u32( 2 );	// Users Logged In Realm
+	m_stream.write_u32( 3 );	// Users Running Game
+	m_stream.write_u32( 4 );	// Users Running Realm
+	m_stream.write_u32( 5 );	// Users Playing Game
+	m_stream.write_u32( 6 );	// Users Playing Realm
+	m_stream.write_u32( 7 );	// unmatchedGamesGame
+	m_stream.write_u32( 8 );	// unmatchedGamesRealm
 	return m_stream;
 }

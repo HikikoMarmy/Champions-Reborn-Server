@@ -7,6 +7,7 @@
 #include "Event/RequestCreateAccount.h"
 #include "Event/RequestCreatePrivateGame.h"
 #include "Event/RequestCreatePublicGame.h"
+#include "Event/RequestGetGame.h"
 #include "Event/RequestGetRealmStats.h"
 #include "Event/RequestLogin.h"
 #include "Event/RequestLogout.h"
@@ -37,6 +38,11 @@ const std::map< int16_t, std::function< std::unique_ptr< GenericRequest >() > > 
 	{ 0x000A, []() -> std::unique_ptr< GenericRequest >
 		{
 			return std::make_unique< RequestCreatePublicGame >();
+		}
+	},
+	{ 0x000D, []() -> std::unique_ptr< GenericRequest >
+		{
+			return std::make_unique< RequestGetGame >();
 		}
 	},
 	{ 0x000F, []() -> std::unique_ptr< GenericRequest >

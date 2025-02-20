@@ -2,7 +2,7 @@
 
 #include "RequestLogin.h"
 
-void RequestLogin::Deserialize( sptr_tcp_socket socket, sptr_byte_stream stream )
+void RequestLogin::Deserialize( sptr_byte_stream stream )
 {
 	DeserializeHeader( stream );
 
@@ -10,9 +10,9 @@ void RequestLogin::Deserialize( sptr_tcp_socket socket, sptr_byte_stream stream 
 	m_password = stream->read_encrypted_utf16();
 }
 
-sptr_generic_response RequestLogin::ProcessRequest( sptr_tcp_socket socket, sptr_byte_stream stream )
+sptr_generic_response RequestLogin::ProcessRequest( sptr_user user, sptr_byte_stream stream )
 {
-	Deserialize( socket, stream );
+	Deserialize( stream );
 
 	if( m_username.empty() || m_password.empty() )
 	{
@@ -31,11 +31,7 @@ sptr_generic_response RequestLogin::ProcessRequest( sptr_tcp_socket socket, sptr
 		Log::Debug( "RequestLogin : Champions of Norrath v1.0" );
 	}
 
-	auto &userMng = RealmUserManager::Get();
-
-	auto user = userMng.CreateUser( socket, m_username, m_password );
-
-	return std::make_shared< ResultLogin >( this, LOGIN_REPLY::SUCCESS, user->m_sessionId );
+	return std::make_shared< ResultLogin >( this, LOGIN_REPLY::SUCCESS, user->session_id );
 }
 
 ResultLogin::ResultLogin( GenericRequest *request, int32_t reply, std::wstring sessionId ) : GenericResponse( *request )

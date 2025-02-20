@@ -2,8 +2,9 @@
 #include "RequestDoClientDiscovery.h"
 #include "NotifyClientDiscovered.h"
 #include "NotifyGameDiscovered.h"
+#include "NotifyClientReqConnect.h"
 
-void RequestDoClientDiscovery::Deserialize( sptr_tcp_socket socket, sptr_byte_stream stream )
+void RequestDoClientDiscovery::Deserialize( sptr_byte_stream stream )
 {
 	DeserializeHeader( stream );
 
@@ -11,40 +12,39 @@ void RequestDoClientDiscovery::Deserialize( sptr_tcp_socket socket, sptr_byte_st
 	m_gameId = stream->read_u32();
 }
 
-sptr_generic_response RequestDoClientDiscovery::ProcessRequest( sptr_tcp_socket socket, sptr_byte_stream stream )
+sptr_generic_response RequestDoClientDiscovery::ProcessRequest( sptr_user user, sptr_byte_stream stream )
 {
-	Deserialize( socket, stream );
+	Deserialize( stream );
 
-	auto user = RealmUserManager::Get().GetUser( socket );
-
-	if( user == nullptr )
+	auto session = GameSessionManager::Get().FindGame( m_gameId );
+	if( session == nullptr )
 	{
-		Log::Error( "User not found! [%s]", m_sessionId.c_str() );
+		Log::Error( "Game session not found! [%d]", m_gameId );
 		return std::make_shared< ResultDoClientDiscovery >( this, DISCOVERY_REPLY::FATAL_ERROR, "", 0 );
 	}
 
-	if( user->m_sessionId != m_sessionId )
+	// TODO: Get max size from game data blob
+	if( session->m_userList.size() >= 4 )
 	{
-		Log::Error( "Session ID mismatch! [%s]", m_sessionId.c_str() );
+		Log::Error( "Game session is full! [%d]", m_gameId );
+		return std::make_shared< ResultDoClientDiscovery >( this, DISCOVERY_REPLY::GAME_FULL, "", 0 );
+	}
+
+	auto host = session->GetHost();
+
+	if( host == nullptr )
+	{
+		Log::Error( "Game session owner not found! [%d]", m_gameId );
 		return std::make_shared< ResultDoClientDiscovery >( this, DISCOVERY_REPLY::FATAL_ERROR, "", 0 );
 	}
 
-	auto result = GameSessionManager::Get().CreatePublicGameSession( user, L"test", 0, 9999 );
+	Log::Debug( "[%s] DoClientDiscovery : %d", m_sessionId.c_str(), m_gameId );
 
-	//auto result = GameSessionManager::Get().UserJoinGame( m_gameId, user );
+	user->game_id = m_gameId;
+	user->discovery_state = DiscoveryState::Initial_Connect;
 
-	//if( result == false )
-	//{
-	//	Log::Error( "Failed to join game! [%d]", m_gameId );
-	//	return std::make_shared< ResultDoClientDiscovery >( this, DISCOVERY_REPLY::GAME_FULL, "", 0 );
-	//}
-
-	//NotifyClientDiscovered notify1( "192.168.1.248", 47115 );
-	//NotifyGameDiscovered notify2( "192.168.1.248", 47115 );
-	//socket->send( notify1 );
-	//socket->send( notify2 );
-
-	return std::make_shared< ResultDoClientDiscovery >( this, DISCOVERY_REPLY::SUCCESS, "192.168.1.248", 3008 );
+	// Send the discovery server information to the client
+	return std::make_shared< ResultDoClientDiscovery >(this, DISCOVERY_REPLY::SUCCESS, Config::service_ip, Config::discovery_port );
 }
 
 ResultDoClientDiscovery::ResultDoClientDiscovery( GenericRequest *request, int32_t reply, std::string ip, int32_t port ) : GenericResponse( *request )

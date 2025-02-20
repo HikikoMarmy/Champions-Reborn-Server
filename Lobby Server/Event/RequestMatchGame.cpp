@@ -1,7 +1,7 @@
 #include "../../global_define.h"
 #include "RequestMatchGame.h"
 
-void RequestMatchGame::Deserialize( sptr_tcp_socket socket, sptr_byte_stream stream )
+void RequestMatchGame::Deserialize( sptr_byte_stream stream )
 {
 	DeserializeHeader( stream );
 
@@ -35,9 +35,9 @@ void RequestMatchGame::Deserialize( sptr_tcp_socket socket, sptr_byte_stream str
 	int dbg = 0;
 }
 
-sptr_generic_response RequestMatchGame::ProcessRequest( sptr_tcp_socket socket, sptr_byte_stream stream )
+sptr_generic_response RequestMatchGame::ProcessRequest( sptr_user user, sptr_byte_stream stream )
 {
-	Deserialize( socket, stream );
+	Deserialize( stream );
 
 	Log::Debug( "RequestMatchGame : %S", m_sessionId.c_str() );
 
@@ -55,40 +55,36 @@ ByteStream &ResultMatchGame::Serialize()
 	m_stream.write_u32( m_requestId );
 	m_stream.write_u32( 0 );
 
-	m_stream.write_u32( 2 );
+	auto publicGameList = GameSessionManager::Get().GetAvailableGameSessionList();
 
-	for( int i = 0; i < 2; i++ )
+	m_stream.write_u32(publicGameList.size());
 	{
-		m_stream.write_utf16( L"Unknown_A " + std::to_wstring( i ) );
+		for (auto& game : publicGameList)
+			m_stream.write_utf16(game->m_gameLocation);
 	}
 
-	m_stream.write_u32( 2 );
-
-	for( int i = 0; i < 2; i++ )
+	m_stream.write_u32(publicGameList.size());
 	{
-		m_stream.write_utf16( L"Game Name " + std::to_wstring( i ) );
+		for (auto& game : publicGameList)
+			m_stream.write_utf16(game->m_gameName);
 	}
 
-	m_stream.write_u32( 2 );
-
-	for( int i = 0; i < 2; i++ )
+	m_stream.write_u32(publicGameList.size());
 	{
-		m_stream.write_utf16( L"Unknown_B " + std::to_wstring( i ) );
+		for (auto& game : publicGameList)
+			m_stream.write_utf16(game->m_ownerName);
 	}
 
-	// Room Unique ID (Used when selecting)
-	m_stream.write_u32( 2 );
-	for( int i = 0; i < 2; i++ )
+	m_stream.write_u32(publicGameList.size());
 	{
-		m_stream.write_u32( i );
+		for (auto& game : publicGameList)
+			m_stream.write_u32(game->m_gameIndex);
 	}
 
-	// "GameBlob"
-	m_stream.write_u32( 1 );
-	for( int i = 0; i < 1; i++ )
+	m_stream.write_u32(publicGameList.size());
 	{
-		std::vector< uint8_t > bytes( 256, 0 );
-		m_stream.write_bytes( bytes );
+		for (auto& game : publicGameList)
+			m_stream.write_utf8(game->m_gameData);
 	}
 
 	return m_stream;

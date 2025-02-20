@@ -36,7 +36,15 @@ void LobbyServer::Start( std::string ip, int32_t port )
 	sockaddr_in service;
 	service.sin_family = AF_INET;
 	service.sin_port = htons( port );
-	service.sin_addr.s_addr = ADDR_ANY;
+
+	if (ip == "0.0.0.0")
+	{
+		service.sin_addr.s_addr = ADDR_ANY;
+	}
+	else
+	{
+		service.sin_addr.s_addr = inet_addr(ip.c_str());
+	}
 
 	if( bind( m_listenSocket, ( SOCKADDR * )&service, sizeof( service ) ) == SOCKET_ERROR )
 	{
@@ -116,6 +124,23 @@ void LobbyServer::Run()
 	}
 }
 
+void LobbyServer::CheckSocketProblem()
+{
+	for( auto it = m_clientSockets.begin(); it != m_clientSockets.end(); )
+	{
+		if( ( *it )->flag.disconnected )
+		{
+			RealmUserManager::Get().RemoveUser( ( *it ) );
+			Log::Info( "[LOBBY] Client disconnected : (%s)", ( *it )->remote_ip.c_str() );
+			it = m_clientSockets.erase( it );
+		}
+		else
+		{
+			++it;
+		}
+	}
+}
+
 void LobbyServer::AcceptNewClient()
 {
 	sockaddr_in clientInfo{};
@@ -130,12 +155,15 @@ void LobbyServer::AcceptNewClient()
 
 	auto new_socket = std::make_shared< RealmTCPSocket >();
 	new_socket->fd = clientSocket;
-	new_socket->remote_address = clientInfo;
-	new_socket->peer_ip_address = inet_ntoa( clientInfo.sin_addr );
+	new_socket->remote_addr = clientInfo;
+	new_socket->remote_ip = inet_ntoa( clientInfo.sin_addr );
+	new_socket->remote_port = ntohs( clientInfo.sin_port );
 
 	m_clientSockets.push_back( new_socket );
 
-	Log::Info( "[LOBBY] New client connected : (%s)", new_socket->peer_ip_address.c_str() );
+	RealmUserManager::Get().CreateUser( new_socket );
+
+	Log::Info( "[LOBBY] New client connected : (%s)", new_socket->remote_ip.c_str() );
 }
 
 void LobbyServer::ReadSocket( sptr_tcp_socket socket )
@@ -232,6 +260,8 @@ void LobbyServer::WriteSocket( sptr_tcp_socket socket )
 	socket->m_pendingWriteBuffer.erase( socket->m_pendingWriteBuffer.begin(), socket->m_pendingWriteBuffer.begin() + totalBytesSent );
 }
 
+#include "Event/NotifyGameDiscovered.h"
+#include "Event/NotifyClientDiscovered.h"
 void LobbyServer::HandleRequest( sptr_tcp_socket socket, sptr_byte_stream stream )
 {
 	auto packetId = stream->read< uint16_t >();
@@ -248,9 +278,25 @@ void LobbyServer::HandleRequest( sptr_tcp_socket socket, sptr_byte_stream stream
 	Log::Debug( "[LOBBY] Request processed : 0x%04X", packetId );
 	
 	auto request = it->second();
+	auto user = RealmUserManager::Get().GetUser( socket );
+
+	if( user == nullptr )
+	{
+		Log::Error( "User not found!" );
+		socket->flag.disconnected = true;
+		return;
+	}
 	
-	if( auto res = request->ProcessRequest( socket, stream ) )
+	if( auto res = request->ProcessRequest( user, stream) )
 	{
 		socket->send( res );
+
+		if( user->player_level == 999 )
+		{
+			user->player_level = 1;
+
+			//NotifyGameDiscovered msg(Config::service_ip, Config::discovery_port);
+			//socket->send(msg);
+		}
 	}
 }
