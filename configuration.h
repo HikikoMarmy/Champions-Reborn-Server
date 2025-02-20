@@ -3,22 +3,13 @@
 #include <fstream>
 #include <string>
 
-class ServerConfig
+class Config
 {
 public:
-	static ServerConfig &Get()
-	{
-		static ServerConfig instance;
-		return instance;
-	}
+	static bool Load( std::string filename );
 
-	ServerConfig();
-	~ServerConfig();
-
-	bool Load( std::string filename );
-
-	std::string service_ip;
-	uint16_t gateway_port;
-	uint16_t session_port;
-	uint16_t broker_port;
+	static inline std::string service_ip;
+	static inline uint16_t gateway_port;
+	static inline uint16_t lobby_port;
+	static inline uint16_t discovery_port;
 };

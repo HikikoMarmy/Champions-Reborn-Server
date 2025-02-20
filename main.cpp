@@ -12,29 +12,46 @@ static void ShowStartup()
 	);
 }
 
+static bool NetworkStartup()
+{
+	WORD wVersionRequest = MAKEWORD(2, 2);
+	WSADATA wsaData;
+
+	if (WSAStartup(wVersionRequest, &wsaData) != 0)
+	{
+		Log::Error("WSAStartup() failed");
+		return false;
+	}
+
+	return true;
+}
+
 int main()
 {
 	ShowStartup();
 
-	WORD wVersionRequest = MAKEWORD( 2, 2 );
-	WSADATA wsaData;
-
-	if( WSAStartup( wVersionRequest, &wsaData ) != 0 )
+	if (false == NetworkStartup())
 	{
-		Log::Error( "WSAStartup() failed" );
+		Log::Error("Could not initialize network.");
+		return 0;
+	}
+	
+	Log::Info( "Server Start..." );
+
+	if( !Config::Load( "config.ini" ) )
+	{
+		Log::Error( "Failed to load configuration file." );
 		return 0;
 	}
 
-	Log::Info( "Server Start..." );
-
 	auto &gateway_server = GatewayServer::Get();
-	gateway_server.Start( "192.168.1.248", 40801 );
+	gateway_server.Start( Config::service_ip, Config::gateway_port );
 
 	auto &lobby_server = LobbyServer::Get();
-	lobby_server.Start( "192.168.1.248", 40810 );
+	lobby_server.Start(Config::service_ip, Config::lobby_port);
 
 	auto &discovery_server = DiscoveryServer::Get();
-	discovery_server.Start( "192.168.1.248", 40820 );
+	discovery_server.Start(Config::service_ip, Config::discovery_port);
 
 	while( true )
 	{

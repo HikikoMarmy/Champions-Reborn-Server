@@ -185,9 +185,10 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="configuration.h" />
     <ClInclude Include="Crypto\NorrathCrypt.h" />
     <ClInclude Include="Discovery Server\DiscoveryServer.h" />
-    <ClInclude Include="Discovery Server\DiscoverySession.h" />
+    <ClInclude Include="Game\RealmCharacterData.h" />
     <ClInclude Include="Game\RealmUser.h" />
     <ClInclude Include="Game\RealmUserManager.h" />
     <ClInclude Include="Game\GameSession.h" />
@@ -206,6 +207,7 @@
     <ClInclude Include="Lobby Server\Event\RequestCreatePublicGame.h" />
     <ClInclude Include="Lobby Server\Event\RequestDoClientDiscovery.h" />
     <ClInclude Include="Lobby Server\Event\RequestGetEncryptionKey.h" />
+    <ClInclude Include="Lobby Server\Event\RequestGetGame.h" />
     <ClInclude Include="Lobby Server\Event\RequestGetRealmStats.h" />
     <ClInclude Include="Lobby Server\Event\RequestGetRules.h" />
     <ClInclude Include="Lobby Server\Event\RequestLogin.h" />
@@ -229,6 +231,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="configuration.cpp" />
     <ClCompile Include="Crypto\NorrathCrypt.cpp" />
     <ClCompile Include="Discovery Server\DiscoveryServer.cpp" />
     <ClCompile Include="Discovery Server\DiscoverySession.cpp" />
@@ -248,6 +251,7 @@
     <ClCompile Include="Lobby Server\Event\RequestCreatePublicGame.cpp" />
     <ClCompile Include="Lobby Server\Event\RequestDoClientDiscovery.cpp" />
     <ClCompile Include="Lobby Server\Event\RequestGetEncryptionKey.cpp" />
+    <ClCompile Include="Lobby Server\Event\RequestGetGame.cpp" />
     <ClCompile Include="Lobby Server\Event\RequestGetRealmStats.cpp" />
     <ClCompile Include="Lobby Server\Event\RequestGetRules.cpp" />
     <ClCompile Include="Lobby Server\Event\RequestLogin.cpp" />
