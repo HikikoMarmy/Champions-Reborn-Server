@@ -51,7 +51,15 @@ void GatewayServer::Start( std::string ip, int32_t port )
 	sockaddr_in service;
 	service.sin_family = AF_INET;
 	service.sin_port = htons( port );
-	service.sin_addr.s_addr = ADDR_ANY;
+
+	if( ip == "0.0.0.0" )
+	{
+		service.sin_addr.s_addr = ADDR_ANY;
+	}
+	else
+	{
+		service.sin_addr.s_addr = inet_addr( ip.c_str() );
+	}
 	
 	if( bind( m_listenSocket, ( SOCKADDR * )&service, sizeof( service ) ) == SOCKET_ERROR )
 	{
@@ -147,12 +155,13 @@ void GatewayServer::AcceptNewClient()
 
 	auto new_client = std::make_shared< RealmTCPSocket >();
 	new_client->fd = clientSocket;
-	new_client->remote_address = clientInfo;
-	new_client->peer_ip_address = inet_ntoa( clientInfo.sin_addr );
+	new_client->remote_addr = clientInfo;
+	new_client->remote_ip = inet_ntoa( clientInfo.sin_addr );
+	new_client->remote_port = ntohs( clientInfo.sin_port );
 
 	m_clientSockets.push_back( new_client );
 
-	Log::Info( "[GATEWAY] New client connected : (%s)", new_client->peer_ip_address.c_str() );
+	Log::Info( "[GATEWAY] New client connected : (%s)", new_client->remote_ip.c_str() );
 }
 
 void GatewayServer::ReadSocket( sptr_tcp_socket socket )
@@ -194,8 +203,6 @@ void GatewayServer::ReadSocket( sptr_tcp_socket socket )
 			break;
 		}
 
-		Log::Packet( socket->m_pendingReadBuffer, packetSize, false );
-
 		auto stream = std::make_shared< ByteStream >( socket->m_pendingReadBuffer.data() + 4, packetSize - 4 );
 
 		// Erase the packet from the buffer
@@ -219,8 +226,6 @@ void GatewayServer::WriteSocket( sptr_tcp_socket socket )
 	}
 
 	size_t totalBytesSent = 0;
-
-	Log::Packet( socket->m_pendingWriteBuffer, ( int )socket->m_pendingWriteBuffer.size(), true );
 
 	while( true )
 	{
@@ -264,7 +269,8 @@ void GatewayServer::HandleRequest( sptr_tcp_socket socket, sptr_byte_stream stre
 	Log::Debug( "[GATEWAY] Request processed : 0x%04X", packetId );
 
 	auto request = it->second();
-	auto res = request->ProcessRequest( socket, stream );
-
-	socket->send( res );
+	if (auto res = request->ProcessRequest(stream))
+	{
+		socket->send(res);
+	}
 }

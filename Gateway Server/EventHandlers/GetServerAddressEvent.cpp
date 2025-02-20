@@ -1,16 +1,16 @@
 #include "../../global_define.h"
 #include "GetServerAddressEvent.h"
 
-void RequestGetServerAddress::Deserialize( sptr_tcp_socket socket, sptr_byte_stream stream )
+void RequestGetServerAddress::Deserialize( sptr_byte_stream stream )
 {
 	DeserializeHeader( stream );
 }
 
-sptr_generic_response RequestGetServerAddress::ProcessRequest( sptr_tcp_socket socket, sptr_byte_stream stream )
+sptr_generic_response RequestGetServerAddress::ProcessRequest( sptr_byte_stream stream )
 {
-	Deserialize( socket, stream );
+	Deserialize( stream);
 
-	return std::make_shared< ResultGetServerAddress >( this, "192.168.1.248", 40810 );
+	return std::make_shared< ResultGetServerAddress >( this, Config::service_ip, Config::lobby_port );
 }
 
 ResultGetServerAddress::ResultGetServerAddress( GenericRequest *request, std::string ip, int32_t port ) : GenericResponse( *request )

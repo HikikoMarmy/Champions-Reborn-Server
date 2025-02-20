@@ -6,8 +6,8 @@ public:
 	{
 		return std::make_unique< RequestGetServerAddress >();
 	}
-	sptr_generic_response ProcessRequest( sptr_tcp_socket socket, sptr_byte_stream stream ) override;
-	void Deserialize( sptr_tcp_socket socket, sptr_byte_stream stream ) override;
+	sptr_generic_response ProcessRequest( sptr_byte_stream stream ) override;
+	void Deserialize( sptr_byte_stream stream ) override;
 };
 
 class ResultGetServerAddress : public GenericResponse {
