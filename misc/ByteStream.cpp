@@ -61,10 +61,27 @@ T ByteStream::read()
 	return value;
 }
 
-void ByteStream::write_utf8( const std::string &value )
+void ByteStream::write_utf8( const std::string &value, const size_t length )
 {
-	write_u32( value.size() );
-	write_bytes( std::vector< uint8_t >( value.begin(), value.end() ) );
+	if( length != -1 )
+	{
+		write_u32( length );
+
+		if (length > value.size())
+		{
+			write_bytes( std::vector< uint8_t >( value.begin(), value.end() ) );
+			write_bytes( std::vector< uint8_t >( length - value.size(), 0 ) );
+		}
+		else
+		{
+			write_bytes(std::vector< uint8_t >(value.begin(), value.begin() + length));
+		}
+	}
+	else
+	{
+		write_u32(value.size());
+		write_bytes(std::vector< uint8_t >(value.begin(), value.end()));
+	}
 }
 
 void ByteStream::write_utf16( const std::wstring &value )
@@ -82,10 +99,18 @@ void ByteStream::write_utf16( const std::wstring &value )
 	write_u16( 0 );
 }
 
-void ByteStream::write_sz_utf8( const std::string &value )
+void ByteStream::write_sz_utf8( const std::string &value, const size_t length )
 {
-	write_bytes( std::vector< uint8_t >( value.begin(), value.end() ) );
-	write< uint8_t >( 0 );
+	if( length != -1 )
+	{
+		write_bytes( std::vector< uint8_t >( value.begin(), value.end() ) );
+		write_bytes( std::vector< uint8_t >( length - value.size(), 0 ) );
+	}
+	else
+	{
+		write_bytes(std::vector< uint8_t >(value.begin(), value.end()));
+		write< uint8_t >(0);
+	}
 }
 
 void ByteStream::write_sz_utf16( const std::wstring &value )
@@ -163,9 +188,13 @@ float_t ByteStream::read_f32()
 	return read< float_t >();
 }
 
-std::string ByteStream::read_utf8()
+std::string ByteStream::read_utf8( size_t length )
 {
-	auto length = read_u32();
+	if( length == -1 )
+	{
+		length = read_u32();
+	}
+	
 	std::string value;
 	for( size_t i = 0; i < length; i++ )
 	{
@@ -177,9 +206,15 @@ std::string ByteStream::read_utf8()
 	return value;
 }
 
-std::wstring ByteStream::read_utf16()
+std::wstring ByteStream::read_utf16( size_t length )
 {
-	auto length = read_u32() * 2;
+	if( length == -1 )
+	{
+		length = read_u32();
+	}
+
+	length *= 2;
+
 	std::wstring value;
 
 	for( size_t i = 0; i < length; i += 2 )

@@ -35,9 +35,9 @@ public:
 	void write_i32( int32_t value );
 	void write_f32( float_t value );
 
-	void write_utf8( const std::string &value );
+	void write_utf8( const std::string &value, const size_t length = -1 );
 	void write_utf16( const std::wstring &value );
-	void write_sz_utf8( const std::string &value );
+	void write_sz_utf8( const std::string &value, const size_t length = -1);
 	void write_sz_utf16( const std::wstring &value );
 	void write_encrypted_utf8( const std::string &value );
 	void write_encrypted_utf16( const std::wstring &value );
@@ -50,8 +50,8 @@ public:
 	int32_t read_i32();
 	float_t read_f32();
 
-	std::string read_utf8();
-	std::wstring read_utf16();
+	std::string read_utf8( size_t length = -1 );
+	std::wstring read_utf16( size_t length = -1);
 	std::string read_sz_utf8();
 	std::wstring read_sz_utf16();
 	std::string read_encrypted_utf8( bool hasBlockLength = true );
