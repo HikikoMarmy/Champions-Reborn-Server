@@ -2,20 +2,54 @@
 
 RealmUser::RealmUser()
 {
-	m_state = UserState::MainMenu;
-	m_realmSocket = nullptr;
-	m_sessionId = L"";
+	tcp = nullptr;
+	udp = std::make_shared<RealmUDPSocket>();
+
+	session_id = L"";
+
+	local_addr = "";
+	discovery_addr = "";
+	discovery_port = 0;
+	discovery_state = DiscoveryState::None;
+
+	is_host = false;
+	is_ready = false;
+
+	game_id = 0;
+
+	player_name = "";
+	player_class = "";
+	player_level = 0;
 }
 
 RealmUser::~RealmUser()
 {
-	m_state = UserState::MainMenu;
-
-	if( m_realmSocket )
+	if( tcp )
 	{
-		m_realmSocket->flag.disconnected = true;
-		m_realmSocket.reset();
+		tcp->flag.disconnected = true;
+		tcp.reset();
 	}
 
-	m_sessionId = L"";
+	if( udp )
+	{
+		udp->flag.disconnected = true;
+		udp.reset();
+	}
+
+	session_id = L"";
+
+	local_addr = "";
+	discovery_addr = "";
+	discovery_port = 0;
+	discovery_state = DiscoveryState::None;
+
+	is_host = false;
+	is_ready = false;
+
+	game_id = 0;
+
+	player_name = "";
+	player_class = "";
+	player_level = 0;
+
 }

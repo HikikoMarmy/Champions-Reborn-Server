@@ -28,12 +28,15 @@ public:
 
 public:
 	static std::wstring GenerateSessionId();
-	sptr_user CreateUser( sptr_tcp_socket socket, std::wstring userId, std::wstring userPw );
+	sptr_user CreateUser( sptr_tcp_socket socket );
 	void RemoveUser( sptr_user user );
 	void RemoveUser( const std::wstring &sessionId );
+	void RemoveUser( const sptr_tcp_socket socket );
 
 	sptr_user GetUser( const std::wstring &sessionId );
-	sptr_user GetUser( sptr_tcp_socket socket );
+	sptr_user GetUser( const sptr_tcp_socket socket );
+
+	sptr_user GetUserByAddress(const sockaddr_in *remoteAddr );
 
 private:
 };

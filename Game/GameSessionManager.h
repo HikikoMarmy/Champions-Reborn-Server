@@ -8,8 +8,7 @@ private:
 	static inline std::mutex m_mutex;
 
 	int32_t m_gameIndex;
-	std::vector< sptr_game_session > m_publicGameSessionList;
-	std::vector< sptr_game_session > m_privateGameSessionList;
+	std::vector< sptr_game_session > m_gameSessionList;
 
 public:
 	GameSessionManager();
@@ -31,15 +30,17 @@ public:
 	void Process();
 	void ProcessGameSession( sptr_game_session gameSession );
 
-	bool CreatePublicGameSession( sptr_user owner, std::wstring gameName, int32_t minimumLevel, int32_t maximumLevel );
-	bool CreatePrivateGameSession( sptr_user owner, std::wstring gameName, int32_t minimumLevel, int32_t maximumLevel );
-	bool CancelGameSession( std::wstring sessionId );
+	bool CreatePublicGameSession( sptr_user user, std::wstring gameName, int32_t minimumLevel, int32_t maximumLevel );
+	bool CreatePrivateGameSession( sptr_user user, std::wstring gameName, int32_t minimumLevel, int32_t maximumLevel );
+	bool CancelGameSession( sptr_user user );
 
-	sptr_game_session FindGame( const std::wstring sessionId );
 	sptr_game_session FindGame( const int32_t gameId );
 
-	bool UserJoinGame( const int32_t gameId, sptr_user joiningUser );
+	bool SetGameOpen( sptr_user user );
+	bool JoinGame( sptr_user user );
+	void RemoveUser( sptr_user user );
 
-private:
-	void HandleJoinDiscovery( sptr_game_session gameSession, sptr_user joiningUser );
+	std::vector< sptr_game_session > GetPublicGameSessionList() const;
+	std::vector< sptr_game_session > GetAvailableGameSessionList() const;
+	std::vector< sptr_game_session > GetPrivateGameSessionList() const;
 };

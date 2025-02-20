@@ -21,14 +21,14 @@ std::wstring RealmUserManager::GenerateSessionId()
 	return sessionId;
 }
 
-sptr_user RealmUserManager::CreateUser( sptr_tcp_socket socket, std::wstring userId, std::wstring userPw )
+sptr_user RealmUserManager::CreateUser( sptr_tcp_socket socket )
 {
 	Log::Debug( "ClientManager::CreateUser() - Created new user" );
 
 	auto user = std::make_shared< RealmUser >();
 
-	user->m_sessionId = GenerateSessionId();
-	user->m_realmSocket = socket;
+	user->session_id = GenerateSessionId();
+	user->tcp = socket;
 
 	m_users.push_back( user );
 
@@ -40,11 +40,13 @@ void RealmUserManager::RemoveUser( sptr_user user )
 	auto it = std::find( m_users.begin(), m_users.end(), user );
 	if( it == m_users.end() )
 	{
-		Log::Error( "RemoveUser : [%S] not found", user->m_sessionId.c_str() );
+		Log::Error( "RemoveUser : [%S] not found", user->session_id.c_str() );
 		return;
 	}
+
+	GameSessionManager::Get().RemoveUser((*it));
 	
-	Log::Debug( "RemoveUser : [%S]", user->m_sessionId.c_str() );
+	Log::Debug( "RemoveUser : [%S]", user->session_id.c_str() );
 	m_users.erase( it );
 }
 
@@ -52,7 +54,7 @@ void RealmUserManager::RemoveUser( const std::wstring &sessionId )
 {
 	auto it = std::find_if( m_users.begin(), m_users.end(), [ &sessionId ]( sptr_user user )
 	{
-		return user->m_sessionId == sessionId;
+		return user->session_id == sessionId;
 	} );
 
 	if( it == m_users.end() )
@@ -61,15 +63,30 @@ void RealmUserManager::RemoveUser( const std::wstring &sessionId )
 		return;
 	}
 
-	Log::Debug( "RemoveUser : [%S]", sessionId.c_str() );
-	m_users.erase( it );
+	RemoveUser((*it));
+}
+
+void RealmUserManager::RemoveUser( const sptr_tcp_socket socket )
+{
+	auto it = std::find_if( m_users.begin(), m_users.end(), [ &socket ]( sptr_user user )
+	{
+		return user->tcp == socket;
+	} );
+
+	if( it == m_users.end() )
+	{
+		Log::Error( "RemoveUser : [%S] not found", socket->remote_ip.c_str() );
+		return;
+	}
+
+	RemoveUser((*it));
 }
 
 sptr_user RealmUserManager::GetUser( const std::wstring &sessionId )
 {
 	for( auto &user : m_users )
 	{
-		if( user->m_sessionId == sessionId )
+		if( user->session_id == sessionId )
 		{
 			return user;
 		}
@@ -78,11 +95,34 @@ sptr_user RealmUserManager::GetUser( const std::wstring &sessionId )
 	return nullptr;
 }
 
-sptr_user RealmUserManager::GetUser( sptr_tcp_socket socket )
+sptr_user RealmUserManager::GetUser( const sptr_tcp_socket socket )
+{
+	auto it = std::find_if(m_users.begin(), m_users.end(), [&socket](sptr_user user)
+	{
+		return user->tcp == socket;
+	});
+
+	if (it == m_users.end())
+	{
+		Log::Error("GetUser : [%S] not found", socket->remote_ip.c_str());
+		return nullptr;
+	}
+
+	return (*it);
+}
+
+sptr_user RealmUserManager::GetUserByAddress( const sockaddr_in* remoteAddr)
 {
 	for( auto &user : m_users )
 	{
-		if( user->m_realmSocket == socket )
+		if( nullptr == user->udp )
+		{
+			continue;
+		}
+
+		// Compare the address
+		if( user->udp->remote_addr.sin_addr.s_addr == remoteAddr->sin_addr.s_addr &&
+			user->udp->remote_addr.sin_port == remoteAddr->sin_port )
 		{
 			return user;
 		}
