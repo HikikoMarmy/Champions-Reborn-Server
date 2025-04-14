@@ -1,4 +1,3 @@
-
 #include <codecvt>
 #include "ByteStream.h"
 #include <span>
@@ -61,85 +60,96 @@ T ByteStream::read()
 	return value;
 }
 
-void ByteStream::write_utf8( const std::string &value, const size_t length )
+void ByteStream::write_utf8( const std::string &str, std::optional<uint32_t> length )
 {
-	if( length != -1 )
+	if( length )
 	{
-		write_u32( length );
+		write_u32( length.value() );
 
-		if (length > value.size())
+		if( length > str.size() )
 		{
-			write_bytes( std::vector< uint8_t >( value.begin(), value.end() ) );
-			write_bytes( std::vector< uint8_t >( length - value.size(), 0 ) );
+			write_bytes( std::vector< uint8_t >( str.begin(), str.end() ) );
+			write_bytes( std::vector< uint8_t >( length.value() - str.size(), 0 ) );
 		}
 		else
 		{
-			write_bytes(std::vector< uint8_t >(value.begin(), value.begin() + length));
+			write_bytes( std::vector< uint8_t >( str.begin(), str.begin() + length.value() ) );
 		}
 	}
 	else
 	{
-		write_u32(value.size());
-		write_bytes(std::vector< uint8_t >(value.begin(), value.end()));
+		write_u32( static_cast< uint32_t >( str.size() ) );
+		write_bytes( std::vector< uint8_t >( str.begin(), str.end() ) );
 	}
 }
 
-void ByteStream::write_utf16( const std::wstring &value )
+void ByteStream::write_utf16( const std::wstring &str, std::optional<uint32_t> length )
 {
-	write_u32( value.size() + 1 );
+	write_u32( static_cast< uint32_t >( str.size() ) + 1 );
 
-	std::vector< uint8_t > utf16;
-	for( auto c : value )
+	for( wchar_t ch : str )
 	{
-		utf16.push_back( c & 0xFF );
-		utf16.push_back( ( c >> 8 ) & 0xFF );
+		uint16_t val = static_cast< uint16_t >( ch );
+		write<uint8_t>( val & 0xFF );
+		write<uint8_t>( ( val >> 8 ) & 0xFF );
 	}
 
-	write_bytes( utf16 );
 	write_u16( 0 );
 }
 
-void ByteStream::write_sz_utf8( const std::string &value, const size_t length )
+void ByteStream::write_sz_utf8( const std::string &str, std::optional<uint32_t> length )
 {
-	if( length != -1 )
+	if( length )
 	{
-		write_bytes( std::vector< uint8_t >( value.begin(), value.end() ) );
-		write_bytes( std::vector< uint8_t >( length - value.size(), 0 ) );
+		write_bytes( std::vector< uint8_t >( str.begin(), str.end() ) );
+		write_bytes( std::vector< uint8_t >( length.value() - str.size(), 0 ) );
 	}
 	else
 	{
-		write_bytes(std::vector< uint8_t >(value.begin(), value.end()));
-		write< uint8_t >(0);
+		write_bytes( std::vector< uint8_t >( str.begin(), str.end() ) );
+		write< uint8_t >( 0 );
 	}
 }
 
-void ByteStream::write_sz_utf16( const std::wstring &value )
+void ByteStream::write_sz_utf16( const std::wstring &str, std::optional<uint32_t> length )
 {
-	std::vector< uint8_t > utf16;
-	for( auto c : value )
+	for( wchar_t ch : str )
 	{
-		utf16.push_back( c & 0xFF );
-		utf16.push_back( ( c >> 8 ) & 0xFF );
+		uint16_t val = static_cast< uint16_t >( ch );
+		write<uint8_t>( val & 0xFF );
+		write<uint8_t>( ( val >> 8 ) & 0xFF );
 	}
 
-	write_bytes( utf16 );
-	write<uint16_t>( 0 );
+	if( length )
+	{
+		size_t bytesWritten = str.size() * 2;
+		size_t totalBytes = length.value();
+
+		if( bytesWritten < totalBytes )
+		{
+			write_bytes( std::vector<uint8_t>( totalBytes - bytesWritten, 0 ) );
+		}
+	}
+	else
+	{
+		write<uint16_t>( 0 );
+	}
 }
 
-void ByteStream::write_encrypted_utf8( const std::string &value )
+void ByteStream::write_encrypted_utf8( const std::string &str )
 {
-	auto encrypted = RealmCrypt::encryptSymmetric( std::vector< uint8_t >( value.begin(), value.end() ) );
+	auto encrypted = RealmCrypt::encryptSymmetric( std::vector< uint8_t >( str.begin(), str.end() ) );
 
-	write_u32( encrypted.size() + 4 );
-	write_u32( value.size() );
+	write_u32( static_cast< uint32_t >( encrypted.size() ) + 4 );
+	write_u32( static_cast< uint32_t >( str.size() ) );
 
 	write_bytes( encrypted );
 }
 
-void ByteStream::write_encrypted_utf16( const std::wstring &value )
+void ByteStream::write_encrypted_utf16( const std::wstring &str )
 {
 	std::vector< uint8_t > utf16;
-	for( auto c : value )
+	for( auto c : str )
 	{
 		utf16.push_back( c & 0xFF );
 		utf16.push_back( ( c >> 8 ) & 0xFF );
@@ -147,8 +157,8 @@ void ByteStream::write_encrypted_utf16( const std::wstring &value )
 
 	auto encrypted = RealmCrypt::encryptSymmetric( utf16 );
 
-	write_u32( encrypted.size() + 4 );
-	write_u32( value.size() * 2 );
+	write_u32( static_cast< uint32_t >( encrypted.size() ) + 4 );
+	write_u32( static_cast< uint32_t >( str.size() ) * 2 );
 
 	write_bytes( encrypted );
 }
@@ -188,42 +198,48 @@ float_t ByteStream::read_f32()
 	return read< float_t >();
 }
 
-std::string ByteStream::read_utf8( size_t length )
+std::string ByteStream::read_utf8( std::optional<uint32_t> length )
 {
-	if( length == -1 )
+	if( !length )
 	{
 		length = read_u32();
 	}
-	
-	std::string value;
-	for( size_t i = 0; i < length; i++ )
+
+	if( position + length.value() > data.size() )
 	{
-		value.push_back( data[ position + i ] );
+		throw std::runtime_error( "read_utf8: Attempt to read past end of buffer" );
 	}
 
-	position += length;
+	std::string value( reinterpret_cast< const char * >( &data[ position ] ), length.value() );
+	position += length.value();
 
 	return value;
 }
 
-std::wstring ByteStream::read_utf16( size_t length )
+std::wstring ByteStream::read_utf16( std::optional<uint32_t> length )
 {
-	if( length == -1 )
+	if( !length )
 	{
 		length = read_u32();
 	}
 
-	length *= 2;
+	uint32_t byteLength = length.value() * 2;
 
-	std::wstring value;
-
-	for( size_t i = 0; i < length; i += 2 )
+	if( position + byteLength > data.size() )
 	{
-		value.push_back( data[ position + i ] | ( data[ position + i + 1 ] << 8 ) );
+		throw std::runtime_error( "read_utf16: Attempt to read past end of buffer" );
 	}
 
-	position += length;
+	std::wstring value;
+	value.reserve( length.value() );
 
+	for( size_t i = 0; i < byteLength; i += 2 )
+	{
+		uint16_t ch = data[ position + i ] | ( data[ position + i + 1 ] << 8 );
+		value.push_back( static_cast< wchar_t >( ch ) );
+	}
+
+	position += byteLength;
 	return value;
 }
 
@@ -269,7 +285,7 @@ std::string ByteStream::read_encrypted_utf8( bool hasBlockLength )
 	else
 	{
 		decryptedLength = read_u32();
-		encryptedLength = Math::round_up( decryptedLength, 16 );
+		encryptedLength = Utility::round_up( decryptedLength, 16 );
 	}
 
 	std::span< const uint8_t > encryptedBuffer( data.data() + position, encryptedLength );
@@ -303,7 +319,7 @@ std::wstring ByteStream::read_encrypted_utf16( bool hasBlockLength )
 	else
 	{
 		decryptedLength = read_u32();
-		encryptedLength = Math::round_up( decryptedLength, 16 );
+		encryptedLength = Utility::round_up( decryptedLength, 16 );
 	}
 
 	std::span< const uint8_t > encryptedBuffer( data.data() + position, encryptedLength );
@@ -340,8 +356,8 @@ void ByteStream::write_encrypted_bytes( const std::vector<uint8_t> &value )
 {
 	auto encrypted = RealmCrypt::encryptSymmetric( value );
 
-	write_u32( encrypted.size() + 4 );
-	write_u32( value.size() );
+	write_u32( static_cast< uint32_t >( encrypted.size() ) + 4 );
+	write_u32( static_cast< uint32_t >( value.size() ) );
 
 	write_bytes( encrypted );
 }
@@ -371,12 +387,12 @@ std::vector<uint8_t> ByteStream::get_data() const
 	return data;
 }
 
-uint32_t ByteStream::get_length() const
+size_t ByteStream::get_length() const
 {
 	return data.size();
 }
 
-void ByteStream::set_position( uint32_t where )
+void ByteStream::set_position( size_t where )
 {
 	if( where > data.size() )
 	{
@@ -386,7 +402,7 @@ void ByteStream::set_position( uint32_t where )
 	this->position = where;
 }
 
-uint32_t ByteStream::get_position() const
+size_t ByteStream::get_position() const
 {
 	return this->position;
 }
