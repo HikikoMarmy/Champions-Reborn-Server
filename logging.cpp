@@ -135,73 +135,7 @@ void Log::Error( std::string format, ... )
 	WriteToLog( log_error, &buf[ 0 ] );
 }
 
-void Log::Packet( std::vector< uint8_t > p, bool send )
-{
-	log_lock.lock();
-
-	HANDLE hConsole = GetStdHandle( STD_OUTPUT_HANDLE );
-
-	uint32_t size = _byteswap_ulong( *( uint32_t * )&p[ 0 ] );
-
-	SetConsoleTextAttribute( hConsole, 15 );
-
-	uint16_t i = 0;
-	uint16_t r = 0;
-
-	if( send )
-	{
-		SetConsoleTextAttribute( hConsole, 11 );
-		printf( "(SEND)(00|01|02|03|04|05|06|07|08|09|0A|0B|0C|0D|0E|0F)\n" );
-		SetConsoleTextAttribute( hConsole, 15 );
-	}
-	else
-	{
-		SetConsoleTextAttribute( hConsole, 10 );
-		printf( "(RECV)(00|01|02|03|04|05|06|07|08|09|0A|0B|0C|0D|0E|0F)\n" );
-		SetConsoleTextAttribute( hConsole, 15 );
-	}
-
-	while( i < size )
-	{
-		if( r == 16 )
-		{
-			uint8_t *c = &p[ ( i - 16 ) ];
-			for( r = 0; r < 16; r++, c++ )
-			{
-				if( ( ( *c ) >= 0x20 && ( *c ) <= 127 ) && ( isprint( ( *c ) ) ) )
-					printf( "%c", ( *c ) );
-				else
-					printf( "%c", 0x2E );
-			}
-			r = 0;
-		}
-
-		if( i % 16 == 0 )
-		{
-			SetConsoleTextAttribute( hConsole, ( send ) ? 11 : 10 );
-			if( i > 0 ) printf( "\n" );
-			printf( "(%04X) ", i );
-			SetConsoleTextAttribute( hConsole, 15 );
-		}
-
-		if( i == 4 || i == 5 )
-		{
-			SetConsoleTextAttribute( hConsole, ( send ) ? 11 : 10 );
-			printf( "%02X ", p[ i ] );
-			SetConsoleTextAttribute( hConsole, 15 );
-		}
-		else
-			printf( "%02X ", p[ i ] );
-
-		i++;
-		r++;
-	}
-	printf( "\n\n" );
-
-	log_lock.unlock();
-}
-
-void Log::Packet( std::vector<uint8_t> p, uint32_t size, bool send )
+void Log::Packet( std::vector<uint8_t> p, size_t size, bool send )
 {
 	log_lock.lock();
 

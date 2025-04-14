@@ -73,8 +73,6 @@ int main()
 			break;
 		}
 
-		GameSessionManager::Get().Process();
-
 		std::this_thread::sleep_for( std::chrono::milliseconds( 250 ) );
 	}
 

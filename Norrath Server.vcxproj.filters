@@ -39,15 +39,6 @@
     <Filter Include="Source Files\Game">
       <UniqueIdentifier>{3b0176b6-97aa-4e67-ab27-60626f71b573}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Gateway Server\EventHandlers">
-      <UniqueIdentifier>{f90649a3-247a-4a65-9ec2-3fca02c7af52}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Gateway Server\EventHandlers">
-      <UniqueIdentifier>{01a6a552-7c0d-4ca4-b4d1-5c05d6048fda}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Crypto">
-      <UniqueIdentifier>{d4bad384-e0dc-4704-8471-c91277eb6d52}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Crypto">
       <UniqueIdentifier>{a8fcffaa-8fc1-4dbc-a005-b5ddb78ee586}</UniqueIdentifier>
     </Filter>
@@ -66,6 +57,12 @@
     <Filter Include="Source Files\Lobby Server\Event">
       <UniqueIdentifier>{6432e486-7341-4eb8-a6c0-c21ecd2e92f8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Gateway Server\Event">
+      <UniqueIdentifier>{01a6a552-7c0d-4ca4-b4d1-5c05d6048fda}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Gateway Server\Event">
+      <UniqueIdentifier>{f90649a3-247a-4a65-9ec2-3fca02c7af52}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -80,20 +77,11 @@
     <ClInclude Include="global_define.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="misc\math.h">
-      <Filter>Header Files\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="misc\Timer.h">
-      <Filter>Header Files\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="misc\threadsafe_queue.hpp">
+    <ClInclude Include="misc\Utility.h">
       <Filter>Header Files\Common</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="misc\RealmCrypt.h">
-      <Filter>Header Files\Common</Filter>
     </ClInclude>
     <ClInclude Include="misc\ByteStream.h">
       <Filter>Header Files\Common</Filter>
@@ -119,22 +107,13 @@
     <ClInclude Include="Game\RealmUserManager.h">
       <Filter>Header Files\Game</Filter>
     </ClInclude>
-    <ClInclude Include="Gateway Server\EventHandlers\GatewayEvents.h">
-      <Filter>Header Files\Gateway Server\EventHandlers</Filter>
-    </ClInclude>
-    <ClInclude Include="Gateway Server\EventHandlers\GetServerAddressEvent.h">
-      <Filter>Header Files\Gateway Server\EventHandlers</Filter>
-    </ClInclude>
-    <ClInclude Include="Crypto\NorrathCrypt.h">
+    <ClInclude Include="Crypto\rijndael.h">
       <Filter>Header Files\Crypto</Filter>
     </ClInclude>
-    <ClInclude Include="Lobby Server\EventLookup.h">
+    <ClInclude Include="Lobby Server\LobbyEvents.h">
       <Filter>Header Files\Lobby Server</Filter>
     </ClInclude>
     <ClInclude Include="Discovery Server\DiscoveryServer.h">
-      <Filter>Header Files\Discovery Server</Filter>
-    </ClInclude>
-    <ClInclude Include="Discovery Server\DiscoverySession.h">
       <Filter>Header Files\Discovery Server</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameSession.h">
@@ -188,6 +167,27 @@
     <ClInclude Include="Network\GenericNetMessage.hpp">
       <Filter>Header Files\Network</Filter>
     </ClInclude>
+    <ClInclude Include="configuration.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Lobby Server\Event\RequestGetRealmStats.h">
+      <Filter>Header Files\Lobby Server\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Lobby Server\Event\RequestUpdateGameData.h">
+      <Filter>Header Files\Lobby Server\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Lobby Server\Event\RequestGetGame.h">
+      <Filter>Header Files\Lobby Server\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Gateway Server\Event\GatewayEvents.h">
+      <Filter>Header Files\Gateway Server\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Gateway Server\Event\GetServerAddressEvent.h">
+      <Filter>Header Files\Gateway Server\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Crypto\RealmCrypt.h">
+      <Filter>Header Files\Crypto</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -196,14 +196,11 @@
     <ClCompile Include="global_define.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="misc\math.cpp">
+    <ClCompile Include="misc\Utility.cpp">
       <Filter>Source Files\Common</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="misc\RealmCrypt.cpp">
-      <Filter>Source Files\Common</Filter>
     </ClCompile>
     <ClCompile Include="misc\ByteStream.cpp">
       <Filter>Source Files\Common</Filter>
@@ -226,16 +223,10 @@
     <ClCompile Include="Game\RealmUserManager.cpp">
       <Filter>Source Files\Game</Filter>
     </ClCompile>
-    <ClCompile Include="Gateway Server\EventHandlers\GetServerAddressEvent.cpp">
-      <Filter>Source Files\Gateway Server\EventHandlers</Filter>
-    </ClCompile>
-    <ClCompile Include="Crypto\NorrathCrypt.cpp">
+    <ClCompile Include="Crypto\rijndael.cpp">
       <Filter>Source Files\Crypto</Filter>
     </ClCompile>
     <ClCompile Include="Discovery Server\DiscoveryServer.cpp">
-      <Filter>Source Files\Discovery Server</Filter>
-    </ClCompile>
-    <ClCompile Include="Discovery Server\DiscoverySession.cpp">
       <Filter>Source Files\Discovery Server</Filter>
     </ClCompile>
     <ClCompile Include="Game\GameSession.cpp">
@@ -285,6 +276,24 @@
     </ClCompile>
     <ClCompile Include="Lobby Server\Event\NotifyGameDiscovered.cpp">
       <Filter>Source Files\Lobby Server\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="configuration.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Lobby Server\Event\RequestGetRealmStats.cpp">
+      <Filter>Source Files\Lobby Server\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Lobby Server\Event\RequestUpdateGameData.cpp">
+      <Filter>Source Files\Lobby Server\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Lobby Server\Event\RequestGetGame.cpp">
+      <Filter>Source Files\Lobby Server\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Gateway Server\Event\GetServerAddressEvent.cpp">
+      <Filter>Source Files\Gateway Server\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Crypto\RealmCrypt.cpp">
+      <Filter>Source Files\Crypto</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -1,19 +1,16 @@
 #pragma once
 
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
-#define FD_SETSIZE 1024
+#define FD_SETSIZE 512
 #include <WinSock2.h>
 
 #include <cstdint>
 #include <memory>
 
-#include "misc/math.h"
-#include "misc/Timer.h"
+#include "misc/Utility.h"
 #include "misc/ByteStream.h"
 
-#include "misc/threadsafe_queue.hpp"
-#include "misc/RealmCrypt.h"
-#include "misc/ByteStream.h"
+#include "Crypto/RealmCrypt.h"
 
 #include "Network/RealmSocket.h"
 

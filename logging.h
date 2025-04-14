@@ -40,8 +40,5 @@ public:
 	static void Warn( std::string format, ... );
 	static void Debug( std::string format, ... );
 	static void Error( std::string format, ... );
-	static void Packet( std::vector< uint8_t > p, bool send );
-	static void Packet( std::vector< uint8_t > p, uint32_t size, bool send );
-
-	
+	static void Packet( std::vector< uint8_t > p, size_t size, bool send );
 };
