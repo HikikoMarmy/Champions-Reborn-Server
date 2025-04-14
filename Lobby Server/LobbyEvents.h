@@ -14,6 +14,7 @@
 #include "Event/RequestMatchGame.h"
 #include "Event/RequestTouchSession.h"
 #include "Event/RequestDoClientDiscovery.h"
+#include "Event/RequestGetServerAddress.h"
 #include "Event/RequestGetEncryptionKey.h"
 #include "Event/RequestGetRules.h"
 #include "Event/RequestUpdateGameData.h"
@@ -83,6 +84,11 @@ const std::map< int16_t, std::function< std::unique_ptr< GenericRequest >() > > 
 	{ 0x0042, []() -> std::unique_ptr< GenericRequest >
 		{
 		return std::make_unique< RequestGetRules >();
+		}
+	},
+	{ 0x0043, []() -> std::unique_ptr< GenericRequest >
+		{
+		return std::make_unique< RequestGetServerAddress >();
 		}
 	},
 	{

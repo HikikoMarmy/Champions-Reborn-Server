@@ -295,8 +295,6 @@ void LobbyServer::WriteSocket( sptr_socket socket )
 
 void LobbyServer::HandleRequest( sptr_socket socket, sptr_byte_stream stream )
 {
-	//Log::Packet( stream->data, stream->data.size(), false );
-
 	auto packetId = stream->read< uint16_t >();
 	stream->set_position( 0 );
 
