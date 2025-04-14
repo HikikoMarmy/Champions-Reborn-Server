@@ -21,7 +21,6 @@
 #include "Network/GenericNetResponse.hpp"
 #include "Network/GenericNetMessage.hpp"
 
-#include "Gateway Server/GatewayServer.h"
 #include "Lobby Server/LobbyServer.h"
 #include "Discovery Server/DiscoveryServer.h"
 

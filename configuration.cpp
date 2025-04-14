@@ -5,9 +5,8 @@
 bool Config::Load( std::string filename )
 {
 	service_ip = "0.0.0.0";
-	gateway_port = 40801;
-	lobby_port = 40802;
-	discovery_port = 40101;
+	lobby_port = 40801;
+	discovery_port = 10101;
 
 	// Read configuration from ini file
 	std::ifstream file( filename );
@@ -37,10 +36,6 @@ bool Config::Load( std::string filename )
 		if( key == "service_ip" )
 		{
 			service_ip = value;
-		}
-		else if( key == "gateway_port" )
-		{
-			gateway_port = std::stoi( value );
 		}
 		else if( key == "lobby_port" )
 		{

@@ -9,9 +9,6 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="Source Files\Gateway Server">
-      <UniqueIdentifier>{9eabece2-9fe0-499d-a5b0-f001d155f4d3}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Common">
       <UniqueIdentifier>{0ecae2be-b6b6-4ee2-bcb2-9252f189acca}</UniqueIdentifier>
     </Filter>
@@ -23,9 +20,6 @@
     </Filter>
     <Filter Include="Header Files\Network">
       <UniqueIdentifier>{d03ff7f7-63d1-43a7-b2cc-4b585130f545}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Gateway Server">
-      <UniqueIdentifier>{b87d23fc-9dc6-4e3a-949a-6d1b3ac2efb0}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Lobby Server">
       <UniqueIdentifier>{92e2e64a-8125-49a7-8eb0-5e96f8d7d7d0}</UniqueIdentifier>
@@ -57,12 +51,6 @@
     <Filter Include="Source Files\Lobby Server\Event">
       <UniqueIdentifier>{6432e486-7341-4eb8-a6c0-c21ecd2e92f8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Gateway Server\Event">
-      <UniqueIdentifier>{01a6a552-7c0d-4ca4-b4d1-5c05d6048fda}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Gateway Server\Event">
-      <UniqueIdentifier>{f90649a3-247a-4a65-9ec2-3fca02c7af52}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -88,9 +76,6 @@
     </ClInclude>
     <ClInclude Include="logging.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Gateway Server\GatewayServer.h">
-      <Filter>Header Files\Gateway Server</Filter>
     </ClInclude>
     <ClInclude Include="Network\GenericNetRequest.hpp">
       <Filter>Header Files\Network</Filter>
@@ -179,14 +164,11 @@
     <ClInclude Include="Lobby Server\Event\RequestGetGame.h">
       <Filter>Header Files\Lobby Server\Event</Filter>
     </ClInclude>
-    <ClInclude Include="Gateway Server\Event\GatewayEvents.h">
-      <Filter>Header Files\Gateway Server\Event</Filter>
-    </ClInclude>
-    <ClInclude Include="Gateway Server\Event\GetServerAddressEvent.h">
-      <Filter>Header Files\Gateway Server\Event</Filter>
-    </ClInclude>
     <ClInclude Include="Crypto\RealmCrypt.h">
       <Filter>Header Files\Crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="Lobby Server\Event\RequestGetServerAddress.h">
+      <Filter>Header Files\Lobby Server\Event</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -204,9 +186,6 @@
     </ClCompile>
     <ClCompile Include="misc\ByteStream.cpp">
       <Filter>Source Files\Common</Filter>
-    </ClCompile>
-    <ClCompile Include="Gateway Server\GatewayServer.cpp">
-      <Filter>Source Files\Gateway Server</Filter>
     </ClCompile>
     <ClCompile Include="logging.cpp">
       <Filter>Source Files</Filter>
@@ -289,11 +268,11 @@
     <ClCompile Include="Lobby Server\Event\RequestGetGame.cpp">
       <Filter>Source Files\Lobby Server\Event</Filter>
     </ClCompile>
-    <ClCompile Include="Gateway Server\Event\GetServerAddressEvent.cpp">
-      <Filter>Source Files\Gateway Server\Event</Filter>
-    </ClCompile>
     <ClCompile Include="Crypto\RealmCrypt.cpp">
       <Filter>Source Files\Crypto</Filter>
+    </ClCompile>
+    <ClCompile Include="Lobby Server\Event\RequestGetServerAddress.cpp">
+      <Filter>Source Files\Lobby Server\Event</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

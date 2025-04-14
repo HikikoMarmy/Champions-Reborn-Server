@@ -193,10 +193,8 @@
     <ClInclude Include="Game\RealmUserManager.h" />
     <ClInclude Include="Game\GameSession.h" />
     <ClInclude Include="Game\GameSessionManager.h" />
-    <ClInclude Include="Gateway Server\Event\GatewayEvents.h" />
-    <ClInclude Include="Gateway Server\Event\GetServerAddressEvent.h" />
-    <ClInclude Include="Gateway Server\GatewayServer.h" />
     <ClInclude Include="global_define.h" />
+    <ClInclude Include="Lobby Server\Event\RequestGetServerAddress.h" />
     <ClInclude Include="Lobby Server\LobbyEvents.h" />
     <ClInclude Include="Lobby Server\Event\NotifyClientDiscovered.h" />
     <ClInclude Include="Lobby Server\Event\NotifyClientReqConnect.h" />
@@ -236,8 +234,6 @@
     <ClCompile Include="Game\RealmUserManager.cpp" />
     <ClCompile Include="Game\GameSession.cpp" />
     <ClCompile Include="Game\GameSessionManager.cpp" />
-    <ClCompile Include="Gateway Server\Event\GetServerAddressEvent.cpp" />
-    <ClCompile Include="Gateway Server\GatewayServer.cpp" />
     <ClCompile Include="global_define.cpp" />
     <ClCompile Include="Lobby Server\Event\NotifyClientDiscovered.cpp" />
     <ClCompile Include="Lobby Server\Event\NotifyClientReqConnect.cpp" />
@@ -251,6 +247,7 @@
     <ClCompile Include="Lobby Server\Event\RequestGetGame.cpp" />
     <ClCompile Include="Lobby Server\Event\RequestGetRealmStats.cpp" />
     <ClCompile Include="Lobby Server\Event\RequestGetRules.cpp" />
+    <ClCompile Include="Lobby Server\Event\RequestGetServerAddress.cpp" />
     <ClCompile Include="Lobby Server\Event\RequestLogin.cpp" />
     <ClCompile Include="Lobby Server\Event\RequestLogout.cpp" />
     <ClCompile Include="Lobby Server\Event\RequestMatchGame.cpp" />
