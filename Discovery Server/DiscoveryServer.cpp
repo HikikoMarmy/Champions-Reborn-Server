@@ -135,9 +135,5 @@ void DiscoveryServer::ProcessPacket( sockaddr_in *clientAddr, sptr_byte_stream s
 	else
 	{
 		GameSessionManager::Get().RequestJoin( user );
-
-		// Theory: It may be possible to get the joining clients local address
-		// by tricking it with an 07 packet, then sending NotifyClientDiscovered.
-		// This would allow local network users to play together.
 	}
 }

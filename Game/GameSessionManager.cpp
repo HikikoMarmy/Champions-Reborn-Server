@@ -275,7 +275,7 @@ bool GameSessionManager::RequestJoin( sptr_user join_user )
 	NotifyClientRequestConnect msgNotifyReqConnect( join_user->m_discoveryAddr, 3000 );// join_user->m_discoveryPort);
 	host_user->sock->send( msgNotifyReqConnect );
 
-	// Then, tell the joiner where to send packets.
+	// Then, tell the joiner its own address. 
 	NotifyClientDiscovered msgClientDiscovered( join_user->m_discoveryAddr, 3000 );// host_user->m_discoveryPort);
 	join_user->sock->send( msgClientDiscovered );
 
