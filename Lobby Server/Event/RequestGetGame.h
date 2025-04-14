@@ -1,7 +1,6 @@
 #pragma once
 
-class RequestGetGame : public GenericRequest
-{
+class RequestGetGame : public GenericRequest {
 private:
 	std::wstring m_sessionId;
 	std::wstring m_gameName;
@@ -24,8 +23,9 @@ public:
 class ResultGetGame : public GenericResponse {
 private:
 	int32_t m_reply;
+	int32_t m_gameId;
 
 public:
-	ResultGetGame( GenericRequest *request, int32_t reply );
+	ResultGetGame( GenericRequest *request, int32_t reply, int32_t gameId = 0 );
 	ByteStream &Serialize();
 };
