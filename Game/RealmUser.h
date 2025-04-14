@@ -1,40 +1,21 @@
 #pragma once
 
-#include "RealmCharacterData.h"
-
-enum class DiscoveryState
-{
-	None,
-	Host_Waiting,
-	Initial_Connect,
-	Negotiating,
-	Joining,
-	Joined
-};
-
 class RealmUser {
 public:
 	RealmUser();
 	~RealmUser();
 
 public:
-	sptr_tcp_socket tcp;			// For Realm Lobby
-	sptr_udp_socket udp;			// For Discovery
+	sptr_socket sock;				// For Realm Lobby
 
-	std::wstring	session_id;		// Unique Session ID for the user (Generated at login)
+	std::wstring	m_sessionId;	// Unique Session ID for the user (Generated at login)
 
-	bool	is_host;
-	bool	is_ready;
-	int32_t	game_id;
+	bool	m_isHost;				// True if this user is the host of a realm
+	int32_t	m_gameId;				// Unique ID of the realm
 
-	std::string local_addr;	
-	std::string discovery_addr;
-	int32_t discovery_port;
-	DiscoveryState discovery_state;
-
-	std::string player_name;
-	std::string player_class;
-	int32_t player_level;
+	std::string m_localAddr;		// Local IP address of the user, passed from the client during realm creation.
+	std::string m_discoveryAddr;
+	int32_t m_discoveryPort;
 };
 
 typedef std::shared_ptr< RealmUser >	sptr_user;

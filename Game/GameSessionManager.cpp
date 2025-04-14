@@ -15,26 +15,33 @@ GameSessionManager::~GameSessionManager()
 {
 }
 
-void GameSessionManager::Process()
+void GameSessionManager::OnDisconnectUser( sptr_user user )
 {
-	for( auto &gameSession : m_gameSessionList)
+	if( !user || user->m_gameId < 0 )
+		return;
+
+	const auto gameId = user->m_gameId;
+
+	auto session = FindGame( gameId );
+	if( !session )
+		return;
+
+	auto owner = session->m_owner.lock();
+	if( !owner )
 	{
-		ProcessGameSession( gameSession );
+		Log::Error( "Game session owner not found! [%d]", gameId );
+		ForceTerminateGame( gameId );
+		return;
+	}
+
+	if( owner->m_sessionId == user->m_sessionId )
+	{
+		Log::Info( "Game session owner disconnected! [%d]", gameId );
+		ForceTerminateGame( gameId );
 	}
 }
 
-void GameSessionManager::ProcessGameSession( sptr_game_session gameSession )
-{
-	for( auto &member : gameSession->m_userList )
-	{
-		if( member == nullptr )
-		{
-			continue;
-		}
-	}
-}
-
-bool GameSessionManager::CreatePublicGameSession( sptr_user owner, std::wstring gameName, int32_t minimumLevel, int32_t maximumLevel )
+bool GameSessionManager::CreatePublicGameSession( sptr_user owner, std::wstring gameName )
 {
 	auto new_session = std::make_shared< GameSession >();
 
@@ -42,20 +49,18 @@ bool GameSessionManager::CreatePublicGameSession( sptr_user owner, std::wstring 
 	new_session->m_gameIndex = m_gameIndex;
 	new_session->m_gameLocation = L"Kelethin";
 	new_session->m_gameName = gameName;
-	new_session->m_minimumLevel = minimumLevel;
-	new_session->m_maximumLevel = maximumLevel;
+	new_session->m_minimumLevel = 1;
+	new_session->m_maximumLevel = 9999;
 
-	new_session->m_gameData.resize(256);
+	new_session->m_gameData.resize( 256 );
 
-	owner->is_host = true;
-	owner->is_ready = false;
-	owner->discovery_addr = "";
-	owner->discovery_port = 0;
-	owner->discovery_state = DiscoveryState::Initial_Connect;
+	owner->m_isHost = true;
+	owner->m_discoveryAddr = "";
 
-	owner->game_id = m_gameIndex;
-	new_session->m_userList.push_back(owner);
+	owner->m_gameId = m_gameIndex;
+	new_session->m_owner = owner;
 
+	std::lock_guard< std::mutex > lock( m_dataMutex );
 	m_gameSessionList.push_back( new_session );
 
 	m_gameIndex++;
@@ -63,14 +68,14 @@ bool GameSessionManager::CreatePublicGameSession( sptr_user owner, std::wstring 
 	return true;
 }
 
-bool GameSessionManager::CreatePrivateGameSession( sptr_user owner, std::wstring gameName, int32_t minimumLevel, int32_t maximumLevel )
+bool GameSessionManager::CreatePrivateGameSession( sptr_user owner, std::wstring gameName )
 {
 	// Check if the game name or host session id is already in use
 	for( auto &gameSession : m_gameSessionList )
 	{
 		if( gameSession->m_type != GameSession::GameType::Private )
 			continue;
-		
+
 		if( gameSession->m_gameName == gameName )
 		{
 			Log::Error( "Game name is already in use! [%S]", gameName.c_str() );
@@ -84,20 +89,18 @@ bool GameSessionManager::CreatePrivateGameSession( sptr_user owner, std::wstring
 	new_session->m_gameIndex = m_gameIndex;
 	new_session->m_gameLocation = L"Kelethin";
 	new_session->m_gameName = gameName;
-	new_session->m_minimumLevel = minimumLevel;
-	new_session->m_maximumLevel = maximumLevel;
+	new_session->m_minimumLevel = 1;
+	new_session->m_maximumLevel = 9999;
 
 	new_session->m_gameData.resize( 256 );
 
-	owner->is_host = true;
-	owner->is_ready = false;
-	owner->discovery_addr = "";
-	owner->discovery_port = 0;
-	owner->discovery_state = DiscoveryState::Initial_Connect;
+	owner->m_isHost = true;
+	owner->m_discoveryAddr = "";
 
-	owner->game_id = m_gameIndex;
-	new_session->m_userList.push_back( owner );
+	owner->m_gameId = m_gameIndex;
+	new_session->m_owner = owner;
 
+	std::lock_guard< std::mutex > lock( m_dataMutex );
 	m_gameSessionList.push_back( new_session );
 
 	m_gameIndex++;
@@ -105,23 +108,19 @@ bool GameSessionManager::CreatePrivateGameSession( sptr_user owner, std::wstring
 	return true;
 }
 
-bool GameSessionManager::CancelGameSession( sptr_user user )
+bool GameSessionManager::ForceTerminateGame( int32_t gameId )
 {
-	auto gameId = user->game_id;
-
 	if( gameId < 0 )
 	{
-		Log::Error( "Game session not found! [%d]", gameId );
 		return false;
 	}
+
+	std::lock_guard< std::mutex > lock( m_dataMutex );
 
 	auto it = std::find_if( m_gameSessionList.begin(), m_gameSessionList.end(), [ &gameId ]( sptr_game_session gameSession )
 	{
 		return gameSession->m_gameIndex == gameId;
 	} );
-
-	Log::Debug( "CancelGameSession : [%d]", gameId );
-	Log::Debug( "TODO: Notify all users in the game session" );
 
 	if( it != m_gameSessionList.end() )
 	{
@@ -134,9 +133,11 @@ bool GameSessionManager::CancelGameSession( sptr_user user )
 
 sptr_game_session GameSessionManager::FindGame( const int32_t gameId )
 {
-	if (gameId < 0) return nullptr;
+	if( gameId < 0 ) return nullptr;
 
-	for( auto &gameSession : m_gameSessionList)
+	std::lock_guard< std::mutex > lock( m_dataMutex );
+
+	for( auto &gameSession : m_gameSessionList )
 	{
 		if( gameSession->m_gameIndex == gameId )
 		{
@@ -147,150 +148,186 @@ sptr_game_session GameSessionManager::FindGame( const int32_t gameId )
 	return nullptr;
 }
 
-bool GameSessionManager::SetGameOpen(sptr_user user)
+sptr_game_session GameSessionManager::FindGame(const std::wstring& gameName)
 {
-	auto gameId = user->game_id;
-	auto session = FindGame(gameId);
+	if( gameName.empty() ) return nullptr;
 
-	if (session == nullptr)
+	std::lock_guard< std::mutex > lock( m_dataMutex );
+
+	for( auto &gameSession : m_gameSessionList )
 	{
-		Log::Error("Game session not found! [%d]", gameId);
+		if( gameSession->m_gameName == gameName )
+		{
+			return gameSession;
+		}
+	}
+
+	return nullptr;
+}
+
+bool GameSessionManager::RequestOpen( sptr_user user )
+{
+	auto gameId = user->m_gameId;
+	auto session = FindGame( gameId );
+
+	if( session == nullptr )
+	{
+		Log::Error( "Game session not found! [%d]", gameId );
 		return false;
 	}
 
-	if( session->m_state != GameSession::GameState::NotReady )
+	if( session->m_state == GameSession::GameState::Open )
 	{
+		return false;
+	}
+
+	if( user->m_discoveryAddr.empty() )
+	{
+		Log::Error( "User discovery address is empty! [%d]", gameId );
 		return false;
 	}
 
 	session->m_state = GameSession::GameState::Open;
 
-	user->is_ready = true;
+	// Tell the host its own address.
+	NotifyGameDiscovered msg(user->m_discoveryAddr, user->m_discoveryPort);
+	user->sock->send( msg );
 
-	Log::Info("Game session is open! [%d]", gameId);
-
-	return true;
-}
-
-bool GameSessionManager::JoinGame(sptr_user user)
-{
-	auto gameId = user->game_id;
-	auto session = FindGame(gameId);
-
-	if (session == nullptr)
-	{
-		Log::Error("Game session not found! [%d]", gameId);
-		return false;
-	}
-
-	auto host = session->GetHost();
-
-	// Check that the user isn't already in the list.
-	auto it = std::find_if(session->m_userList.begin(), session->m_userList.end(), [&user](sptr_user member)
-	{
-		return member == user;
-	});
-
-	if (it != session->m_userList.end())
-	{
-		Log::Error("User is already in the game session! [%d]", gameId);
-		return false;
-	}
-
-	// Add the user to the game session.
-	user->is_host = false;
-	user->is_ready = false;
-	session->m_userList.push_back(user);
-
-	// Notify the host that a user is joining.
-	NotifyClientRequestConnect msg_a( user->discovery_addr, user->discovery_port );
-	host->tcp->send( msg_a );
-
-	// Update the user with their discovery address.
-	NotifyGameDiscovered msg_b( user->discovery_addr, user->discovery_port );
-	user->tcp->send( msg_b );
-
-	Log::Info("User [%S] joined game session! [%d]", user->session_id.c_str(), gameId);
+	Log::Info( "Game Session [%d] Discoverable on %s", gameId, user->m_discoveryAddr.c_str() );
 
 	return true;
 }
 
-void GameSessionManager::RemoveUser(sptr_user user)
+bool GameSessionManager::RequestCancel( sptr_user user )
 {
-	if( user == nullptr )
+	if( !user || user->m_gameId < 0 )
+		return false;
+
+	const int gameId = user->m_gameId;
+
+	std::lock_guard<std::mutex> lock( m_dataMutex );
+
+	auto it = std::find_if( m_gameSessionList.begin(), m_gameSessionList.end(),
+							[ gameId ]( const sptr_game_session &gameSession )
 	{
-		Log::Error( "User is null!" );
-		return;
+		return gameSession->m_gameIndex == gameId;
+	} );
+
+	if( it == m_gameSessionList.end() )
+		return false;
+
+	const auto &session = *it;
+
+	auto owner = session->m_owner.lock();
+	if( !owner )
+	{
+		Log::Error( "Game session owner not found! [%d]", gameId );
+		ForceTerminateGame( gameId );
+		return false;
 	}
 
-	auto session = FindGame( user->game_id );
+	if( owner->m_sessionId != user->m_sessionId )
+	{
+		Log::Error( "User is not the host! [%d]", gameId );
+		return false;
+	}
+
+	m_gameSessionList.erase( it );
+	return true;
+}
+
+bool GameSessionManager::RequestJoin( sptr_user join_user )
+{
+	const auto gameId = join_user->m_gameId;
+	auto session = FindGame( gameId );
 
 	if( session == nullptr )
 	{
-		Log::Error( "Game session not found! [%d]", user->game_id );
-		return;
+		Log::Error( "Game session not found! [%d]", gameId );
+		return false;
 	}
 
-	auto it = std::find_if( session->m_userList.begin(), session->m_userList.end(), [ &user ]( sptr_user member )
+	if( session->m_state != GameSession::GameState::Open )
 	{
-		return member == user;
-	} );
-
-	if( it != session->m_userList.end() )
-	{
-		session->m_userList.erase( it );
+		Log::Error( "Game session not open! [%d]", gameId );
+		return false;
 	}
 
-	if( session->m_userList.empty() )
-	{
-		
-	}
-}
+	auto host_user = session->m_owner.lock();
 
-std::vector<sptr_game_session> GameSessionManager::GetPublicGameSessionList() const
-{
-	std::vector< sptr_game_session > list;
-
-	for( auto &game : m_gameSessionList )
+	if( host_user == nullptr )
 	{
-		if( game->m_type == GameSession::GameType::Public )
-		{
-			list.push_back( game );
-		}
+		Log::Error( "Host not found! [%d]", gameId );
+		ForceTerminateGame( gameId );
+		return false;
 	}
 
-	return list;
+	if( host_user->m_discoveryAddr.empty() )
+	{
+		Log::Error( "User discovery address is empty! [%d]", gameId );
+		ForceTerminateGame( gameId );
+		return false;
+	}
+
+	join_user->m_isHost = false;
+
+	// First, notify the host that a client is trying to connect.
+	NotifyClientRequestConnect msgNotifyReqConnect(join_user->m_discoveryAddr, join_user->m_discoveryPort);
+	host_user->sock->send(msgNotifyReqConnect);
+
+	// Then, tell the joiner where to send packets.
+	NotifyClientDiscovered msgClientDiscovered(host_user->m_discoveryAddr, host_user->m_discoveryPort);
+	join_user->sock->send(msgClientDiscovered);
+
+	Log::Info( "Send User Address to host [%S] from %s:%d", join_user->m_sessionId.c_str(), join_user->m_discoveryAddr.c_str(), join_user->m_discoveryPort );
+
+	
+
+	Log::Info( "Send Host Address to user [%S] from %s:%d", join_user->m_sessionId.c_str(), host_user->m_discoveryAddr.c_str(), join_user->m_discoveryPort );
+
+	Log::Info( "User [%S] Joining game session... [%d]", join_user->m_sessionId.c_str(), gameId );
+
+	return true;
 }
 
 std::vector<sptr_game_session> GameSessionManager::GetAvailableGameSessionList() const
 {
+	std::lock_guard<std::mutex> lock( m_dataMutex );
+
 	std::vector<sptr_game_session> list;
-
-	for( auto &game : m_gameSessionList)
+	for( const auto &game : m_gameSessionList )
 	{
-		if (game->m_type != GameSession::GameType::Public)
-			continue;
-
-		//if( game->m_state != GameSession::GameState::Open)
-		//	continue;
-
-		list.push_back(game);
+		if( game->m_type == GameSession::GameType::Public &&
+			game->m_state == GameSession::GameState::Open )
+		{
+			list.push_back( game );
+		}
 	}
+	return list;
+}
 
+std::vector<sptr_game_session> GameSessionManager::GetPublicGameSessionList() const
+{
+	std::lock_guard<std::mutex> lock( m_dataMutex );
+
+	std::vector<sptr_game_session> list;
+	for( const auto &game : m_gameSessionList )
+	{
+		if( game->m_type == GameSession::GameType::Public )
+			list.push_back( game );
+	}
 	return list;
 }
 
 std::vector<sptr_game_session> GameSessionManager::GetPrivateGameSessionList() const
 {
-	std::vector<sptr_game_session> list;
+	std::lock_guard<std::mutex> lock( m_dataMutex );
 
-	for( auto &game : m_gameSessionList )
+	std::vector<sptr_game_session> list;
+	for( const auto &game : m_gameSessionList )
 	{
 		if( game->m_type == GameSession::GameType::Private )
-		{
 			list.push_back( game );
-		}
 	}
-
 	return list;
 }

@@ -5,11 +5,6 @@ public:
 	GameSession();
 	~GameSession();
 
-	sptr_user GetHost();
-
-	bool JoinUser( sptr_user user );
-
-public:
 	enum class GameType
 	{
 		Public,
@@ -19,23 +14,23 @@ public:
 	enum class GameState
 	{
 		NotReady,
-		Open,
-		Started
+		Open
 	} m_state;
 
+	std::weak_ptr< RealmUser > m_owner;
+
 	int32_t m_gameIndex;
+	
 	std::wstring m_gameLocation;
 	std::wstring m_gameName;
 	std::wstring m_ownerName;
 
 	std::string m_gameData;
-
-	int32_t m_maximumPlayers;
+	std::string m_description;
+	int8_t m_currentPlayers;
+	int8_t m_maximumPlayers;
 	int32_t m_minimumLevel;
 	int32_t m_maximumLevel;
-
-	// User Information
-	std::vector< sptr_user >  m_userList;
 };
 
 typedef std::shared_ptr< GameSession > sptr_game_session;
