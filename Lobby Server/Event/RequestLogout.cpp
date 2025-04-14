@@ -11,7 +11,6 @@ sptr_generic_response RequestLogout::ProcessRequest( sptr_user user, sptr_byte_s
 {
 	Deserialize( stream );
 
-	// TODO: Any other cleanup here?
 	Log::Debug( "[%S] Logout", m_sessionId.c_str() );
 
 	return std::make_shared< ResultLogout >( this, 0 );

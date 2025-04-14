@@ -18,10 +18,7 @@ sptr_generic_response RequestCancelGame::ProcessRequest( sptr_user user, sptr_by
 		return std::make_shared< ResultCancelGame >( this );
 	}
 
-	GameSessionManager::Get().CancelGameSession( user );
-
-	// TODO:
-	// Notify the players via the Discovery Server
+	GameSessionManager::Get().RequestCancel( user );
 
 	return std::make_shared< ResultCancelGame >( this );
 }

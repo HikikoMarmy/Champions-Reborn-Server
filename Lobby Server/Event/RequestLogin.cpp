@@ -1,5 +1,4 @@
 #include "../../global_define.h"
-
 #include "RequestLogin.h"
 
 void RequestLogin::Deserialize( sptr_byte_stream stream )
@@ -31,7 +30,7 @@ sptr_generic_response RequestLogin::ProcessRequest( sptr_user user, sptr_byte_st
 		Log::Debug( "RequestLogin : Champions of Norrath v1.0" );
 	}
 
-	return std::make_shared< ResultLogin >( this, LOGIN_REPLY::SUCCESS, user->session_id );
+	return std::make_shared< ResultLogin >( this, LOGIN_REPLY::SUCCESS, user->m_sessionId );
 }
 
 ResultLogin::ResultLogin( GenericRequest *request, int32_t reply, std::wstring sessionId ) : GenericResponse( *request )

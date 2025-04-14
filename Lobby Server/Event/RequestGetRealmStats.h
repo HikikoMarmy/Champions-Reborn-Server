@@ -2,8 +2,6 @@
 
 class RequestGetRealmStats : public GenericRequest
 {
-private:
-
 public:
 	static std::unique_ptr< RequestGetRealmStats > Create()
 	{

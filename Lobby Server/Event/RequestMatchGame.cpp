@@ -15,7 +15,7 @@ void RequestMatchGame::Deserialize( sptr_byte_stream stream )
 	auto unknown_e = stream->read_u32();
 
 	// Match Game Node Count
-	for( int i = 0; i < unknown_e; i++ )
+	for( uint32_t i = 0; i < unknown_e; i++ )
 	{
 		auto node_a = stream->read_u16();
 		auto node_b = stream->read_u32();
@@ -40,13 +40,14 @@ sptr_generic_response RequestMatchGame::ProcessRequest( sptr_user user, sptr_byt
 	Deserialize( stream );
 
 	Log::Debug( "RequestMatchGame : %S", m_sessionId.c_str() );
+	Log::Packet( stream->data, stream->data.size(), false );
 
 	return std::make_shared< ResultMatchGame >( this );
 }
 
 ResultMatchGame::ResultMatchGame( GenericRequest *request ) : GenericResponse( *request )
 {
-	
+
 }
 
 ByteStream &ResultMatchGame::Serialize()
@@ -56,35 +57,36 @@ ByteStream &ResultMatchGame::Serialize()
 	m_stream.write_u32( 0 );
 
 	auto publicGameList = GameSessionManager::Get().GetAvailableGameSessionList();
+	auto publicGameCount = static_cast< uint32_t >( publicGameList.size() );
 
-	m_stream.write_u32(publicGameList.size());
+	m_stream.write_u32( publicGameCount );
 	{
-		for (auto& game : publicGameList)
-			m_stream.write_utf16(game->m_gameLocation);
+		for( auto &game : publicGameList )
+			m_stream.write_utf16( game->m_gameLocation );
 	}
 
-	m_stream.write_u32(publicGameList.size());
+	m_stream.write_u32( publicGameCount );
 	{
-		for (auto& game : publicGameList)
-			m_stream.write_utf16(game->m_gameName);
+		for( auto &game : publicGameList )
+			m_stream.write_utf16( game->m_gameName );
 	}
 
-	m_stream.write_u32(publicGameList.size());
+	m_stream.write_u32( publicGameCount );
 	{
-		for (auto& game : publicGameList)
-			m_stream.write_utf16(game->m_ownerName);
+		for( auto &game : publicGameList )
+			m_stream.write_utf16( game->m_ownerName );
 	}
 
-	m_stream.write_u32(publicGameList.size());
+	m_stream.write_u32( publicGameCount );
 	{
-		for (auto& game : publicGameList)
-			m_stream.write_u32(game->m_gameIndex);
+		for( auto &game : publicGameList )
+			m_stream.write_u32( game->m_gameIndex );
 	}
 
-	m_stream.write_u32(publicGameList.size());
+	m_stream.write_u32( publicGameCount );
 	{
-		for (auto& game : publicGameList)
-			m_stream.write_utf8(game->m_gameData);
+		for( auto &game : publicGameList )
+			m_stream.write_utf8( game->m_gameData );
 	}
 
 	return m_stream;

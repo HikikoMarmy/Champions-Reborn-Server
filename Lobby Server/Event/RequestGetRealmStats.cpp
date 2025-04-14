@@ -24,13 +24,16 @@ ByteStream &ResultGetRealmStats::Serialize()
 	m_stream.write_u32( m_requestId );
 	m_stream.write_u32( 0 );
 
-	m_stream.write_u32( 1 );	// Users Logged In Game
-	m_stream.write_u32( 2 );	// Users Logged In Realm
-	m_stream.write_u32( 3 );	// Users Running Game
-	m_stream.write_u32( 4 );	// Users Running Realm
-	m_stream.write_u32( 5 );	// Users Playing Game
-	m_stream.write_u32( 6 );	// Users Playing Realm
-	m_stream.write_u32( 7 );	// unmatchedGamesGame
-	m_stream.write_u32( 8 );	// unmatchedGamesRealm
+	// Player count on the game page.
+	m_stream.write_u32( RealmUserManager::Get().GetUserCount() );	// Users Logged In Game
+
+	// I'm not sure this appears anywhere in the game.
+	m_stream.write_u32( 0 );	// Users Logged In Realm
+	m_stream.write_u32( 0 );	// Users Running Game
+	m_stream.write_u32( 0 );	// Users Running Realm
+	m_stream.write_u32( 0 );	// Users Playing Game
+	m_stream.write_u32( 0 );	// Users Playing Realm
+	m_stream.write_u32( 0 );	// unmatchedGamesGame
+	m_stream.write_u32( 0 );	// unmatchedGamesRealm
 	return m_stream;
 }

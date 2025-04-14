@@ -23,7 +23,7 @@ sptr_generic_response RequestCreateAccount::ProcessRequest( sptr_user user, sptr
 		return std::make_shared< ResultCreateAccount >( this, CREATE_ACCOUNT_REPLY::ERROR_FATAL, L"" );
 	}
 
-	return std::make_shared< ResultCreateAccount >( this, CREATE_ACCOUNT_REPLY::SUCCESS, user->session_id );
+	return std::make_shared< ResultCreateAccount >( this, CREATE_ACCOUNT_REPLY::SUCCESS, user->m_sessionId );
 }
 
 ResultCreateAccount::ResultCreateAccount( GenericRequest *request, int32_t reply, std::wstring sessionId ) : GenericResponse( *request )

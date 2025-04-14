@@ -12,8 +12,6 @@ sptr_generic_response RequestTouchSession::ProcessRequest( sptr_user user, sptr_
 {
 	Deserialize( stream );
 
-	Log::Debug( "RequestTouchSession : %S", m_sessionId.c_str() );
-
 	return std::make_shared< ResultTouchSession >( this );
 }
 

@@ -5,7 +5,6 @@ class RequestUpdateGameData : public GenericRequest
 private:
 	std::wstring m_sessionId;
 	std::string m_gameData;
-	std::string m_hardwareIp;
 
 public:
 	static std::unique_ptr< RequestUpdateGameData > Create()

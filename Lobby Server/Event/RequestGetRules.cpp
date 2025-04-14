@@ -13,7 +13,10 @@ sptr_generic_response RequestGetRules::ProcessRequest( sptr_user user, sptr_byte
 	Deserialize( stream );
 
 	// TODO: Get rules/eula based on language
-	std::wstring rules = L"Welcome to the Norrath Emulated Server!\n\n";
+	std::wstring rules =
+		L"Welcome to the Norrath Emulated Server!\n\n"
+		L"This server is currently in development\n"
+		L"and may not be fully functional.\n\n";
 
 	 return std::make_shared< ResultGetRules >( this, rules );
 }

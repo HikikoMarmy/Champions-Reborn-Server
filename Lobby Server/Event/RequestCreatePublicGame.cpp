@@ -24,7 +24,7 @@ sptr_generic_response RequestCreatePublicGame::ProcessRequest( sptr_user user, s
 {
 	Deserialize( stream );
 
-	auto result = GameSessionManager::Get().CreatePublicGameSession( user, m_gameName, 0, 9999 );
+	auto result = GameSessionManager::Get().CreatePublicGameSession( user, m_gameName );
 
 	if( !result )
 	{
@@ -33,8 +33,6 @@ sptr_generic_response RequestCreatePublicGame::ProcessRequest( sptr_user user, s
 	}
 
 	Log::Info( "[%S] Create Public Game: %S", m_sessionId.c_str(), m_gameName.c_str() );
-
-	user->player_level = 999;
 
 	return std::make_shared< ResultCreatePublicGame >(this, CREATE_REPLY::SUCCESS, Config::service_ip, Config::discovery_port);
 }

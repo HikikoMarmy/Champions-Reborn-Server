@@ -6,6 +6,12 @@ private:
 	std::wstring m_sessionId;
 	std::wstring m_gameName;
 
+	enum REPLY {
+		SUCCESS = 0,
+		TIMEOUT,
+		NOT_FOUND
+	};
+
 public:
 	static std::unique_ptr< RequestGetGame > Create()
 	{
@@ -16,7 +22,10 @@ public:
 };
 
 class ResultGetGame : public GenericResponse {
+private:
+	int32_t m_reply;
+
 public:
-	ResultGetGame( GenericRequest *request );
+	ResultGetGame( GenericRequest *request, int32_t reply );
 	ByteStream &Serialize();
 };
