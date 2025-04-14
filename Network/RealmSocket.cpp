@@ -51,14 +51,6 @@ RealmSocket::~RealmSocket()
 
 }
 
-void RealmSocket::send( const sptr_byte_stream stream )
-{
-	auto packetSize = htonl( static_cast< uint32_t >( stream->get_position() ) );
-
-	m_pendingWriteBuffer.insert( m_pendingWriteBuffer.end(), ( uint8_t * )&packetSize, ( uint8_t * )&packetSize + 4 );
-	m_pendingWriteBuffer.insert( m_pendingWriteBuffer.end(), stream->data.begin(), stream->data.end() );
-}
-
 void RealmSocket::send( const sptr_generic_response response )
 {
 	auto &stream = response->Serialize();

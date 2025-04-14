@@ -1,8 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <queue>
-#include <memory>
 #include <mutex>
 
 // Forward Declare GenericResponse
@@ -21,7 +19,6 @@ public:
 	RealmSocket();
 	~RealmSocket();
 
-	void send( const sptr_byte_stream stream );
 	void send( const sptr_generic_response response );
 	void send( GenericMessage &message );
 
