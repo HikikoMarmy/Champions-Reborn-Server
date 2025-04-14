@@ -148,7 +148,7 @@ sptr_game_session GameSessionManager::FindGame( const int32_t gameId )
 	return nullptr;
 }
 
-sptr_game_session GameSessionManager::FindGame(const std::wstring& gameName)
+sptr_game_session GameSessionManager::FindGame( const std::wstring &gameName )
 {
 	if( gameName.empty() ) return nullptr;
 
@@ -190,7 +190,7 @@ bool GameSessionManager::RequestOpen( sptr_user user )
 	session->m_state = GameSession::GameState::Open;
 
 	// Tell the host its own address.
-	NotifyGameDiscovered msg(user->m_discoveryAddr, user->m_discoveryPort);
+	NotifyGameDiscovered msg( user->m_discoveryAddr, 3000 );// user->m_discoveryPort);
 	user->sock->send( msg );
 
 	Log::Info( "Game Session [%d] Discoverable on %s", gameId, user->m_discoveryAddr.c_str() );
@@ -272,18 +272,12 @@ bool GameSessionManager::RequestJoin( sptr_user join_user )
 	join_user->m_isHost = false;
 
 	// First, notify the host that a client is trying to connect.
-	NotifyClientRequestConnect msgNotifyReqConnect(join_user->m_discoveryAddr, join_user->m_discoveryPort);
-	host_user->sock->send(msgNotifyReqConnect);
+	NotifyClientRequestConnect msgNotifyReqConnect( join_user->m_discoveryAddr, 3000 );// join_user->m_discoveryPort);
+	host_user->sock->send( msgNotifyReqConnect );
 
 	// Then, tell the joiner where to send packets.
-	NotifyClientDiscovered msgClientDiscovered(host_user->m_discoveryAddr, host_user->m_discoveryPort);
-	join_user->sock->send(msgClientDiscovered);
-
-	Log::Info( "Send User Address to host [%S] from %s:%d", join_user->m_sessionId.c_str(), join_user->m_discoveryAddr.c_str(), join_user->m_discoveryPort );
-
-	
-
-	Log::Info( "Send Host Address to user [%S] from %s:%d", join_user->m_sessionId.c_str(), host_user->m_discoveryAddr.c_str(), join_user->m_discoveryPort );
+	NotifyClientDiscovered msgClientDiscovered( join_user->m_discoveryAddr, 3000 );// host_user->m_discoveryPort);
+	join_user->sock->send( msgClientDiscovered );
 
 	Log::Info( "User [%S] Joining game session... [%d]", join_user->m_sessionId.c_str(), gameId );
 
