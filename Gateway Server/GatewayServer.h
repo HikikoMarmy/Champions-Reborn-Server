@@ -5,8 +5,8 @@
 class GatewayServer
 {
 	static inline std::unique_ptr< GatewayServer > m_instance;
-public:
 
+public:
 	static GatewayServer& Get()
 	{
 		if( m_instance == nullptr )
@@ -28,19 +28,17 @@ public:
 	}
 
 private:
-
-	Timer m_timer;
 	std::atomic< bool > m_running;
 	std::thread m_thread;
 
 	SOCKET m_listenSocket;
-	std::vector< sptr_tcp_socket > m_clientSockets;
+	std::vector< sptr_socket > m_clientSockets;
 	std::vector< uint8_t > m_recvBuffer;
 
 	void Run();
 	void AcceptNewClient();
 
-	void ReadSocket( sptr_tcp_socket socket );
-	void WriteSocket( sptr_tcp_socket socket );
-	void HandleRequest( sptr_tcp_socket socket, sptr_byte_stream stream );
+	void ReadSocket( sptr_socket socket );
+	void WriteSocket( sptr_socket socket );
+	void HandleRequest( sptr_socket socket, sptr_byte_stream stream );
 };

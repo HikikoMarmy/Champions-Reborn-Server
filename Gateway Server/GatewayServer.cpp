@@ -6,11 +6,10 @@
 // ╚═╝╩ ╩ ╩ ╚═╝╚╩╝╩ ╩ ╩   ╚═╝╚═╝╩╚═ ╚╝ ╚═╝╩╚═
 
 #include <map>
-#include <functional>
 #include "../global_define.h"
 
 #include "GatewayServer.h"
-#include "EventHandlers/GatewayEvents.h"
+#include "Event/GatewayEvents.h"
 
 typedef std::map< int16_t, std::function< std::unique_ptr< GenericRequest >() > > CommandMap;
 
@@ -35,7 +34,6 @@ GatewayServer::GatewayServer()
 GatewayServer::~GatewayServer()
 {
 	Log::Info( "Gateway Server stopped." );
-	m_timer.Stop();
 }
 
 void GatewayServer::Start( std::string ip, int32_t port )
@@ -60,7 +58,7 @@ void GatewayServer::Start( std::string ip, int32_t port )
 	{
 		service.sin_addr.s_addr = inet_addr( ip.c_str() );
 	}
-	
+
 	if( bind( m_listenSocket, ( SOCKADDR * )&service, sizeof( service ) ) == SOCKET_ERROR )
 	{
 		Log::Error( "bind() failed" );
@@ -96,8 +94,6 @@ void GatewayServer::Run()
 	FD_SET writeSet;
 
 	timeval timeout = { 0, 1000 };
-
-	m_timer.Start();
 
 	while( m_running )
 	{
@@ -153,18 +149,18 @@ void GatewayServer::AcceptNewClient()
 		return;
 	}
 
-	auto new_client = std::make_shared< RealmTCPSocket >();
-	new_client->fd = clientSocket;
-	new_client->remote_addr = clientInfo;
-	new_client->remote_ip = inet_ntoa( clientInfo.sin_addr );
-	new_client->remote_port = ntohs( clientInfo.sin_port );
+	auto new_socket = std::make_shared< RealmSocket >();
+	new_socket->fd = clientSocket;
+	new_socket->remote_addr = clientInfo;
+	new_socket->remote_ip = inet_ntoa( clientInfo.sin_addr );
+	new_socket->remote_port = ntohs( clientInfo.sin_port );
 
-	m_clientSockets.push_back( new_client );
+	m_clientSockets.push_back( new_socket );
 
-	Log::Info( "[GATEWAY] New client connected : (%s)", new_client->remote_ip.c_str() );
+	//Log::Info( "[GATEWAY] New client connected : (%s)", new_client->remote_ip.c_str() );
 }
 
-void GatewayServer::ReadSocket( sptr_tcp_socket socket )
+void GatewayServer::ReadSocket( sptr_socket socket )
 {
 	if( socket->flag.disconnected )
 	{
@@ -213,7 +209,7 @@ void GatewayServer::ReadSocket( sptr_tcp_socket socket )
 	}
 }
 
-void GatewayServer::WriteSocket( sptr_tcp_socket socket )
+void GatewayServer::WriteSocket( sptr_socket socket )
 {
 	if( socket->flag.disconnected )
 	{
@@ -254,7 +250,7 @@ void GatewayServer::WriteSocket( sptr_tcp_socket socket )
 	socket->m_pendingWriteBuffer.erase( socket->m_pendingWriteBuffer.begin(), socket->m_pendingWriteBuffer.begin() + totalBytesSent );
 }
 
-void GatewayServer::HandleRequest( sptr_tcp_socket socket, sptr_byte_stream stream )
+void GatewayServer::HandleRequest( sptr_socket socket, sptr_byte_stream stream )
 {
 	auto packetId = stream->read< uint16_t >();
 	stream->set_position( 0 );
@@ -262,15 +258,15 @@ void GatewayServer::HandleRequest( sptr_tcp_socket socket, sptr_byte_stream stre
 	auto it = GATEWAY_REQUEST_LOOKUP.find( packetId );
 	if( it == GATEWAY_REQUEST_LOOKUP.end() )
 	{
-		Log::Error( "[GATEWAY] Unknown packet id : 0x%04X", packetId );
+		//Log::Error( "[GATEWAY] Unknown packet id : 0x%04X", packetId );
 		return;
 	}
 
-	Log::Debug( "[GATEWAY] Request processed : 0x%04X", packetId );
+	//Log::Debug( "[GATEWAY] Request processed : 0x%04X", packetId );
 
 	auto request = it->second();
-	if (auto res = request->ProcessRequest(stream))
+	if( auto res = request->ProcessRequest( stream ) )
 	{
-		socket->send(res);
+		socket->send( res );
 	}
 }
