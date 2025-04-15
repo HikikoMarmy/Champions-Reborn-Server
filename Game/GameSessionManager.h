@@ -11,6 +11,8 @@ private:
 	int32_t m_gameIndex;
 	std::vector< sptr_game_session > m_gameSessionList;
 
+	std::tuple< std::wstring, std::wstring > ParseInfoData( const std::wstring &str );
+
 public:
 	GameSessionManager();
 	~GameSessionManager();
@@ -30,8 +32,8 @@ public:
 
 	void OnDisconnectUser( sptr_user user );
 
-	bool CreatePublicGameSession( sptr_user user, std::wstring gameName );
-	bool CreatePrivateGameSession( sptr_user user, std::wstring gameName );
+	bool CreatePublicGameSession( sptr_user user, std::wstring gameInfo );
+	bool CreatePrivateGameSession( sptr_user user, std::wstring gameInfo );
 	bool ForceTerminateGame( const int32_t gameId );
 	sptr_game_session FindGame( const int32_t gameId );
 	sptr_game_session FindGame( const std::wstring &gameName );

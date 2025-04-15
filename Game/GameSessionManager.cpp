@@ -15,6 +15,24 @@ GameSessionManager::~GameSessionManager()
 {
 }
 
+std::tuple<std::wstring, std::wstring> GameSessionManager::ParseInfoData( const std::wstring &str )
+{
+	size_t openBracket = str.find( '[' );
+	size_t closeBracket = str.find( ']', openBracket );
+
+	if( openBracket != std::string::npos && closeBracket != std::string::npos )
+	{
+		std::wstring roomName = str.substr( 0, openBracket );
+		std::wstring areaName = str.substr( openBracket + 1, closeBracket - openBracket - 1 );
+
+		roomName.erase( roomName.find_last_not_of( L" \t\r\n" ) + 1 );
+
+		return { roomName, areaName };
+	}
+
+	return { str, L"" };
+}
+
 void GameSessionManager::OnDisconnectUser( sptr_user user )
 {
 	if( !user || user->m_gameId < 0 )
@@ -41,13 +59,15 @@ void GameSessionManager::OnDisconnectUser( sptr_user user )
 	}
 }
 
-bool GameSessionManager::CreatePublicGameSession( sptr_user owner, std::wstring gameName )
+bool GameSessionManager::CreatePublicGameSession( sptr_user owner, std::wstring gameInfo )
 {
 	auto new_session = std::make_shared< GameSession >();
 
+	auto [gameName, gameLocation] = ParseInfoData( gameInfo );
+
 	new_session->m_type = GameSession::GameType::Public;
 	new_session->m_gameIndex = m_gameIndex;
-	new_session->m_gameLocation = L"Kelethin";
+	new_session->m_gameLocation = gameLocation;
 	new_session->m_gameName = gameName;
 	new_session->m_minimumLevel = 1;
 	new_session->m_maximumLevel = 9999;
@@ -68,8 +88,10 @@ bool GameSessionManager::CreatePublicGameSession( sptr_user owner, std::wstring 
 	return true;
 }
 
-bool GameSessionManager::CreatePrivateGameSession( sptr_user owner, std::wstring gameName )
+bool GameSessionManager::CreatePrivateGameSession( sptr_user owner, std::wstring gameInfo )
 {
+	auto [gameName, gameLocation] = ParseInfoData( gameInfo );
+
 	// Check if the game name or host session id is already in use
 	for( auto &gameSession : m_gameSessionList )
 	{
@@ -87,7 +109,7 @@ bool GameSessionManager::CreatePrivateGameSession( sptr_user owner, std::wstring
 
 	new_session->m_type = GameSession::GameType::Private;
 	new_session->m_gameIndex = m_gameIndex;
-	new_session->m_gameLocation = L"Kelethin";
+	new_session->m_gameLocation = gameLocation;
 	new_session->m_gameName = gameName;
 	new_session->m_minimumLevel = 1;
 	new_session->m_maximumLevel = 9999;

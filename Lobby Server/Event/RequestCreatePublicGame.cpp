@@ -17,14 +17,14 @@ void RequestCreatePublicGame::Deserialize( sptr_byte_stream stream )
 	auto unknown_c = stream->read_u32();
 	auto unknown_d = stream->read_u32();
 
-	m_gameName = stream->read_utf16();
+	m_gameInfo = stream->read_utf16();
 }
 
 sptr_generic_response RequestCreatePublicGame::ProcessRequest( sptr_user user, sptr_byte_stream stream )
 {
 	Deserialize( stream );
 
-	auto result = GameSessionManager::Get().CreatePublicGameSession( user, m_gameName );
+	auto result = GameSessionManager::Get().CreatePublicGameSession( user, m_gameInfo );
 
 	if( !result )
 	{
@@ -32,7 +32,7 @@ sptr_generic_response RequestCreatePublicGame::ProcessRequest( sptr_user user, s
 		return std::make_shared< ResultCreatePublicGame >( this, CREATE_REPLY::GENERAL_ERROR, "", 0 );
 	}
 
-	Log::Info( "[%S] Create Public Game: %S", m_sessionId.c_str(), m_gameName.c_str() );
+	Log::Info( "[%S] Create Public Game: %S", m_sessionId.c_str(), m_gameInfo.c_str() );
 
 	return std::make_shared< ResultCreatePublicGame >(this, CREATE_REPLY::SUCCESS, Config::service_ip, Config::discovery_port);
 }

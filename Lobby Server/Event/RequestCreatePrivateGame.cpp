@@ -7,14 +7,14 @@ void RequestCreatePrivateGame::Deserialize( sptr_byte_stream stream )
 	DeserializeHeader( stream );
 
 	m_sessionId = stream->read_encrypted_utf16();
-	m_gameName = stream->read_utf16();
+	m_gameInfo = stream->read_utf16();
 }
 
 sptr_generic_response RequestCreatePrivateGame::ProcessRequest( sptr_user user, sptr_byte_stream stream )
 {
 	Deserialize( stream );
 
-	auto result = GameSessionManager::Get().CreatePrivateGameSession( user, m_gameName );
+	auto result = GameSessionManager::Get().CreatePrivateGameSession( user, m_gameInfo );
 
 	if( !result )
 	{
@@ -22,7 +22,7 @@ sptr_generic_response RequestCreatePrivateGame::ProcessRequest( sptr_user user, 
 		return std::make_shared< ResultCreatePrivateGame >( this, CREATE_REPLY::GENERAL_ERROR, "", 0 );
 	}
 
-	Log::Info( "[%S] Create Private Game: %S", m_sessionId.c_str(), m_gameName.c_str() );
+	Log::Info( "[%S] Create Private Game: %S", m_sessionId.c_str(), m_gameInfo.c_str() );
 
 	return std::make_shared< ResultCreatePrivateGame >( this, CREATE_REPLY::SUCCESS, Config::service_ip, Config::discovery_port );
 }

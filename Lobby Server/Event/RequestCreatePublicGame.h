@@ -4,7 +4,7 @@ class RequestCreatePublicGame : public GenericRequest
 {
 private:
 	std::wstring m_sessionId;
-	std::wstring m_gameName;
+	std::wstring m_gameInfo;
 
 	int32_t m_minimumLevel;
 	int32_t m_maximumLevel;

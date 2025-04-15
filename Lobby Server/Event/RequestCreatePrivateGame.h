@@ -4,7 +4,7 @@ class RequestCreatePrivateGame : public GenericRequest
 {
 private:
 	std::wstring m_sessionId;
-	std::wstring m_gameName;
+	std::wstring m_gameInfo;
 
 	enum CREATE_REPLY {
 		SUCCESS = 0,
