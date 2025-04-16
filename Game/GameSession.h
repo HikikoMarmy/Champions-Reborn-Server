@@ -21,7 +21,7 @@ public:
 
 	int32_t m_gameIndex;
 	
-	std::wstring m_gameLocation;
+	std::wstring m_gameAddress;
 	std::wstring m_gameName;
 	std::wstring m_ownerName;
 

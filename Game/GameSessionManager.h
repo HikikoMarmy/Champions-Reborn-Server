@@ -32,8 +32,8 @@ public:
 
 	void OnDisconnectUser( sptr_user user );
 
-	bool CreatePublicGameSession( sptr_user user, std::wstring gameInfo );
-	bool CreatePrivateGameSession( sptr_user user, std::wstring gameInfo );
+	bool CreatePublicGameSession( sptr_user user, std::wstring gameName );
+	bool CreatePrivateGameSession( sptr_user user, std::wstring gameName );
 	bool ForceTerminateGame( const int32_t gameId );
 	sptr_game_session FindGame( const int32_t gameId );
 	sptr_game_session FindGame( const std::wstring &gameName );

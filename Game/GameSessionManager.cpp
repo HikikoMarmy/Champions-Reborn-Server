@@ -1,4 +1,7 @@
 #include "../global_define.h"
+
+#include <format>
+
 #include "GameSessionManager.h"
 
 #include "../Lobby Server/Event/NotifyClientDiscovered.h"
@@ -59,15 +62,13 @@ void GameSessionManager::OnDisconnectUser( sptr_user user )
 	}
 }
 
-bool GameSessionManager::CreatePublicGameSession( sptr_user owner, std::wstring gameInfo )
+bool GameSessionManager::CreatePublicGameSession( sptr_user owner, std::wstring gameName )
 {
 	auto new_session = std::make_shared< GameSession >();
 
-	auto [gameName, gameLocation] = ParseInfoData( gameInfo );
-
 	new_session->m_type = GameSession::GameType::Public;
 	new_session->m_gameIndex = m_gameIndex;
-	new_session->m_gameLocation = gameLocation;
+	new_session->m_gameAddress = L"";
 	new_session->m_gameName = gameName;
 	new_session->m_minimumLevel = 1;
 	new_session->m_maximumLevel = 9999;
@@ -88,10 +89,8 @@ bool GameSessionManager::CreatePublicGameSession( sptr_user owner, std::wstring 
 	return true;
 }
 
-bool GameSessionManager::CreatePrivateGameSession( sptr_user owner, std::wstring gameInfo )
+bool GameSessionManager::CreatePrivateGameSession( sptr_user owner, std::wstring gameName )
 {
-	auto [gameName, gameLocation] = ParseInfoData( gameInfo );
-
 	// Check if the game name or host session id is already in use
 	for( auto &gameSession : m_gameSessionList )
 	{
@@ -109,7 +108,7 @@ bool GameSessionManager::CreatePrivateGameSession( sptr_user owner, std::wstring
 
 	new_session->m_type = GameSession::GameType::Private;
 	new_session->m_gameIndex = m_gameIndex;
-	new_session->m_gameLocation = gameLocation;
+	new_session->m_gameAddress = L"";
 	new_session->m_gameName = gameName;
 	new_session->m_minimumLevel = 1;
 	new_session->m_maximumLevel = 9999;
@@ -209,10 +208,14 @@ bool GameSessionManager::RequestOpen( sptr_user user )
 		return false;
 	}
 
+	session->m_gameAddress = std::format( L"{}:{}",
+										  std::wstring( user->m_discoveryAddr.begin(), user->m_discoveryAddr.end() ),
+										  user->m_discoveryPort );
+
 	session->m_state = GameSession::GameState::Open;
 
 	// Tell the host its own address.
-	NotifyGameDiscovered msg( user->m_discoveryAddr, 3000 );// user->m_discoveryPort);
+	NotifyGameDiscovered msg( user->m_discoveryAddr, user->m_discoveryPort);
 	user->sock->send( msg );
 
 	Log::Info( "Game Session [%d] Discoverable on %s", gameId, user->m_discoveryAddr.c_str() );
@@ -294,11 +297,11 @@ bool GameSessionManager::RequestJoin( sptr_user join_user )
 	join_user->m_isHost = false;
 
 	// First, notify the host that a client is trying to connect.
-	NotifyClientRequestConnect msgNotifyReqConnect( join_user->m_discoveryAddr, 3000 );// join_user->m_discoveryPort);
+	NotifyClientRequestConnect msgNotifyReqConnect( join_user->m_discoveryAddr, join_user->m_discoveryPort);
 	host_user->sock->send( msgNotifyReqConnect );
 
 	// Then, tell the joiner its own address. 
-	NotifyClientDiscovered msgClientDiscovered( join_user->m_discoveryAddr, 3000 );// host_user->m_discoveryPort);
+	NotifyClientDiscovered msgClientDiscovered( join_user->m_discoveryAddr,host_user->m_discoveryPort);
 	join_user->sock->send( msgClientDiscovered );
 
 	Log::Info( "User [%S] Joining game session... [%d]", join_user->m_sessionId.c_str(), gameId );

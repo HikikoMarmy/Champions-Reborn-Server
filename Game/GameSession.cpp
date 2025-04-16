@@ -12,7 +12,7 @@ GameSession::GameSession()
 	m_currentPlayers = 0;
 	m_maximumPlayers = 0;
 
-	m_gameLocation.clear();
+	m_gameAddress.clear();
 	m_gameName.clear();
 	m_ownerName.clear();
 	m_gameData.clear();
@@ -31,7 +31,7 @@ GameSession::~GameSession()
 	m_currentPlayers = 0;
 	m_maximumPlayers = 0;
 
-	m_gameLocation.clear();
+	m_gameAddress.clear();
 	m_gameName.clear();
 	m_ownerName.clear();
 	m_gameData.clear();

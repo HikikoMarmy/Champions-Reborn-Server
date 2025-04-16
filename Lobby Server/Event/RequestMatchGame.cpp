@@ -39,9 +39,6 @@ sptr_generic_response RequestMatchGame::ProcessRequest( sptr_user user, sptr_byt
 {
 	Deserialize( stream );
 
-	Log::Debug( "RequestMatchGame : %S", m_sessionId.c_str() );
-	Log::Packet( stream->data, stream->data.size(), false );
-
 	return std::make_shared< ResultMatchGame >( this );
 }
 
@@ -62,7 +59,7 @@ ByteStream &ResultMatchGame::Serialize()
 	m_stream.write_u32( publicGameCount );
 	{
 		for( auto &game : publicGameList )
-			m_stream.write_utf16( game->m_gameLocation );
+			m_stream.write_utf16( game->m_gameAddress );
 	}
 
 	m_stream.write_u32( publicGameCount );

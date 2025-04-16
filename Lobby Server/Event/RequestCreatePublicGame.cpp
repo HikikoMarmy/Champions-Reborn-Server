@@ -1,8 +1,6 @@
 #include "../../global_define.h"
 
 #include "RequestCreatePublicGame.h"
-#include "NotifyGameDiscovered.h"
-#include "NotifyClientDiscovered.h"
 
 // Request
 void RequestCreatePublicGame::Deserialize( sptr_byte_stream stream )
