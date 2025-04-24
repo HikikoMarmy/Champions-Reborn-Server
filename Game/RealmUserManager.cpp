@@ -22,7 +22,7 @@ std::wstring RealmUserManager::GenerateSessionId()
 	return sessionId;
 }
 
-sptr_user RealmUserManager::CreateUser( sptr_socket socket )
+sptr_user RealmUserManager::CreateUser( sptr_socket socket, RealmClientType clientType )
 {
 	Log::Debug( "ClientManager::CreateUser() - Created new user" );
 
@@ -30,6 +30,7 @@ sptr_user RealmUserManager::CreateUser( sptr_socket socket )
 
 	user->m_sessionId = GenerateSessionId();
 	user->sock = socket;
+	user->m_clientType = clientType;
 
 	m_users.push_back( user );
 

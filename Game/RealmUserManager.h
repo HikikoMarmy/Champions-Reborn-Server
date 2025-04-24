@@ -28,7 +28,7 @@ public:
 
 public:
 	static std::wstring GenerateSessionId();
-	sptr_user CreateUser( sptr_socket socket );
+	sptr_user CreateUser( sptr_socket socket, RealmClientType clientType );
 	void RemoveUser( sptr_user user );
 	void RemoveUser( const std::wstring &sessionId );
 	void RemoveUser( const sptr_socket socket );

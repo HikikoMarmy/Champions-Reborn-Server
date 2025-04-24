@@ -8,6 +8,8 @@ public:
 public:
 	sptr_socket sock;				// For Realm Lobby
 
+	RealmClientType m_clientType;
+
 	std::wstring	m_sessionId;	// Unique Session ID for the user (Generated at login)
 
 	bool	m_isHost;				// True if this user is the host of a realm
