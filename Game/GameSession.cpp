@@ -5,14 +5,15 @@ GameSession::GameSession()
 	m_owner.reset();
 
 	m_gameIndex = 0;
+	m_clientType = RealmClientType::UNKNOWN;
 	m_type = GameType::Public;
 	m_state = GameState::NotReady;
-	m_minimumLevel = 0;
-	m_maximumLevel = 0;
 	m_currentPlayers = 0;
 	m_maximumPlayers = 0;
 
-	m_gameAddress.clear();
+	m_hostPort = 0;
+	m_hostLocalAddr.clear();
+	m_hostExternalAddr.clear();
 	m_gameName.clear();
 	m_ownerName.clear();
 	m_gameData.clear();
@@ -24,14 +25,15 @@ GameSession::~GameSession()
 	m_owner.reset();
 
 	m_gameIndex = 0;
+	m_clientType = RealmClientType::UNKNOWN;
 	m_type = GameType::Public;
 	m_state = GameState::NotReady;
-	m_minimumLevel = 0;
-	m_maximumLevel = 0;
 	m_currentPlayers = 0;
 	m_maximumPlayers = 0;
 
-	m_gameAddress.clear();
+	m_hostPort = 0;
+	m_hostLocalAddr.clear();
+	m_hostExternalAddr.clear();
 	m_gameName.clear();
 	m_ownerName.clear();
 	m_gameData.clear();

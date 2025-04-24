@@ -9,28 +9,35 @@ public:
 	{
 		Public,
 		Private
-	} m_type;
+	};
 
 	enum class GameState
 	{
 		NotReady,
 		Open
-	} m_state;
+	};
+
+	GameType m_type;
+	GameState m_state;
+	RealmClientType m_clientType;
 
 	std::weak_ptr< RealmUser > m_owner;
 
 	int32_t m_gameIndex;
 	
-	std::wstring m_gameAddress;
 	std::wstring m_gameName;
 	std::wstring m_ownerName;
+	std::wstring m_playerCount;
 
 	std::string m_gameData;
 	std::string m_description;
+
+	std::wstring m_hostLocalAddr;
+	std::wstring m_hostExternalAddr;
+	int32_t m_hostPort;
+
 	int8_t m_currentPlayers;
 	int8_t m_maximumPlayers;
-	int32_t m_minimumLevel;
-	int32_t m_maximumLevel;
 };
 
 typedef std::shared_ptr< GameSession > sptr_game_session;

@@ -1,12 +1,11 @@
 #include "../global_define.h"
 
-#include <format>
-
 #include "GameSessionManager.h"
+#include "../Network/Event/NotifyClientDiscovered.h"
+#include "../Network/Event/NotifyClientReqConnect.h"
+#include "../Network/Event/NotifyGameDiscovered.h"
 
-#include "../Lobby Server/Event/NotifyClientDiscovered.h"
-#include "../Lobby Server/Event/NotifyClientReqConnect.h"
-#include "../Lobby Server/Event/NotifyGameDiscovered.h"
+#include "../Network/Event/NotifyClientRequestConnect_RTA.h"
 
 GameSessionManager::GameSessionManager()
 {
@@ -16,24 +15,6 @@ GameSessionManager::GameSessionManager()
 
 GameSessionManager::~GameSessionManager()
 {
-}
-
-std::tuple<std::wstring, std::wstring> GameSessionManager::ParseInfoData( const std::wstring &str )
-{
-	size_t openBracket = str.find( '[' );
-	size_t closeBracket = str.find( ']', openBracket );
-
-	if( openBracket != std::string::npos && closeBracket != std::string::npos )
-	{
-		std::wstring roomName = str.substr( 0, openBracket );
-		std::wstring areaName = str.substr( openBracket + 1, closeBracket - openBracket - 1 );
-
-		roomName.erase( roomName.find_last_not_of( L" \t\r\n" ) + 1 );
-
-		return { roomName, areaName };
-	}
-
-	return { str, L"" };
 }
 
 void GameSessionManager::OnDisconnectUser( sptr_user user )
@@ -62,16 +43,17 @@ void GameSessionManager::OnDisconnectUser( sptr_user user )
 	}
 }
 
-bool GameSessionManager::CreatePublicGameSession( sptr_user owner, std::wstring gameName )
+bool GameSessionManager::CreatePublicGameSession( sptr_user owner, std::wstring gameName, RealmClientType clientType )
 {
 	auto new_session = std::make_shared< GameSession >();
 
 	new_session->m_type = GameSession::GameType::Public;
+	new_session->m_clientType = clientType;
 	new_session->m_gameIndex = m_gameIndex;
-	new_session->m_gameAddress = L"";
+	new_session->m_hostLocalAddr = L"";
 	new_session->m_gameName = gameName;
-	new_session->m_minimumLevel = 1;
-	new_session->m_maximumLevel = 9999;
+	new_session->m_currentPlayers = 1;
+	new_session->m_maximumPlayers = 4;
 
 	new_session->m_gameData.resize( 256 );
 
@@ -89,7 +71,7 @@ bool GameSessionManager::CreatePublicGameSession( sptr_user owner, std::wstring 
 	return true;
 }
 
-bool GameSessionManager::CreatePrivateGameSession( sptr_user owner, std::wstring gameName )
+bool GameSessionManager::CreatePrivateGameSession( sptr_user owner, std::wstring gameName, RealmClientType clientType )
 {
 	// Check if the game name or host session id is already in use
 	for( auto &gameSession : m_gameSessionList )
@@ -107,11 +89,12 @@ bool GameSessionManager::CreatePrivateGameSession( sptr_user owner, std::wstring
 	auto new_session = std::make_shared< GameSession >();
 
 	new_session->m_type = GameSession::GameType::Private;
+	new_session->m_clientType = clientType;
 	new_session->m_gameIndex = m_gameIndex;
-	new_session->m_gameAddress = L"";
+	new_session->m_hostLocalAddr = L"";
 	new_session->m_gameName = gameName;
-	new_session->m_minimumLevel = 1;
-	new_session->m_maximumLevel = 9999;
+	new_session->m_currentPlayers = 1;
+	new_session->m_maximumPlayers = 4;
 
 	new_session->m_gameData.resize( 256 );
 
@@ -208,14 +191,15 @@ bool GameSessionManager::RequestOpen( sptr_user user )
 		return false;
 	}
 
-	session->m_gameAddress = std::format( L"{}:{}",
-										  std::wstring( user->m_discoveryAddr.begin(), user->m_discoveryAddr.end() ),
-										  user->m_discoveryPort );
+	// Very cool that they couldn't agree on ASCII or UTF-16
+	session->m_hostLocalAddr = std::wstring( user->m_localAddr.begin(), user->m_localAddr.end() );
+	session->m_hostExternalAddr = std::wstring( user->m_localAddr.begin(), user->m_localAddr.end() );
+	session->m_hostPort = user->m_discoveryPort;
 
 	session->m_state = GameSession::GameState::Open;
 
 	// Tell the host its own address.
-	NotifyGameDiscovered msg( user->m_discoveryAddr, user->m_discoveryPort);
+	NotifyGameDiscovered msg( user->m_discoveryAddr, user->m_discoveryPort, user->m_clientType );
 	user->sock->send( msg );
 
 	Log::Info( "Game Session [%d] Discoverable on %s", gameId, user->m_discoveryAddr.c_str() );
@@ -296,26 +280,46 @@ bool GameSessionManager::RequestJoin( sptr_user join_user )
 
 	join_user->m_isHost = false;
 
-	// First, notify the host that a client is trying to connect.
-	NotifyClientRequestConnect msgNotifyReqConnect( join_user->m_discoveryAddr, join_user->m_discoveryPort);
-	host_user->sock->send( msgNotifyReqConnect );
-
-	// Then, tell the joiner its own address. 
-	NotifyClientDiscovered msgClientDiscovered( join_user->m_discoveryAddr,host_user->m_discoveryPort);
+	// Tell the joiner its own address. 
+	NotifyClientDiscovered msgClientDiscovered( host_user->m_discoveryAddr, host_user->m_discoveryPort, host_user->m_clientType );
 	join_user->sock->send( msgClientDiscovered );
 
+	// Notify the host that a client is trying to connect.
+	if( host_user->m_clientType == RealmClientType::CHAMPIONS_OF_NORRATH )
+	{
+		NotifyClientRequestConnect msgNotifyReqConnect(
+			join_user->m_discoveryAddr,
+			join_user->m_discoveryPort
+		);
+
+		host_user->sock->send( msgNotifyReqConnect );
+	}
+	else
+	{
+		NotifyClientRequestConnect_RTA msgNotifyReqConnect(
+			join_user->m_discoveryAddr,
+			join_user->m_localAddr,
+			join_user->m_discoveryPort
+		);
+
+		host_user->sock->send( msgNotifyReqConnect );
+	}
+	
 	Log::Info( "User [%S] Joining game session... [%d]", join_user->m_sessionId.c_str(), gameId );
 
 	return true;
 }
 
-std::vector<sptr_game_session> GameSessionManager::GetAvailableGameSessionList() const
+std::vector<sptr_game_session> GameSessionManager::GetAvailableGameSessionList( RealmClientType clientType ) const
 {
 	std::lock_guard<std::mutex> lock( m_dataMutex );
 
 	std::vector<sptr_game_session> list;
 	for( const auto &game : m_gameSessionList )
 	{
+		if( game->m_clientType != clientType )
+			continue;
+
 		if( game->m_type == GameSession::GameType::Public &&
 			game->m_state == GameSession::GameState::Open )
 		{
@@ -325,26 +329,32 @@ std::vector<sptr_game_session> GameSessionManager::GetAvailableGameSessionList()
 	return list;
 }
 
-std::vector<sptr_game_session> GameSessionManager::GetPublicGameSessionList() const
+std::vector<sptr_game_session> GameSessionManager::GetPublicGameSessionList( RealmClientType clientType ) const
 {
 	std::lock_guard<std::mutex> lock( m_dataMutex );
 
 	std::vector<sptr_game_session> list;
 	for( const auto &game : m_gameSessionList )
 	{
+		if( game->m_clientType != clientType )
+			continue;
+
 		if( game->m_type == GameSession::GameType::Public )
 			list.push_back( game );
 	}
 	return list;
 }
 
-std::vector<sptr_game_session> GameSessionManager::GetPrivateGameSessionList() const
+std::vector<sptr_game_session> GameSessionManager::GetPrivateGameSessionList( RealmClientType clientType ) const
 {
 	std::lock_guard<std::mutex> lock( m_dataMutex );
 
 	std::vector<sptr_game_session> list;
 	for( const auto &game : m_gameSessionList )
 	{
+		if( game->m_clientType != clientType )
+			continue;
+
 		if( game->m_type == GameSession::GameType::Private )
 			list.push_back( game );
 	}

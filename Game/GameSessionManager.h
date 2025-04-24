@@ -11,8 +11,6 @@ private:
 	int32_t m_gameIndex;
 	std::vector< sptr_game_session > m_gameSessionList;
 
-	std::tuple< std::wstring, std::wstring > ParseInfoData( const std::wstring &str );
-
 public:
 	GameSessionManager();
 	~GameSessionManager();
@@ -32,8 +30,8 @@ public:
 
 	void OnDisconnectUser( sptr_user user );
 
-	bool CreatePublicGameSession( sptr_user user, std::wstring gameName );
-	bool CreatePrivateGameSession( sptr_user user, std::wstring gameName );
+	bool CreatePublicGameSession( sptr_user user, std::wstring gameName, RealmClientType clientType );
+	bool CreatePrivateGameSession( sptr_user user, std::wstring gameName, RealmClientType clientType );
 	bool ForceTerminateGame( const int32_t gameId );
 	sptr_game_session FindGame( const int32_t gameId );
 	sptr_game_session FindGame( const std::wstring &gameName );
@@ -42,7 +40,7 @@ public:
 	bool RequestCancel( sptr_user user );
 	bool RequestJoin( sptr_user user );
 
-	std::vector< sptr_game_session > GetAvailableGameSessionList() const;
-	std::vector< sptr_game_session > GetPublicGameSessionList() const;
-	std::vector< sptr_game_session > GetPrivateGameSessionList() const;
+	std::vector< sptr_game_session > GetAvailableGameSessionList( RealmClientType clientType ) const;
+	std::vector< sptr_game_session > GetPublicGameSessionList( RealmClientType clientType ) const;
+	std::vector< sptr_game_session > GetPrivateGameSessionList( RealmClientType clientType ) const;
 };
