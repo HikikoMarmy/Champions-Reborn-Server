@@ -137,66 +137,68 @@ void Log::Error( std::string format, ... )
 
 void Log::Packet( std::vector<uint8_t> p, size_t size, bool send )
 {
-	log_lock.lock();
+	std::lock_guard<std::mutex> lock( log_lock );
 
 	HANDLE hConsole = GetStdHandle( STD_OUTPUT_HANDLE );
 
 	SetConsoleTextAttribute( hConsole, 15 );
 
 	uint16_t i = 0;
-	uint16_t r = 0;
+	uint8_t line[ 16 ] = {};
+	uint8_t r = 0;
 
-	if( send )
-	{
-		SetConsoleTextAttribute( hConsole, 11 );
-		printf( "(SEND)(00|01|02|03|04|05|06|07|08|09|0A|0B|0C|0D|0E|0F)\n" );
-		SetConsoleTextAttribute( hConsole, 15 );
-	}
-	else
-	{
-		SetConsoleTextAttribute( hConsole, 10 );
-		printf( "(RECV)(00|01|02|03|04|05|06|07|08|09|0A|0B|0C|0D|0E|0F)\n" );
-		SetConsoleTextAttribute( hConsole, 15 );
-	}
+	SetConsoleTextAttribute( hConsole, send ? 11 : 10 );
+	printf( "(%s)(00|01|02|03|04|05|06|07|08|09|0A|0B|0C|0D|0E|0F)\n", send ? "SEND" : "RECV" );
+	SetConsoleTextAttribute( hConsole, 15 );
 
 	while( i < size )
 	{
-		if( r == 16 )
+		if( i % 16 == 0 )
 		{
-			uint8_t *c = &p[ ( i - 16 ) ];
-			for( r = 0; r < 16; r++, c++ )
+			if( i > 0 )
 			{
-				if( ( ( *c ) >= 0x20 && ( *c ) <= 127 ) && ( isprint( ( *c ) ) ) )
-					printf( "%c", ( *c ) );
-				else
-					printf( "%c", 0x2E );
+				printf( " " );
+				for( uint8_t j = 0; j < r; ++j )
+				{
+					char c = line[ j ];
+					printf( "%c", ( c >= 0x20 && c <= 0x7E ) ? c : '.' );
+				}
+				printf( "\n" );
 			}
+			printf( "(%04X) ", i );
 			r = 0;
 		}
 
-		if( i % 16 == 0 )
-		{
-			SetConsoleTextAttribute( hConsole, ( send ) ? 11 : 10 );
-			if( i > 0 ) printf( "\n" );
-			printf( "(%04X) ", i );
-			SetConsoleTextAttribute( hConsole, 15 );
-		}
+		line[ r++ ] = p[ i ];
+
 
 		if( i == 4 || i == 5 )
 		{
-			SetConsoleTextAttribute( hConsole, ( send ) ? 11 : 10 );
+			SetConsoleTextAttribute( hConsole, send ? 11 : 10 );
 			printf( "%02X ", p[ i ] );
 			SetConsoleTextAttribute( hConsole, 15 );
 		}
 		else
+		{
 			printf( "%02X ", p[ i ] );
+		}
 
-		i++;
-		r++;
+		++i;
 	}
+
+
+	if( r > 0 )
+	{
+		for( uint8_t j = r; j < 16; ++j )
+			printf( "   " ); // Pad to align character section
+
+		printf( " " );
+		for( uint8_t j = 0; j < r; ++j )
+		{
+			char c = line[ j ];
+			printf( "%c", ( c >= 0x20 && c <= 0x7E ) ? c : '.' );
+		}
+	}
+
 	printf( "\n\n" );
-
-	log_lock.unlock();
-
 }
-

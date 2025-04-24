@@ -45,11 +45,11 @@
     <Filter Include="Source Files\Discovery Server">
       <UniqueIdentifier>{76928587-566c-4842-9fa3-1a5baec12238}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Lobby Server\Event">
-      <UniqueIdentifier>{fe6aba50-18f0-46a1-b154-4226b3ca42ab}</UniqueIdentifier>
+    <Filter Include="Source Files\Network\Event">
+      <UniqueIdentifier>{a72820fb-0d67-45e0-91f3-b7d7b6b61465}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Lobby Server\Event">
-      <UniqueIdentifier>{6432e486-7341-4eb8-a6c0-c21ecd2e92f8}</UniqueIdentifier>
+    <Filter Include="Header Files\Network\Event">
+      <UniqueIdentifier>{48da1e06-b5a7-49cd-b264-12389d181a65}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -95,9 +95,6 @@
     <ClInclude Include="Crypto\rijndael.h">
       <Filter>Header Files\Crypto</Filter>
     </ClInclude>
-    <ClInclude Include="Lobby Server\LobbyEvents.h">
-      <Filter>Header Files\Lobby Server</Filter>
-    </ClInclude>
     <ClInclude Include="Discovery Server\DiscoveryServer.h">
       <Filter>Header Files\Discovery Server</Filter>
     </ClInclude>
@@ -107,68 +104,128 @@
     <ClInclude Include="Game\GameSessionManager.h">
       <Filter>Header Files\Game</Filter>
     </ClInclude>
-    <ClInclude Include="Lobby Server\Event\RequestCancelGame.h">
-      <Filter>Header Files\Lobby Server\Event</Filter>
-    </ClInclude>
-    <ClInclude Include="Lobby Server\Event\RequestCreateAccount.h">
-      <Filter>Header Files\Lobby Server\Event</Filter>
-    </ClInclude>
-    <ClInclude Include="Lobby Server\Event\RequestCreatePrivateGame.h">
-      <Filter>Header Files\Lobby Server\Event</Filter>
-    </ClInclude>
-    <ClInclude Include="Lobby Server\Event\RequestCreatePublicGame.h">
-      <Filter>Header Files\Lobby Server\Event</Filter>
-    </ClInclude>
-    <ClInclude Include="Lobby Server\Event\RequestDoClientDiscovery.h">
-      <Filter>Header Files\Lobby Server\Event</Filter>
-    </ClInclude>
-    <ClInclude Include="Lobby Server\Event\RequestGetEncryptionKey.h">
-      <Filter>Header Files\Lobby Server\Event</Filter>
-    </ClInclude>
-    <ClInclude Include="Lobby Server\Event\RequestGetRules.h">
-      <Filter>Header Files\Lobby Server\Event</Filter>
-    </ClInclude>
-    <ClInclude Include="Lobby Server\Event\RequestLogin.h">
-      <Filter>Header Files\Lobby Server\Event</Filter>
-    </ClInclude>
-    <ClInclude Include="Lobby Server\Event\RequestLogout.h">
-      <Filter>Header Files\Lobby Server\Event</Filter>
-    </ClInclude>
-    <ClInclude Include="Lobby Server\Event\RequestMatchGame.h">
-      <Filter>Header Files\Lobby Server\Event</Filter>
-    </ClInclude>
-    <ClInclude Include="Lobby Server\Event\RequestTouchSession.h">
-      <Filter>Header Files\Lobby Server\Event</Filter>
-    </ClInclude>
-    <ClInclude Include="Lobby Server\Event\NotifyClientDiscovered.h">
-      <Filter>Header Files\Lobby Server\Event</Filter>
-    </ClInclude>
-    <ClInclude Include="Lobby Server\Event\NotifyClientReqConnect.h">
-      <Filter>Header Files\Lobby Server\Event</Filter>
-    </ClInclude>
-    <ClInclude Include="Lobby Server\Event\NotifyGameDiscovered.h">
-      <Filter>Header Files\Lobby Server\Event</Filter>
-    </ClInclude>
     <ClInclude Include="Network\GenericNetMessage.hpp">
       <Filter>Header Files\Network</Filter>
     </ClInclude>
     <ClInclude Include="configuration.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Lobby Server\Event\RequestGetRealmStats.h">
-      <Filter>Header Files\Lobby Server\Event</Filter>
-    </ClInclude>
-    <ClInclude Include="Lobby Server\Event\RequestUpdateGameData.h">
-      <Filter>Header Files\Lobby Server\Event</Filter>
-    </ClInclude>
-    <ClInclude Include="Lobby Server\Event\RequestGetGame.h">
-      <Filter>Header Files\Lobby Server\Event</Filter>
-    </ClInclude>
     <ClInclude Include="Crypto\RealmCrypt.h">
       <Filter>Header Files\Crypto</Filter>
     </ClInclude>
-    <ClInclude Include="Lobby Server\Event\RequestGetServerAddress.h">
-      <Filter>Header Files\Lobby Server\Event</Filter>
+    <ClInclude Include="Game\Constant.hpp">
+      <Filter>Header Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\NotifyClientDiscovered.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\NotifyClientReqConnect.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\NotifyGameDiscovered.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\Request_5B.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\Request_5D.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\Request_61.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestCancelGame.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestCreateAccount.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestCreatePrivateGame.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestCreatePrivateGame_RTA.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestCreatePublicGame.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestCreatePublicGame_RTA.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestDoClientDiscovery.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestEnterRoom.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestGetEncryptionKey.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestGetGame.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestGetPublicRooms.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestGetRealmStats.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestGetRules.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestGetServerAddress.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestLogin.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestLogout.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestMatchGame.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestMatchGame_RTA.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestTouchSession.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestUpdateGameData.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Events.h">
+      <Filter>Header Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestSaveNewCharacter_RTA.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestGetGame_RTA.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestCreatePrivateRoom.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestCancelGame_RTA.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\ChatRoomSession.h">
+      <Filter>Header Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\ChatRoomManager.h">
+      <Filter>Header Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestGetRoom.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\Notify_4C.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\NotifyForcedLogout.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\NotifyClientRequestConnect_RTA.h">
+      <Filter>Header Files\Network\Event</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -214,65 +271,119 @@
     <ClCompile Include="Game\GameSessionManager.cpp">
       <Filter>Source Files\Game</Filter>
     </ClCompile>
-    <ClCompile Include="Lobby Server\Event\RequestCancelGame.cpp">
-      <Filter>Source Files\Lobby Server\Event</Filter>
-    </ClCompile>
-    <ClCompile Include="Lobby Server\Event\RequestCreateAccount.cpp">
-      <Filter>Source Files\Lobby Server\Event</Filter>
-    </ClCompile>
-    <ClCompile Include="Lobby Server\Event\RequestCreatePrivateGame.cpp">
-      <Filter>Source Files\Lobby Server\Event</Filter>
-    </ClCompile>
-    <ClCompile Include="Lobby Server\Event\RequestCreatePublicGame.cpp">
-      <Filter>Source Files\Lobby Server\Event</Filter>
-    </ClCompile>
-    <ClCompile Include="Lobby Server\Event\RequestDoClientDiscovery.cpp">
-      <Filter>Source Files\Lobby Server\Event</Filter>
-    </ClCompile>
-    <ClCompile Include="Lobby Server\Event\RequestGetEncryptionKey.cpp">
-      <Filter>Source Files\Lobby Server\Event</Filter>
-    </ClCompile>
-    <ClCompile Include="Lobby Server\Event\RequestGetRules.cpp">
-      <Filter>Source Files\Lobby Server\Event</Filter>
-    </ClCompile>
-    <ClCompile Include="Lobby Server\Event\RequestLogin.cpp">
-      <Filter>Source Files\Lobby Server\Event</Filter>
-    </ClCompile>
-    <ClCompile Include="Lobby Server\Event\RequestLogout.cpp">
-      <Filter>Source Files\Lobby Server\Event</Filter>
-    </ClCompile>
-    <ClCompile Include="Lobby Server\Event\RequestMatchGame.cpp">
-      <Filter>Source Files\Lobby Server\Event</Filter>
-    </ClCompile>
-    <ClCompile Include="Lobby Server\Event\RequestTouchSession.cpp">
-      <Filter>Source Files\Lobby Server\Event</Filter>
-    </ClCompile>
-    <ClCompile Include="Lobby Server\Event\NotifyClientDiscovered.cpp">
-      <Filter>Source Files\Lobby Server\Event</Filter>
-    </ClCompile>
-    <ClCompile Include="Lobby Server\Event\NotifyClientReqConnect.cpp">
-      <Filter>Source Files\Lobby Server\Event</Filter>
-    </ClCompile>
-    <ClCompile Include="Lobby Server\Event\NotifyGameDiscovered.cpp">
-      <Filter>Source Files\Lobby Server\Event</Filter>
-    </ClCompile>
     <ClCompile Include="configuration.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Lobby Server\Event\RequestGetRealmStats.cpp">
-      <Filter>Source Files\Lobby Server\Event</Filter>
-    </ClCompile>
-    <ClCompile Include="Lobby Server\Event\RequestUpdateGameData.cpp">
-      <Filter>Source Files\Lobby Server\Event</Filter>
-    </ClCompile>
-    <ClCompile Include="Lobby Server\Event\RequestGetGame.cpp">
-      <Filter>Source Files\Lobby Server\Event</Filter>
     </ClCompile>
     <ClCompile Include="Crypto\RealmCrypt.cpp">
       <Filter>Source Files\Crypto</Filter>
     </ClCompile>
-    <ClCompile Include="Lobby Server\Event\RequestGetServerAddress.cpp">
-      <Filter>Source Files\Lobby Server\Event</Filter>
+    <ClCompile Include="Network\Event\NotifyClientDiscovered.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\NotifyClientReqConnect.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\NotifyGameDiscovered.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestGetPublicRooms.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\Request_5B.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\Request_5D.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestMatchGame_RTA.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\Request_61.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestCancelGame.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestCreateAccount.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestCreatePrivateGame.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestCreatePrivateGame_RTA.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestCreatePublicGame.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestCreatePublicGame_RTA.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestDoClientDiscovery.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestEnterRoom.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestGetEncryptionKey.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestGetGame.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestGetRealmStats.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestGetRules.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestGetServerAddress.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestLogin.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestLogout.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestMatchGame.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestTouchSession.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestUpdateGameData.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestSaveNewCharacter_RTA.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestGetGame_RTA.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestCreatePrivateRoom.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestCancelGame_RTA.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\ChatRoom.cpp">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\ChatRoomManager.cpp">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestGetRoom.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\Notify_4C.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\NotifyForcedLogout.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\NotifyClientRequestConnect_RTA.cpp">
+      <Filter>Source Files\Network\Event</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

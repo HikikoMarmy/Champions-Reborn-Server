@@ -58,6 +58,8 @@ void RealmSocket::send( const sptr_generic_response response )
 
 	m_pendingWriteBuffer.insert( m_pendingWriteBuffer.end(), ( uint8_t * )&netSize, ( uint8_t * )&netSize + 4 );
 	m_pendingWriteBuffer.insert( m_pendingWriteBuffer.end(), stream.data.begin(), stream.data.end() );
+
+	Log::Packet( response->m_stream.data, response->m_stream.get_length(), true);
 }
 
 void RealmSocket::send( GenericMessage &message )
@@ -67,4 +69,6 @@ void RealmSocket::send( GenericMessage &message )
 
 	m_pendingWriteBuffer.insert( m_pendingWriteBuffer.end(), ( uint8_t * )&netSize, ( uint8_t * )&netSize + 4 );
 	m_pendingWriteBuffer.insert( m_pendingWriteBuffer.end(), stream.data.begin(), stream.data.end() );
+
+	Log::Packet( stream.data, stream.get_length(), true );
 }

@@ -6,16 +6,25 @@
 
 #include <cstdint>
 #include <memory>
+#include <format>
+#include <thread>
+#include <mutex>
+#include <map>
+#include <unordered_map>
+#include <vector>
 
 #include "misc/Utility.h"
 #include "misc/ByteStream.h"
 
 #include "Crypto/RealmCrypt.h"
 
+#include "Game/Constant.hpp"
+
 #include "Network/RealmSocket.h"
 
 #include "Game/RealmUserManager.h"
 #include "Game/GameSessionManager.h"
+#include "Game/ChatRoomManager.h"
 
 #include "Network/GenericNetRequest.hpp"
 #include "Network/GenericNetResponse.hpp"

@@ -45,7 +45,7 @@ int main()
 	}
 
 	auto &lobby_server = LobbyServer::Get();
-	lobby_server.Start( Config::service_ip, Config::lobby_port );
+	lobby_server.Start( Config::service_ip );
 
 	auto &discovery_server = DiscoveryServer::Get();
 	discovery_server.Start( Config::service_ip, Config::discovery_port );
