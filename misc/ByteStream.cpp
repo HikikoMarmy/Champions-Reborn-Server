@@ -62,11 +62,11 @@ T ByteStream::read()
 
 void ByteStream::write_utf8( const std::string &str, std::optional<uint32_t> length )
 {
-	if( length )
+	if( length.has_value() )
 	{
 		write_u32( length.value() );
 
-		if( length > str.size() )
+		if( length.value() > str.size() )
 		{
 			write_bytes( std::vector< uint8_t >( str.begin(), str.end() ) );
 			write_bytes( std::vector< uint8_t >( length.value() - str.size(), 0 ) );
@@ -156,9 +156,11 @@ void ByteStream::write_encrypted_utf16( const std::wstring &str )
 	}
 
 	auto encrypted = RealmCrypt::encryptSymmetric( utf16 );
+	uint32_t encryptedLength = static_cast< uint32_t >( encrypted.size() );
+	uint32_t decryptedLength = static_cast< uint32_t >( utf16.size() );
 
-	write_u32( static_cast< uint32_t >( encrypted.size() ) + 4 );
-	write_u32( static_cast< uint32_t >( str.size() ) * 2 );
+	write_u32( ( encryptedLength + 4 ) / 2 );
+	write_u32( decryptedLength );
 
 	write_bytes( encrypted );
 }
