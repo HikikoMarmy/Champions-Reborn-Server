@@ -42,3 +42,22 @@ uint32_t Utility::swap_endian( uint32_t val )
 		( ( val >> 8 ) & 0x0000FF00 ) |
 		( ( val >> 24 ) & 0x000000FF );
 }
+
+std::string Utility::WideToUTF8( const std::wstring &wstr )
+{
+	if( wstr.empty() ) return {};
+
+	int size_needed = WideCharToMultiByte(
+		CP_UTF8, 0, wstr.c_str(), static_cast< int >( wstr.size() ),
+		nullptr, 0, nullptr, nullptr
+	);
+
+	std::string result( size_needed, 0 );
+
+	WideCharToMultiByte(
+		CP_UTF8, 0, wstr.c_str(), static_cast< int >( wstr.size() ),
+		&result[ 0 ], size_needed, nullptr, nullptr
+	);
+
+	return result;
+}
