@@ -1,13 +1,12 @@
 #pragma once
 
-class DiscoveryServer
-{
+class DiscoveryServer {
 private:
 	static inline std::unique_ptr< DiscoveryServer > m_instance;
 	static inline std::mutex m_mutex;
 
 public:
-	static DiscoveryServer& Get()
+	static DiscoveryServer &Get()
 	{
 		std::lock_guard< std::mutex > lock( m_mutex );
 		if( m_instance == nullptr )
@@ -32,7 +31,7 @@ public:
 	}
 
 private:
-	void ProcessPacket(sockaddr_in* clientAddr, sptr_byte_stream stream);
+	void ProcessPacket( sockaddr_in *clientAddr, sptr_byte_stream stream );
 
 	std::atomic< bool > m_running;
 	std::thread m_thread;

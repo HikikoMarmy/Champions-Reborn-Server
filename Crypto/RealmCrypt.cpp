@@ -36,7 +36,7 @@ std::string RealmCrypt::encryptString( std::string &input )
 
 	rijndael aes;
 
-	auto result = aes.EncryptECB( 
+	auto result = aes.EncryptECB(
 		reinterpret_cast< const uint8_t * >( input.c_str() ),
 		static_cast< uint32_t >( input.size() ),
 		default_sym_key.data()
