@@ -31,8 +31,6 @@ void RequestMatchGame::Deserialize( sptr_byte_stream stream )
 	auto unknown_f = stream->read_u8();
 	auto unknown_g = stream->read_u32();
 	auto unknown_h = stream->read_u32();
-
-	int dbg = 0;
 }
 
 sptr_generic_response RequestMatchGame::ProcessRequest( sptr_user user, sptr_byte_stream stream )
@@ -53,13 +51,13 @@ ByteStream &ResultMatchGame::Serialize()
 	m_stream.write_u32( m_requestId );
 	m_stream.write_u32( 0 );
 
-	auto publicGameList = GameSessionManager::Get().GetAvailableGameSessionList();
+	auto publicGameList = GameSessionManager::Get().GetAvailableGameSessionList( RealmClientType::CHAMPIONS_OF_NORRATH );
 	auto publicGameCount = static_cast< uint32_t >( publicGameList.size() );
 
 	m_stream.write_u32( publicGameCount );
 	{
 		for( auto &game : publicGameList )
-			m_stream.write_utf16( game->m_gameAddress );
+			m_stream.write_utf16( std::format( L"{}:{}", game->m_hostExternalAddr, game->m_hostPort ) );
 	}
 
 	m_stream.write_u32( publicGameCount );

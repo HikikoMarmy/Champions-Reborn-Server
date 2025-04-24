@@ -3,8 +3,8 @@
 
 NotifyClientRequestConnect::NotifyClientRequestConnect( std::string clientIp, int32_t clientPort ) : GenericMessage( 0x3F )
 {
-	m_clientIp = clientIp;
-	m_clientPort = clientPort;
+	this->m_clientIp = std::move( clientIp );
+	this->m_clientPort = clientPort;
 }
 
 ByteStream &NotifyClientRequestConnect::Serialize()

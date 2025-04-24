@@ -6,14 +6,15 @@
 // ╩═╝╚═╝╚═╝╚═╝ ╩   ╚═╝╚═╝╩╚═ ╚╝ ╚═╝╩╚═
 
 #include "../global_define.h"
+#include "../Network/Events.h"
 
-#include "LobbyEvents.h"
 #include "LobbyServer.h"
 
 LobbyServer::LobbyServer()
 {
 	m_running = false;
-	m_listenSocket = INVALID_SOCKET;
+	m_conSocket = INVALID_SOCKET;
+	m_rtaSocket = INVALID_SOCKET;
 
 	m_clientSockets.clear();
 	m_recvBuffer.resize( 1024 );
@@ -21,49 +22,33 @@ LobbyServer::LobbyServer()
 
 LobbyServer::~LobbyServer()
 {
+	Log::Info( "Lobby Server stopped." );
+	if( m_conSocket != INVALID_SOCKET )
+	{
+		closesocket( m_conSocket );
+		m_conSocket = INVALID_SOCKET;
+	}
+	if( m_rtaSocket != INVALID_SOCKET )
+	{
+		closesocket( m_rtaSocket );
+		m_rtaSocket = INVALID_SOCKET;
+	}
 }
 
-void LobbyServer::Start( std::string ip, int32_t port )
+void LobbyServer::Start( std::string ip )
 {
-	m_listenSocket = ::WSASocket( AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED );
-	if( m_listenSocket == INVALID_SOCKET )
-	{
-		Log::Error( "WSASocket() failed" );
+	m_conSocket = OpenNetworkSocket( ip, 40801 );
+	if( m_conSocket == INVALID_SOCKET )
 		return;
-	}
 
-	// Bind the socket
-	sockaddr_in service;
-	service.sin_family = AF_INET;
-	service.sin_port = htons( port );
-
-	if( ip == "0.0.0.0" )
-	{
-		service.sin_addr.s_addr = ADDR_ANY;
-	}
-	else
-	{
-		service.sin_addr.s_addr = inet_addr( ip.c_str() );
-	}
-
-	if( bind( m_listenSocket, ( SOCKADDR * )&service, sizeof( service ) ) == SOCKET_ERROR )
-	{
-		Log::Error( "bind() failed" );
+	m_rtaSocket = OpenNetworkSocket( ip, 40810 );
+	if( m_rtaSocket == INVALID_SOCKET )
 		return;
-	}
 
-	// Listen on the socket
-	if( listen( m_listenSocket, SOMAXCONN ) == SOCKET_ERROR )
-	{
-		Log::Error( "listen() failed" );
-		return;
-	}
-
-	// Start the server
 	m_running = true;
 	m_thread = std::thread( &LobbyServer::Run, this );
 
-	Log::Info( "Lobby Server started on %s:%d", ip.c_str(), port );
+	Log::Info( "Lobby Server started" );
 }
 
 void LobbyServer::Stop()
@@ -73,6 +58,43 @@ void LobbyServer::Stop()
 	{
 		m_thread.join();
 	}
+}
+
+SOCKET LobbyServer::OpenNetworkSocket( std::string ip, int32_t port )
+{
+	SOCKET sock = ::WSASocket( AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED );
+	if( sock == INVALID_SOCKET )
+	{
+		Log::Error( "WSASocket() failed on port %u", port );
+		return INVALID_SOCKET;
+	}
+
+	sockaddr_in service{};
+	service.sin_family = AF_INET;
+	service.sin_port = htons( port );
+
+	if( ip == "0.0.0.0" )
+		service.sin_addr.s_addr = ADDR_ANY;
+	else
+		service.sin_addr.s_addr = inet_addr( ip.c_str() );
+
+	if( bind( sock, ( SOCKADDR * )&service, sizeof( service ) ) == SOCKET_ERROR )
+	{
+		Log::Error( "bind() failed on port %u", port );
+		closesocket( sock );
+		return INVALID_SOCKET;
+	}
+
+	if( listen( sock, SOMAXCONN ) == SOCKET_ERROR )
+	{
+		Log::Error( "listen() failed on port %u", port );
+		closesocket( sock );
+		return INVALID_SOCKET;
+	}
+
+	Log::Info( "Socket Opened on %s:%d", ip.c_str(), port );
+
+	return sock;
 }
 
 void LobbyServer::Run()
@@ -87,18 +109,23 @@ void LobbyServer::Run()
 		FD_ZERO( &readSet );
 		FD_ZERO( &writeSet );
 
-		FD_SET( m_listenSocket, &readSet );
+		FD_SET( m_conSocket, &readSet );
+		FD_SET( m_rtaSocket, &readSet );
 
 		CheckSocketProblem();
 
-		// Process clients
-		for( auto &client : m_clientSockets )
+		auto maxfd = std::max< SOCKET >( m_conSocket, m_rtaSocket );
+
+		for( const auto &client : m_clientSockets )
 		{
 			FD_SET( client->fd, &readSet );
 			FD_SET( client->fd, &writeSet );
+
+			if( client->fd > maxfd )
+				maxfd = client->fd;
 		}
 
-		auto result = select( 0, &readSet, &writeSet, NULL, &timeout );
+		auto result = select( static_cast< int >( maxfd + 1 ), &readSet, &writeSet, NULL, &timeout );
 
 		if( result == SOCKET_ERROR )
 		{
@@ -106,9 +133,14 @@ void LobbyServer::Run()
 			continue;
 		}
 
-		if( FD_ISSET( m_listenSocket, &readSet ) )
+		if( FD_ISSET( m_conSocket, &readSet ) )
 		{
-			AcceptNewClient();
+			AcceptNewClient( m_conSocket, RealmClientType::CHAMPIONS_OF_NORRATH );
+		}
+
+		if( FD_ISSET( m_rtaSocket, &readSet ) )
+		{
+			AcceptNewClient( m_rtaSocket, RealmClientType::RETURN_TO_ARMS );
 		}
 
 		for( auto &client : m_clientSockets )
@@ -152,12 +184,12 @@ void LobbyServer::CheckSocketProblem()
 	}
 }
 
-void LobbyServer::AcceptNewClient()
+void LobbyServer::AcceptNewClient( SOCKET socket, RealmClientType clientType )
 {
 	sockaddr_in clientInfo{};
 	int32_t addrSize = sizeof( clientInfo );
 
-	SOCKET clientSocket = accept( m_listenSocket, ( SOCKADDR * )&clientInfo, &addrSize );
+	SOCKET clientSocket = accept( socket, ( SOCKADDR * )&clientInfo, &addrSize );
 	if( clientSocket == INVALID_SOCKET )
 	{
 		Log::Error( "accept() failed" );
@@ -172,7 +204,7 @@ void LobbyServer::AcceptNewClient()
 
 	m_clientSockets.push_back( new_socket );
 
-	RealmUserManager::Get().CreateUser( new_socket );
+	RealmUserManager::Get().CreateUser( new_socket, clientType );
 
 	Log::Info( "[LOBBY] New Client Connected : (%s)", new_socket->remote_ip.c_str() );
 }
@@ -213,7 +245,7 @@ void LobbyServer::ReadSocket( sptr_socket socket )
 	{
 		int32_t packetSize = ntohl( *reinterpret_cast< const int32_t * >( &socket->m_pendingReadBuffer[ 0 ] ) );
 
-		if( packetSize <= 0 || packetSize > 1024 )
+		if( packetSize <= 0 || packetSize > 2048 )
 		{
 			Log::Error( "Invalid packet size: %d. Disconnecting client.", packetSize );
 			socket->flag.disconnected = true;
@@ -298,8 +330,11 @@ void LobbyServer::HandleRequest( sptr_socket socket, sptr_byte_stream stream )
 	auto packetId = stream->read< uint16_t >();
 	stream->set_position( 0 );
 
-	auto it = LOBBY_REQUEST_EVENT.find( packetId );
-	if( it == LOBBY_REQUEST_EVENT.end() )
+	Log::Debug( "Event Request %04X", packetId );
+	Log::Packet( stream->data, stream->data.size(), false );
+
+	auto it = REQUEST_EVENT.find( packetId );
+	if( it == REQUEST_EVENT.end() )
 	{
 		Log::Error( "[LOBBY] Unknown packet id : 0x%04X", packetId );
 		Log::Packet( stream->data, stream->data.size(), false );

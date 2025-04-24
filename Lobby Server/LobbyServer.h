@@ -3,37 +3,6 @@
 #include <memory>
 #include <mutex>
 
-class GameRoom {
-public:
-	GameRoom()
-	{
-		m_gameType = GameType::PRIVATE;
-		m_roomId = 0;
-		m_ownerSessionId = L"";
-		m_gameName = L"";
-		m_minimumLevel = 0;
-		m_maximumLevel = 0;
-	}
-
-	~GameRoom()
-	{
-
-	}
-
-	enum GameType {
-		PRIVATE,
-		PUBLIC
-	} m_gameType;
-
-	int32_t m_roomId;
-	std::wstring m_ownerSessionId;
-	std::wstring m_gameName;
-	int32_t m_minimumLevel;
-	int32_t m_maximumLevel;
-};
-
-typedef std::shared_ptr< GameRoom > sptr_game_room;
-
 class LobbyServer
 {
 private:
@@ -60,7 +29,7 @@ public:
 	LobbyServer();
 	~LobbyServer();
 
-	void Start( std::string ip, int32_t port );
+	void Start( std::string ip );
 	void Stop();
 	bool isRunning() const
 	{
@@ -68,13 +37,16 @@ public:
 	}
 
 private:
-	SOCKET m_listenSocket;
+	SOCKET m_conSocket;
+	SOCKET m_rtaSocket;
 	std::vector< sptr_socket > m_clientSockets;
 	std::vector< uint8_t > m_recvBuffer;
 
+	SOCKET OpenNetworkSocket( std::string ip, int32_t port );
+
 	void Run();
 	void CheckSocketProblem();
-	void AcceptNewClient();
+	void AcceptNewClient( SOCKET socket, RealmClientType clientType );
 	void ReadSocket( sptr_socket socket );
 	void WriteSocket( sptr_socket socket );
 	void HandleRequest( sptr_socket socket, sptr_byte_stream stream );

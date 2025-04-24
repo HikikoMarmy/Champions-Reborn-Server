@@ -22,7 +22,7 @@ sptr_generic_response RequestCreatePublicGame::ProcessRequest( sptr_user user, s
 {
 	Deserialize( stream );
 
-	auto result = GameSessionManager::Get().CreatePublicGameSession( user, m_gameInfo );
+	auto result = GameSessionManager::Get().CreatePublicGameSession( user, m_gameInfo, user->m_clientType );
 
 	if( !result )
 	{

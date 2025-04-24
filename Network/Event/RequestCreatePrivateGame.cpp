@@ -14,7 +14,7 @@ sptr_generic_response RequestCreatePrivateGame::ProcessRequest( sptr_user user, 
 {
 	Deserialize( stream );
 
-	auto result = GameSessionManager::Get().CreatePrivateGameSession( user, m_gameInfo );
+	auto result = GameSessionManager::Get().CreatePrivateGameSession( user, m_gameInfo, user->m_clientType );
 
 	if( !result )
 	{

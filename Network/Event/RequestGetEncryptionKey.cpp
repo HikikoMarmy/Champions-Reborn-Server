@@ -27,7 +27,11 @@ ByteStream& ResultGetEncryptionKey::Serialize()
 	m_stream.write_u32( m_requestId );
 	m_stream.write_u32( 0 );
 
-	m_stream.write_encrypted_bytes( m_symKey );
+	auto encrypted = RealmCrypt::encryptSymmetric( m_symKey );
+
+	m_stream.write_u32( encrypted.size() + 4 );
+	m_stream.write_u32( m_symKey.size() );
+	m_stream.write_bytes( encrypted );
 
 	return m_stream;
 }
