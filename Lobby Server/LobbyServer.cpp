@@ -5,16 +5,23 @@
 // ║  ║ ║╠╩╗╠╩╗╚╦╝  ╚═╗║╣ ╠╦╝╚╗╔╝║╣ ╠╦╝
 // ╩═╝╚═╝╚═╝╚═╝ ╩   ╚═╝╚═╝╩╚═ ╚╝ ╚═╝╩╚═
 
-#include "../global_define.h"
-#include "../Network/Events.h"
-
 #include "LobbyServer.h"
+
+#include "../Game/RealmUserManager.h"
+#include "../Network/Events.h"
+#include "../../logging.h"
 
 LobbyServer::LobbyServer()
 {
 	m_running = false;
 	m_conSocket = INVALID_SOCKET;
 	m_rtaSocket = INVALID_SOCKET;
+
+	for( int i = 0; i < 8; i++ )
+	{
+		m_conGatewaySocket[ i ] = INVALID_SOCKET;
+		m_rtaGatewaySocket[ i ] = INVALID_SOCKET;
+	}
 
 	m_clientSockets.clear();
 	m_recvBuffer.resize( 1024 );
@@ -23,27 +30,47 @@ LobbyServer::LobbyServer()
 LobbyServer::~LobbyServer()
 {
 	Log::Info( "Lobby Server stopped." );
-	if( m_conSocket != INVALID_SOCKET )
+
+	for( auto &socket : m_clientSockets )
 	{
-		closesocket( m_conSocket );
-		m_conSocket = INVALID_SOCKET;
+		if( socket->fd != INVALID_SOCKET )
+		{
+			closesocket( socket->fd );
+		}
 	}
-	if( m_rtaSocket != INVALID_SOCKET )
+
+	for( auto &sock : m_conGatewaySocket )
 	{
-		closesocket( m_rtaSocket );
-		m_rtaSocket = INVALID_SOCKET;
+		if( sock != INVALID_SOCKET )
+		{
+			closesocket( sock );
+		}
+	}
+
+	for( auto &sock : m_rtaGatewaySocket )
+	{
+		if( sock != INVALID_SOCKET )
+		{
+			closesocket( sock );
+		}
 	}
 }
 
 void LobbyServer::Start( std::string ip )
 {
-	m_conSocket = OpenNetworkSocket( ip, 40801 );
-	if( m_conSocket == INVALID_SOCKET )
-		return;
+	for( int i = 0; i < 8; i++ )
+	{
+		m_conGatewaySocket[ i ] = OpenNetworkSocket( ip, 40800 + i );
+		if( m_conGatewaySocket[ i ] == INVALID_SOCKET )
+			return;
 
-	m_rtaSocket = OpenNetworkSocket( ip, 40810 );
-	if( m_rtaSocket == INVALID_SOCKET )
-		return;
+		m_rtaGatewaySocket[ i ] = OpenNetworkSocket( ip, 40810 + i );
+		if( m_rtaGatewaySocket[ i ] == INVALID_SOCKET )
+			return;
+	}
+
+	m_conSocket = OpenNetworkSocket( ip, 40900 );
+	m_rtaSocket = OpenNetworkSocket( ip, 40910 );
 
 	m_running = true;
 	m_thread = std::thread( &LobbyServer::Run, this );
@@ -74,11 +101,20 @@ SOCKET LobbyServer::OpenNetworkSocket( std::string ip, int32_t port )
 	service.sin_port = htons( port );
 
 	if( ip == "0.0.0.0" )
-		service.sin_addr.s_addr = ADDR_ANY;
+	{
+		service.sin_addr.s_addr = INADDR_ANY;
+	}
 	else
-		service.sin_addr.s_addr = inet_addr( ip.c_str() );
+	{
+		if( InetPtonA( AF_INET, ip.c_str(), &service.sin_addr ) != 1 )
+		{
+			Log::Error( "Invalid IP address format: %s", ip.c_str() );
+			closesocket( sock );
+			return INVALID_SOCKET;
+		}
+	}
 
-	if( bind( sock, ( SOCKADDR * )&service, sizeof( service ) ) == SOCKET_ERROR )
+	if( bind( sock, reinterpret_cast< SOCKADDR * >( &service ), sizeof( service ) ) == SOCKET_ERROR )
 	{
 		Log::Error( "bind() failed on port %u", port );
 		closesocket( sock );
@@ -112,20 +148,31 @@ void LobbyServer::Run()
 		FD_SET( m_conSocket, &readSet );
 		FD_SET( m_rtaSocket, &readSet );
 
-		CheckSocketProblem();
+		for( auto &sock : m_conGatewaySocket )
+		{
+			if( sock != INVALID_SOCKET )
+			{
+				FD_SET( sock, &readSet );
+			}
+		}
 
-		auto maxfd = std::max< SOCKET >( m_conSocket, m_rtaSocket );
+		for( auto &sock : m_rtaGatewaySocket )
+		{
+			if( sock != INVALID_SOCKET )
+			{
+				FD_SET( sock, &readSet );
+			}
+		}
+
+		CheckSocketProblem();
 
 		for( const auto &client : m_clientSockets )
 		{
 			FD_SET( client->fd, &readSet );
 			FD_SET( client->fd, &writeSet );
-
-			if( client->fd > maxfd )
-				maxfd = client->fd;
 		}
 
-		auto result = select( static_cast< int >( maxfd + 1 ), &readSet, &writeSet, NULL, &timeout );
+		auto result = select( 0, &readSet, &writeSet, NULL, &timeout );
 
 		if( result == SOCKET_ERROR )
 		{
@@ -133,14 +180,30 @@ void LobbyServer::Run()
 			continue;
 		}
 
+		for( auto &sock : m_conGatewaySocket )
+		{
+			if( sock != INVALID_SOCKET && FD_ISSET( sock, &readSet ) )
+			{
+				AcceptGateway( sock, RealmGameType::CHAMPIONS_OF_NORRATH );
+			}
+		}
+
+		for( auto &sock : m_rtaGatewaySocket )
+		{
+			if( sock != INVALID_SOCKET && FD_ISSET( sock, &readSet ) )
+			{
+				AcceptGateway( sock, RealmGameType::RETURN_TO_ARMS );
+			}
+		}
+
 		if( FD_ISSET( m_conSocket, &readSet ) )
 		{
-			AcceptNewClient( m_conSocket, RealmClientType::CHAMPIONS_OF_NORRATH );
+			AcceptClient( m_conSocket, RealmGameType::CHAMPIONS_OF_NORRATH );
 		}
 
 		if( FD_ISSET( m_rtaSocket, &readSet ) )
 		{
-			AcceptNewClient( m_rtaSocket, RealmClientType::RETURN_TO_ARMS );
+			AcceptClient( m_rtaSocket, RealmGameType::RETURN_TO_ARMS );
 		}
 
 		for( auto &client : m_clientSockets )
@@ -161,20 +224,29 @@ void LobbyServer::Run()
 void LobbyServer::CheckSocketProblem()
 {
 	auto now = std::chrono::steady_clock::now();
+
 	for( auto it = m_clientSockets.begin(); it != m_clientSockets.end(); )
 	{
-		auto duration = std::chrono::duration_cast< std::chrono::seconds >( now - ( *it )->last_recv_time );
+		auto &socket = *it;
+		auto elapsed = std::chrono::duration_cast< std::chrono::seconds >( now - socket->last_recv_time );
 
-		if( duration.count() > 30 )
+		// Check for client timeouts
+		if( elapsed.count() > 30 )
 		{
-			( *it )->flag.disconnected = true;
-			Log::Info( "[LOBBY] Client Timeout : (%s)", ( *it )->remote_ip.c_str() );
+			socket->flag.disconnected_forced = true;
+			Log::Info( "[LOBBY] Client Timeout : (%s)", socket->remote_ip.c_str() );
 		}
 
-		if( ( *it )->flag.disconnected )
+		// Check if we're waiting to disconnect after sending buffered data
+		if( socket->flag.disconnected_wait && socket->m_pendingWriteBuffer.empty() )
 		{
-			RealmUserManager::Get().RemoveUser( ( *it ) );
-			Log::Info( "[LOBBY] Client Disconnected : (%s)", ( *it )->remote_ip.c_str() );
+			socket->flag.disconnected_forced = true;
+		}
+
+		if( socket->flag.disconnected_forced )
+		{
+			RealmUserManager::Get().RemoveUser( socket );
+			Log::Info( "[LOBBY] Client Disconnected : (%s)", socket->remote_ip.c_str() );
 			it = m_clientSockets.erase( it );
 		}
 		else
@@ -184,7 +256,29 @@ void LobbyServer::CheckSocketProblem()
 	}
 }
 
-void LobbyServer::AcceptNewClient( SOCKET socket, RealmClientType clientType )
+void LobbyServer::AcceptGateway( SOCKET socket, RealmGameType clientType )
+{
+	sockaddr_in clientInfo{};
+	int32_t addrSize = sizeof( clientInfo );
+
+	SOCKET clientSocket = accept( socket, ( SOCKADDR * )&clientInfo, &addrSize );
+	if( clientSocket == INVALID_SOCKET )
+	{
+		Log::Error( "accept() failed" );
+		return;
+	}
+
+	auto new_socket = std::make_shared< RealmSocket >();
+	new_socket->fd = clientSocket;
+	new_socket->remote_addr = clientInfo;
+	new_socket->remote_ip = inet_ntoa( clientInfo.sin_addr );
+	new_socket->remote_port = ntohs( clientInfo.sin_port );
+	m_clientSockets.push_back( new_socket );
+
+	Log::Info( "New Gateway Client Connected : (%s)", new_socket->remote_ip.c_str() );
+}
+
+void LobbyServer::AcceptClient( SOCKET socket, RealmGameType clientType )
 {
 	sockaddr_in clientInfo{};
 	int32_t addrSize = sizeof( clientInfo );
@@ -206,12 +300,12 @@ void LobbyServer::AcceptNewClient( SOCKET socket, RealmClientType clientType )
 
 	RealmUserManager::Get().CreateUser( new_socket, clientType );
 
-	Log::Info( "[LOBBY] New Client Connected : (%s)", new_socket->remote_ip.c_str() );
+	Log::Info( "New Client Connected : (%s)", new_socket->remote_ip.c_str() );
 }
 
 void LobbyServer::ReadSocket( sptr_socket socket )
 {
-	if( socket->flag.disconnected )
+	if( socket->flag.disconnected_wait )
 	{
 		return;
 	}
@@ -221,13 +315,13 @@ void LobbyServer::ReadSocket( sptr_socket socket )
 	if( bytesReceived == SOCKET_ERROR )
 	{
 		Log::Info( "Socket Error [%d].", WSAGetLastError() );
-		socket->flag.disconnected = true;
+		socket->flag.disconnected_wait = true;
 		return;
 	}
 
 	if( bytesReceived == 0 )
 	{
-		socket->flag.disconnected = true;
+		socket->flag.disconnected_wait = true;
 		return;
 	}
 
@@ -248,7 +342,7 @@ void LobbyServer::ReadSocket( sptr_socket socket )
 		if( packetSize <= 0 || packetSize > 2048 )
 		{
 			Log::Error( "Invalid packet size: %d. Disconnecting client.", packetSize );
-			socket->flag.disconnected = true;
+			socket->flag.disconnected_wait = true;
 			break;
 		}
 
@@ -257,7 +351,7 @@ void LobbyServer::ReadSocket( sptr_socket socket )
 			break;
 		}
 
-		auto stream = std::make_shared< ByteStream >( socket->m_pendingReadBuffer.data() + 4, packetSize - 4 );
+		auto stream = std::make_shared< ByteBuffer >( socket->m_pendingReadBuffer.data() + 4, packetSize - 4 );
 
 		// Erase the packet from the buffer
 		socket->m_pendingReadBuffer.erase(
@@ -265,7 +359,7 @@ void LobbyServer::ReadSocket( sptr_socket socket )
 			socket->m_pendingReadBuffer.begin() + packetSize
 		);
 
-		if (stream->data.size() == 0) break;
+		if( stream->m_buffer.size() == 0 ) break;
 
 		// Process the packet
 		HandleRequest( socket, stream );
@@ -274,7 +368,7 @@ void LobbyServer::ReadSocket( sptr_socket socket )
 
 void LobbyServer::WriteSocket( sptr_socket socket )
 {
-	if( socket->flag.disconnected || socket->m_pendingWriteBuffer.empty() )
+	if( socket->flag.disconnected_wait || socket->m_pendingWriteBuffer.empty() )
 		return;
 
 	socket->last_send_time = std::chrono::steady_clock::now();
@@ -301,13 +395,13 @@ void LobbyServer::WriteSocket( sptr_socket socket )
 				break;
 
 			Log::Error( "Send failed: %d", err );
-			socket->flag.disconnected = true;
+			socket->flag.disconnected_wait = true;
 			return;
 		}
 
 		if( bytesSent == 0 )
 		{
-			socket->flag.disconnected = true;
+			socket->flag.disconnected_wait = true;
 			return;
 		}
 
@@ -318,6 +412,8 @@ void LobbyServer::WriteSocket( sptr_socket socket )
 			break;
 		}
 	}
+
+	std::lock_guard< std::mutex > lock( socket->write_mutex );
 
 	socket->m_pendingWriteBuffer.erase(
 		socket->m_pendingWriteBuffer.begin(),
@@ -331,27 +427,28 @@ void LobbyServer::HandleRequest( sptr_socket socket, sptr_byte_stream stream )
 	stream->set_position( 0 );
 
 	Log::Debug( "Event Request %04X", packetId );
-	Log::Packet( stream->data, stream->data.size(), false );
+
+	//Log::Packet( stream->m_buffer, stream->m_buffer.size(), false );
 
 	auto it = REQUEST_EVENT.find( packetId );
 	if( it == REQUEST_EVENT.end() )
 	{
 		Log::Error( "[LOBBY] Unknown packet id : 0x%04X", packetId );
-		Log::Packet( stream->data, stream->data.size(), false );
+		Log::Packet( stream->m_buffer, stream->m_buffer.size(), false );
 		return;
 	}
 
 	auto request = it->second();
-	auto user = RealmUserManager::Get().GetUser( socket );
+	//auto user = RealmUserManager::Get().FindUserBySocket( socket );
+	//
+	//if( user == nullptr )
+	//{
+	//	Log::Error( "User not found!" );
+	//	socket->flag.disconnected_wait = true;
+	//	return;
+	//}
 
-	if( user == nullptr )
-	{
-		Log::Error( "User not found!" );
-		socket->flag.disconnected = true;
-		return;
-	}
-
-	if( auto res = request->ProcessRequest( user, stream ) )
+	if( auto res = request->ProcessRequest( socket, stream ) )
 	{
 		socket->send( res );
 	}
