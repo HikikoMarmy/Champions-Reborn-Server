@@ -1,23 +1,34 @@
 #pragma once
 
+#include <string>
+#include <memory>
+#include <array>
+
+#include "RealmCharacter.h"
+#include "../Common/Constant.h"
+#include "../Network/RealmSocket.h"
+
 class RealmUser {
 public:
 	RealmUser();
 	~RealmUser();
 
 public:
-	sptr_socket sock;				// For Realm Lobby
+	sptr_socket		sock;			// For Realm Lobby
 
-	RealmClientType m_clientType;
+	RealmGameType	m_gameType;		// Champions of Norrath or Return to Arms
+	std::wstring	m_sessionId;	// Temporary Session ID
+	int64_t			m_accountId;	// Unique ID of the account
 
-	std::wstring	m_sessionId;	// Unique Session ID for the user (Generated at login)
+	int32_t					m_characterId;	// ID of selected Net Character
+	sptr_realm_character	m_character;	// Currently selected character
 
-	bool	m_isHost;				// True if this user is the host of a realm
-	int32_t	m_gameId;				// Unique ID of the realm
+	bool	m_isHost;	// True if this user is the host of a realm
+	int32_t	m_gameId;	// Unique ID of the realm
 
-	std::string m_localAddr;		// Local IP address of the user, passed from the client during realm creation.
-	std::string m_discoveryAddr;
-	int32_t m_discoveryPort;
+	std::string m_localAddr;		// Local IP address of the user, passed from the client during Realm creation.
+	std::string m_discoveryAddr;	
+	int32_t m_discoveryPort;		
 };
 
-typedef std::shared_ptr< RealmUser >	sptr_user;
+using sptr_user = std::shared_ptr< RealmUser >;

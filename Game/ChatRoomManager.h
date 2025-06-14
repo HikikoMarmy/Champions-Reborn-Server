@@ -1,5 +1,10 @@
 #pragma once
 
+#include <memory>
+#include <mutex>
+#include <vector>
+#include <string>
+
 #include "ChatRoomSession.h"
 
 class ChatRoomManager {

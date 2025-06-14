@@ -1,5 +1,9 @@
 #pragma once
 
+#include <memory>
+#include <string>
+#include "RealmUser.h"
+
 class ChatRoomSession {
 public:
 	ChatRoomSession();

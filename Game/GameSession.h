@@ -1,5 +1,10 @@
 #pragma once
 
+#include <string>
+#include <memory>
+
+#include "RealmUser.h"
+
 class GameSession {
 public:
 	GameSession();
@@ -14,12 +19,12 @@ public:
 	enum class GameState
 	{
 		NotReady,
-		Open
+		Open,
+		Started
 	};
 
 	GameType m_type;
 	GameState m_state;
-	RealmClientType m_clientType;
 
 	std::weak_ptr< RealmUser > m_owner;
 
@@ -32,8 +37,8 @@ public:
 	std::string m_gameData;
 	std::string m_description;
 
-	std::wstring m_hostLocalAddr;
-	std::wstring m_hostExternalAddr;
+	std::string m_hostLocalAddr;
+	std::string m_hostExternalAddr;
 	int32_t m_hostPort;
 
 	int8_t m_currentPlayers;

@@ -1,6 +1,8 @@
-#include "../global_define.h"
-
 #include "ChatRoomManager.h"
+
+#include "RealmUser.h"
+
+#include "../logging.h"
 
 ChatRoomManager::ChatRoomManager()
 {

@@ -1,11 +1,11 @@
-#include "../global_define.h"
+
+#include "GameSession.h"
 
 GameSession::GameSession()
 {
 	m_owner.reset();
 
 	m_gameIndex = 0;
-	m_clientType = RealmClientType::UNKNOWN;
 	m_type = GameType::Public;
 	m_state = GameState::NotReady;
 	m_currentPlayers = 0;
@@ -25,7 +25,6 @@ GameSession::~GameSession()
 	m_owner.reset();
 
 	m_gameIndex = 0;
-	m_clientType = RealmClientType::UNKNOWN;
 	m_type = GameType::Public;
 	m_state = GameState::NotReady;
 	m_currentPlayers = 0;

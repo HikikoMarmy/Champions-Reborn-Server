@@ -1,4 +1,4 @@
-#include "../global_define.h"
+#include "ChatRoomSession.h"
 
 ChatRoomSession::ChatRoomSession()
 {

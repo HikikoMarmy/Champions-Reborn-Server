@@ -1,11 +1,13 @@
-#include "../global_define.h"
+#include "RealmUser.h"
 
 RealmUser::RealmUser()
 {
 	sock = nullptr;
 
-	m_clientType = RealmClientType::UNKNOWN;
+	m_gameType = RealmGameType::CHAMPIONS_OF_NORRATH;
 
+	m_accountId = -1;
+	m_characterId = -1;
 	m_sessionId = L"";
 
 	m_localAddr = "";
@@ -20,12 +22,14 @@ RealmUser::~RealmUser()
 {
 	if( sock )
 	{
-		sock->flag.disconnected = true;
+		sock->flag.disconnected_wait = true;
 		sock.reset();
 	}
 
-	m_clientType = RealmClientType::UNKNOWN;
+	m_gameType = RealmGameType::CHAMPIONS_OF_NORRATH;
 
+	m_accountId = 0;
+	m_characterId = 0;
 	m_sessionId = L"";
 
 	m_localAddr = "";

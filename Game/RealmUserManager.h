@@ -1,24 +1,21 @@
 #pragma once
 
+#include <memory>
+#include <mutex>
+#include <vector>
+#include <string>
+#include <random>
+
 #include "RealmUser.h"
 
 class RealmUserManager {
 private:
-	static const int MAX_SESSION_ID_LENGTH = 16;
-	static inline std::unique_ptr< RealmUserManager > m_instance;
-	static inline std::mutex m_mutex;
 
-	std::vector< sptr_user > m_users;
 public:
-	static RealmUserManager& Get()
+	static RealmUserManager &Get()
 	{
-		std::lock_guard< std::mutex > lock( m_mutex );
-		if( m_instance == nullptr )
-		{
-			m_instance.reset( new RealmUserManager() );
-		}
-
-		return *m_instance;
+		static RealmUserManager instance;
+		return instance;
 	}
 
 	RealmUserManager( const RealmUserManager & ) = delete;
@@ -26,15 +23,19 @@ public:
 	RealmUserManager();
 	~RealmUserManager();
 
-public:
-	static std::wstring GenerateSessionId();
-	sptr_user CreateUser( sptr_socket socket, RealmClientType clientType );
+	std::wstring GenerateSessionId();
+	sptr_user CreateUser( sptr_socket socket, RealmGameType clientType );
 	void RemoveUser( sptr_user user );
 	void RemoveUser( const std::wstring &sessionId );
 	void RemoveUser( const sptr_socket socket );
+	void DisconnectUser( sptr_user user, const std::string reason );
 
-	sptr_user GetUser( const std::wstring &sessionId );
-	sptr_user GetUser( const sptr_socket socket );
-
+	sptr_user FindUserBySessionId( const std::wstring &sessionId );
+	sptr_user FindUserBySocket( const sptr_socket &socket );
 	int32_t GetUserCount() const;
+
+private:
+	std::mutex m_mutex;
+	std::vector< sptr_user > m_users;
+	std::mt19937 rng;
 };
