@@ -1,5 +1,14 @@
 #include "stdafx.h"
-#include "global_define.h"
+
+#include <winsock2.h>
+
+#include "logging.h"
+#include "configuration.h"
+#include "Database/Database.h"
+#include "Lobby Server/LobbyServer.h"
+#include "Discovery Server/DiscoveryServer.h"
+
+
 
 static void ShowStartup()
 {
@@ -49,6 +58,8 @@ int main()
 
 	auto &discovery_server = DiscoveryServer::Get();
 	discovery_server.Start( Config::service_ip, Config::discovery_port );
+
+	auto &database = Database::Get();
 
 	while( true )
 	{

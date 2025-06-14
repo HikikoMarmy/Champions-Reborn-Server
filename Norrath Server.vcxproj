@@ -125,7 +125,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\Dependency\sqlite;.\Dependency\bcrypt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
@@ -185,29 +185,35 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Common\ByteStream.h" />
+    <ClInclude Include="Common\Constant.h" />
+    <ClInclude Include="Common\RLEZ.hpp" />
+    <ClInclude Include="Common\Utility.h" />
     <ClInclude Include="configuration.h" />
+    <ClInclude Include="Crypto\PasswordHash.h" />
     <ClInclude Include="Crypto\RealmCrypt.h" />
     <ClInclude Include="Crypto\rijndael.h" />
+    <ClInclude Include="Database\Database.h" />
     <ClInclude Include="Discovery Server\DiscoveryServer.h" />
     <ClInclude Include="Game\ChatRoomSession.h" />
     <ClInclude Include="Game\ChatRoomManager.h" />
-    <ClInclude Include="Game\Constant.hpp" />
+    <ClInclude Include="Game\RealmCharacter.h" />
+    <ClInclude Include="Game\RealmCharacterMetaKV.h" />
     <ClInclude Include="Game\RealmUser.h" />
     <ClInclude Include="Game\RealmUserManager.h" />
     <ClInclude Include="Game\GameSession.h" />
     <ClInclude Include="Game\GameSessionManager.h" />
-    <ClInclude Include="global_define.h" />
     <ClInclude Include="Lobby Server\LobbyServer.h" />
     <ClInclude Include="logging.h" />
-    <ClInclude Include="misc\ByteStream.h" />
-    <ClInclude Include="misc\Utility.h" />
     <ClInclude Include="Network\Events.h" />
     <ClInclude Include="Network\Event\NotifyClientDiscovered.h" />
-    <ClInclude Include="Network\Event\NotifyClientReqConnect.h" />
+    <ClInclude Include="Network\Event\NotifyClientDiscovered_RTA.h" />
+    <ClInclude Include="Network\Event\NotifyClientRequestConnect.h" />
     <ClInclude Include="Network\Event\NotifyForcedLogout.h" />
     <ClInclude Include="Network\Event\NotifyGameDiscovered.h" />
     <ClInclude Include="Network\Event\Notify_4C.h" />
     <ClInclude Include="Network\Event\NotifyClientRequestConnect_RTA.h" />
+    <ClInclude Include="Network\Event\NotifyReserveUserSlot_RTA.h" />
     <ClInclude Include="Network\Event\RequestCancelGame.h" />
     <ClInclude Include="Network\Event\RequestCancelGame_RTA.h" />
     <ClInclude Include="Network\Event\RequestCreateAccount.h" />
@@ -218,6 +224,7 @@
     <ClInclude Include="Network\Event\RequestCreatePublicGame_RTA.h" />
     <ClInclude Include="Network\Event\RequestDoClientDiscovery.h" />
     <ClInclude Include="Network\Event\RequestEnterRoom.h" />
+    <ClInclude Include="Network\Event\RequestGetCharacterData_RTA.h" />
     <ClInclude Include="Network\Event\RequestGetEncryptionKey.h" />
     <ClInclude Include="Network\Event\RequestGetGame.h" />
     <ClInclude Include="Network\Event\RequestGetGame_RTA.h" />
@@ -230,43 +237,52 @@
     <ClInclude Include="Network\Event\RequestLogout.h" />
     <ClInclude Include="Network\Event\RequestMatchGame.h" />
     <ClInclude Include="Network\Event\RequestMatchGame_RTA.h" />
-    <ClInclude Include="Network\Event\RequestSaveNewCharacter_RTA.h" />
+    <ClInclude Include="Network\Event\RequestCreateNewCharacter_RTA.h" />
+    <ClInclude Include="Network\Event\RequestSaveCharacter_RTA.h" />
+    <ClInclude Include="Network\Event\RequestStartGame.h" />
     <ClInclude Include="Network\Event\RequestTouchSession.h" />
     <ClInclude Include="Network\Event\RequestUpdateGameData.h" />
-    <ClInclude Include="Network\Event\Request_5B.h" />
+    <ClInclude Include="Network\Event\RequestGetNetCharacterList_RTA.h" />
     <ClInclude Include="Network\Event\Request_5D.h" />
+    <ClInclude Include="Network\Event\Request_5F.h" />
     <ClInclude Include="Network\Event\Request_61.h" />
-    <ClInclude Include="Network\GenericNetMessage.hpp" />
-    <ClInclude Include="Network\GenericNetRequest.hpp" />
-    <ClInclude Include="Network\GenericNetResponse.hpp" />
+    <ClInclude Include="Network\GenericNetMessage.h" />
+    <ClInclude Include="Network\GenericNetRequest.h" />
+    <ClInclude Include="Network\GenericNetResponse.h" />
     <ClInclude Include="network\RealmSocket.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Common\ByteStream.cpp" />
+    <ClCompile Include="Common\Utility.cpp" />
     <ClCompile Include="configuration.cpp" />
+    <ClCompile Include="Crypto\PasswordHash.cpp" />
     <ClCompile Include="Crypto\RealmCrypt.cpp" />
     <ClCompile Include="Crypto\rijndael.cpp" />
+    <ClCompile Include="Database\Database.cpp" />
+    <ClCompile Include="Dependency\sqlite\sqlite3.c" />
     <ClCompile Include="Discovery Server\DiscoveryServer.cpp" />
     <ClCompile Include="Game\ChatRoom.cpp" />
     <ClCompile Include="Game\ChatRoomManager.cpp" />
+    <ClCompile Include="Game\RealmCharacter.cpp" />
+    <ClCompile Include="Game\RealmCharacterMetaKV.cpp" />
     <ClCompile Include="Game\RealmUser.cpp" />
     <ClCompile Include="Game\RealmUserManager.cpp" />
     <ClCompile Include="Game\GameSession.cpp" />
     <ClCompile Include="Game\GameSessionManager.cpp" />
-    <ClCompile Include="global_define.cpp" />
     <ClCompile Include="Lobby Server\LobbyServer.cpp" />
     <ClCompile Include="logging.cpp" />
-    <ClCompile Include="misc\ByteStream.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="misc\Utility.cpp" />
     <ClCompile Include="Network\Event\NotifyClientDiscovered.cpp" />
-    <ClCompile Include="Network\Event\NotifyClientReqConnect.cpp" />
+    <ClCompile Include="Network\Event\NotifyClientDiscovered_RTA.cpp" />
+    <ClCompile Include="Network\Event\NotifyClientRequestConnect.cpp" />
     <ClCompile Include="Network\Event\NotifyForcedLogout.cpp" />
     <ClCompile Include="Network\Event\NotifyGameDiscovered.cpp" />
     <ClCompile Include="Network\Event\Notify_4C.cpp" />
     <ClCompile Include="Network\Event\NotifyClientRequestConnect_RTA.cpp" />
+    <ClCompile Include="Network\Event\NotifyReserveUserSlot_RTA.cpp" />
     <ClCompile Include="Network\Event\RequestCancelGame.cpp" />
     <ClCompile Include="Network\Event\RequestCancelGame_RTA.cpp" />
     <ClCompile Include="Network\Event\RequestCreateAccount.cpp" />
@@ -277,6 +293,7 @@
     <ClCompile Include="Network\Event\RequestCreatePublicGame_RTA.cpp" />
     <ClCompile Include="Network\Event\RequestDoClientDiscovery.cpp" />
     <ClCompile Include="Network\Event\RequestEnterRoom.cpp" />
+    <ClCompile Include="Network\Event\RequestGetCharacterData_RTA.cpp" />
     <ClCompile Include="Network\Event\RequestGetEncryptionKey.cpp" />
     <ClCompile Include="Network\Event\RequestGetGame.cpp" />
     <ClCompile Include="Network\Event\RequestGetGame_RTA.cpp" />
@@ -287,14 +304,18 @@
     <ClCompile Include="Network\Event\RequestLogin.cpp" />
     <ClCompile Include="Network\Event\RequestLogout.cpp" />
     <ClCompile Include="Network\Event\RequestMatchGame.cpp" />
-    <ClCompile Include="Network\Event\RequestSaveNewCharacter_RTA.cpp" />
+    <ClCompile Include="Network\Event\RequestCreateNewCharacter_RTA.cpp" />
+    <ClCompile Include="Network\Event\RequestSaveCharacter_RTA.cpp" />
+    <ClCompile Include="Network\Event\RequestStartGame.cpp" />
     <ClCompile Include="Network\Event\RequestTouchSession.cpp" />
     <ClCompile Include="Network\Event\RequestUpdateGameData.cpp" />
     <ClCompile Include="Network\Event\RequestGetPublicRooms.cpp" />
     <ClCompile Include="Network\Event\RequestMatchGame_RTA.cpp" />
-    <ClCompile Include="Network\Event\Request_5B.cpp" />
+    <ClCompile Include="Network\Event\RequestGetNetCharacterList_RTA.cpp" />
     <ClCompile Include="Network\Event\Request_5D.cpp" />
+    <ClCompile Include="Network\Event\Request_5F.cpp" />
     <ClCompile Include="Network\Event\Request_61.cpp" />
+    <ClCompile Include="Network\GenericNetRequest.cpp" />
     <ClCompile Include="network\RealmSocket.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

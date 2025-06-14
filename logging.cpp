@@ -1,5 +1,7 @@
 
+#include <fstream>
 #include "logging.h"
+
 
 static const char* LOG_PATH[] = {
 	"./generic",
@@ -157,6 +159,7 @@ void Log::Packet( std::vector<uint8_t> p, size_t size, bool send )
 		{
 			if( i > 0 )
 			{
+				// Print ASCII characters for the previous line
 				printf( " " );
 				for( uint8_t j = 0; j < r; ++j )
 				{
@@ -171,7 +174,7 @@ void Log::Packet( std::vector<uint8_t> p, size_t size, bool send )
 
 		line[ r++ ] = p[ i ];
 
-
+		// Highlight packet type or flags
 		if( i == 4 || i == 5 )
 		{
 			SetConsoleTextAttribute( hConsole, send ? 11 : 10 );
@@ -186,7 +189,7 @@ void Log::Packet( std::vector<uint8_t> p, size_t size, bool send )
 		++i;
 	}
 
-
+	// Padding for incomplete final line
 	if( r > 0 )
 	{
 		for( uint8_t j = r; j < 16; ++j )
@@ -201,4 +204,33 @@ void Log::Packet( std::vector<uint8_t> p, size_t size, bool send )
 	}
 
 	printf( "\n\n" );
+}
+
+void Log::PacketToFile( std::string prefix, std::vector<uint8_t> p, size_t size)
+{
+	static char timestamp[64] = "";
+
+	time_t t; time(&t);
+	struct tm date_tm;
+	localtime_s(&date_tm, &t);
+
+	_snprintf_s(timestamp, _TRUNCATE, 63,
+				 "%02d-%02d-%02d.packet.bin",
+				 date_tm.tm_hour,
+				 date_tm.tm_min,
+				 date_tm.tm_sec);
+
+	std::string filename = prefix + '_' + timestamp;
+
+	std::fstream file;
+	file.open(filename, std::ios::out | std::ios::binary);
+
+	if (!file.is_open())
+	{
+		Error("Failed to open packet log file: %s", filename.c_str());
+		return;
+	}
+
+	file.write(reinterpret_cast<const char*>(p.data()), size);
+	file.close();
 }

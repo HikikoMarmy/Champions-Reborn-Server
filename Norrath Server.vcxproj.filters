@@ -51,6 +51,18 @@
     <Filter Include="Header Files\Network\Event">
       <UniqueIdentifier>{48da1e06-b5a7-49cd-b264-12389d181a65}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Dependency">
+      <UniqueIdentifier>{f3eef755-c7e8-4aa0-9b12-18defb183e51}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Database">
+      <UniqueIdentifier>{72ca5d8f-75d7-45b0-92fe-890fe17b53e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Database">
+      <UniqueIdentifier>{2de5b54c-130c-46a4-a16b-ee1c841c7b48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependency\sqlite3">
+      <UniqueIdentifier>{9a0761e6-3beb-491a-9c4c-8e8fc3c8baf5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -62,25 +74,16 @@
     <ClInclude Include="network\RealmSocket.h">
       <Filter>Header Files\Network</Filter>
     </ClInclude>
-    <ClInclude Include="global_define.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="misc\Utility.h">
-      <Filter>Header Files\Common</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="misc\ByteStream.h">
-      <Filter>Header Files\Common</Filter>
     </ClInclude>
     <ClInclude Include="logging.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Network\GenericNetRequest.hpp">
+    <ClInclude Include="Network\GenericNetRequest.h">
       <Filter>Header Files\Network</Filter>
     </ClInclude>
-    <ClInclude Include="Network\GenericNetResponse.hpp">
+    <ClInclude Include="Network\GenericNetResponse.h">
       <Filter>Header Files\Network</Filter>
     </ClInclude>
     <ClInclude Include="Lobby Server\LobbyServer.h">
@@ -104,7 +107,7 @@
     <ClInclude Include="Game\GameSessionManager.h">
       <Filter>Header Files\Game</Filter>
     </ClInclude>
-    <ClInclude Include="Network\GenericNetMessage.hpp">
+    <ClInclude Include="Network\GenericNetMessage.h">
       <Filter>Header Files\Network</Filter>
     </ClInclude>
     <ClInclude Include="configuration.h">
@@ -113,19 +116,16 @@
     <ClInclude Include="Crypto\RealmCrypt.h">
       <Filter>Header Files\Crypto</Filter>
     </ClInclude>
-    <ClInclude Include="Game\Constant.hpp">
-      <Filter>Header Files\Game</Filter>
-    </ClInclude>
     <ClInclude Include="Network\Event\NotifyClientDiscovered.h">
       <Filter>Header Files\Network\Event</Filter>
     </ClInclude>
-    <ClInclude Include="Network\Event\NotifyClientReqConnect.h">
+    <ClInclude Include="Network\Event\NotifyClientRequestConnect.h">
       <Filter>Header Files\Network\Event</Filter>
     </ClInclude>
     <ClInclude Include="Network\Event\NotifyGameDiscovered.h">
       <Filter>Header Files\Network\Event</Filter>
     </ClInclude>
-    <ClInclude Include="Network\Event\Request_5B.h">
+    <ClInclude Include="Network\Event\RequestGetNetCharacterList_RTA.h">
       <Filter>Header Files\Network\Event</Filter>
     </ClInclude>
     <ClInclude Include="Network\Event\Request_5D.h">
@@ -197,7 +197,7 @@
     <ClInclude Include="Network\Events.h">
       <Filter>Header Files\Network</Filter>
     </ClInclude>
-    <ClInclude Include="Network\Event\RequestSaveNewCharacter_RTA.h">
+    <ClInclude Include="Network\Event\RequestCreateNewCharacter_RTA.h">
       <Filter>Header Files\Network\Event</Filter>
     </ClInclude>
     <ClInclude Include="Network\Event\RequestGetGame_RTA.h">
@@ -227,22 +227,55 @@
     <ClInclude Include="Network\Event\NotifyClientRequestConnect_RTA.h">
       <Filter>Header Files\Network\Event</Filter>
     </ClInclude>
+    <ClInclude Include="Network\Event\NotifyReserveUserSlot_RTA.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestGetCharacterData_RTA.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Database\Database.h">
+      <Filter>Header Files\Database</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\RealmCharacter.h">
+      <Filter>Header Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\RealmCharacterMetaKV.h">
+      <Filter>Header Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\ByteStream.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Constant.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Utility.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Crypto\PasswordHash.h">
+      <Filter>Header Files\Crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\NotifyClientDiscovered_RTA.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\Request_5F.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestSaveCharacter_RTA.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\RLEZ.hpp">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestStartGame.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="global_define.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="misc\Utility.cpp">
-      <Filter>Source Files\Common</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="misc\ByteStream.cpp">
-      <Filter>Source Files\Common</Filter>
     </ClCompile>
     <ClCompile Include="logging.cpp">
       <Filter>Source Files</Filter>
@@ -280,7 +313,7 @@
     <ClCompile Include="Network\Event\NotifyClientDiscovered.cpp">
       <Filter>Source Files\Network\Event</Filter>
     </ClCompile>
-    <ClCompile Include="Network\Event\NotifyClientReqConnect.cpp">
+    <ClCompile Include="Network\Event\NotifyClientRequestConnect.cpp">
       <Filter>Source Files\Network\Event</Filter>
     </ClCompile>
     <ClCompile Include="Network\Event\NotifyGameDiscovered.cpp">
@@ -289,7 +322,7 @@
     <ClCompile Include="Network\Event\RequestGetPublicRooms.cpp">
       <Filter>Source Files\Network\Event</Filter>
     </ClCompile>
-    <ClCompile Include="Network\Event\Request_5B.cpp">
+    <ClCompile Include="Network\Event\RequestGetNetCharacterList_RTA.cpp">
       <Filter>Source Files\Network\Event</Filter>
     </ClCompile>
     <ClCompile Include="Network\Event\Request_5D.cpp">
@@ -355,7 +388,7 @@
     <ClCompile Include="Network\Event\RequestUpdateGameData.cpp">
       <Filter>Source Files\Network\Event</Filter>
     </ClCompile>
-    <ClCompile Include="Network\Event\RequestSaveNewCharacter_RTA.cpp">
+    <ClCompile Include="Network\Event\RequestCreateNewCharacter_RTA.cpp">
       <Filter>Source Files\Network\Event</Filter>
     </ClCompile>
     <ClCompile Include="Network\Event\RequestGetGame_RTA.cpp">
@@ -383,6 +416,48 @@
       <Filter>Source Files\Network\Event</Filter>
     </ClCompile>
     <ClCompile Include="Network\Event\NotifyClientRequestConnect_RTA.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\NotifyReserveUserSlot_RTA.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestGetCharacterData_RTA.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Database\Database.cpp">
+      <Filter>Source Files\Database</Filter>
+    </ClCompile>
+    <ClCompile Include="Dependency\sqlite\sqlite3.c">
+      <Filter>Dependency\sqlite3</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\GenericNetRequest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\RealmCharacter.cpp">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\RealmCharacterMetaKV.cpp">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\ByteStream.cpp">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\Utility.cpp">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Crypto\PasswordHash.cpp">
+      <Filter>Source Files\Crypto</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\NotifyClientDiscovered_RTA.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\Request_5F.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestSaveCharacter_RTA.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestStartGame.cpp">
       <Filter>Source Files\Network\Event</Filter>
     </ClCompile>
   </ItemGroup>

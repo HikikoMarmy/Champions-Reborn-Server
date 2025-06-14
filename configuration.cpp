@@ -1,11 +1,10 @@
-
-#include "global_define.h"
 #include "configuration.h"
 
 bool Config::Load( std::string filename )
 {
 	service_ip = "0.0.0.0";
-	lobby_port = 40801;
+	con_lobby_port = 40801;
+	rta_lobby_port = 40810;
 	discovery_port = 10101;
 
 	// Read configuration from ini file
@@ -37,9 +36,13 @@ bool Config::Load( std::string filename )
 		{
 			service_ip = value;
 		}
-		else if( key == "lobby_port" )
+		else if( key == "con_lobby_port" )
 		{
-			lobby_port = std::stoi( value );
+			con_lobby_port = std::stoi( value );
+		}
+		else if (key == "rta_lobby_port")
+		{
+			rta_lobby_port = std::stoi(value);
 		}
 		else if( key == "discovery_port" )
 		{

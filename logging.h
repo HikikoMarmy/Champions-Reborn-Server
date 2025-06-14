@@ -6,7 +6,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <Windows.h>
+#include <windows.h>
 
 class Log {
 private:
@@ -41,4 +41,5 @@ public:
 	static void Debug( std::string format, ... );
 	static void Error( std::string format, ... );
 	static void Packet( std::vector< uint8_t > p, size_t size, bool send );
+	static void PacketToFile( std::string prefix, std::vector< uint8_t > p, size_t size );
 };
