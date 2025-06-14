@@ -22,6 +22,7 @@
 /* 0017 */	#include "Event/RequestLogout.h"
 /* 0018 */	#include "Event/RequestMatchGame.h"
 
+/* 0023 */	#include "Event/RequestStartGame.h"
 /* 0024 */	#include "Event/RequestTouchSession.h"
 /* 0025 */	#include "Event/RequestDoClientDiscovery.h"
 
@@ -35,9 +36,12 @@
 /* 0055 */	#include "Event/RequestMatchGame_RTA.h"
 /* 0056 */	#include "Event/RequestCreatePrivateGame_RTA.h"
 
-/* 0058 */	#include "Event/RequestSaveNewCharacter_RTA.h"
-/* 005B */	#include "Event/Request_5B.h"
+/* 0058 */	#include "Event/RequestCreateNewCharacter_RTA.h"
+/* 005B */	#include "Event/RequestGetNetCharacterList_RTA.h"
+/* 005C */	#include "Event/RequestGetCharacterData_RTA.h"
 /* 005D */	#include "Event/Request_5D.h"
+/* 005E */	#include "Event/RequestSaveCharacter_RTA.h"
+/* 005F */	#include "Event/Request_5F.h"
 /* 0060 */	#include "Event/RequestCancelGame_RTA.h"
 /* 0061 */	#include "Event/Request_61.h"
 
@@ -111,6 +115,11 @@ const std::map< int16_t, std::function< std::unique_ptr< GenericRequest >() > > 
 			return std::make_unique< RequestMatchGame >();
 		}
 	},
+	{ 0x0023, []() -> std::unique_ptr< GenericRequest >
+		{
+			return std::make_unique< RequestStartGame >();
+		}
+	},
 	{ 0x0024, []() -> std::unique_ptr< GenericRequest >
 		{
 		return std::make_unique< RequestTouchSession >();
@@ -141,7 +150,6 @@ const std::map< int16_t, std::function< std::unique_ptr< GenericRequest >() > > 
 	  return std::make_unique< RequestUpdateGameData >();
 	  }
 	},
-
 	{ 0x0054, []() -> std::unique_ptr< GenericRequest >
 	  {
 	  return std::make_unique< RequestCreatePublicGame_RTA >();
@@ -159,17 +167,32 @@ const std::map< int16_t, std::function< std::unique_ptr< GenericRequest >() > > 
 	},
 	{ 0x0058, []() -> std::unique_ptr< GenericRequest >
 	  {
-	  return std::make_unique< RequestSaveNewCharacter >();
+	  return std::make_unique< RequestCreateNewCharacter_RTA >();
 	  }
 	},
 	{ 0x005B, []() -> std::unique_ptr< GenericRequest >
 	  {
-	  return std::make_unique< Request_5B >();
+	  return std::make_unique< RequestGetNetCharacterList_RTA >();
+	  }
+	},
+	{ 0x005C, []() -> std::unique_ptr< GenericRequest >
+	  {
+	  return std::make_unique< RequestGetNetCharacterData_RTA >();
 	  }
 	},
 	{ 0x005D, []() -> std::unique_ptr< GenericRequest >
 	  {
 	  return std::make_unique< Request_5D >();
+	  }
+	},
+	{ 0x005E, []() -> std::unique_ptr< GenericRequest >
+	  {
+	  return std::make_unique< RequestSaveCharacter_RTA >();
+	  }
+	},
+	{ 0x005F, []() -> std::unique_ptr< GenericRequest >
+	  {
+	  return std::make_unique< Request_5F >();
 	  }
 	},
 	{ 0x0060, []() -> std::unique_ptr< GenericRequest >

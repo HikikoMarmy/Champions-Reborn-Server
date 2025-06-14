@@ -1,5 +1,11 @@
 #pragma once
 
+#include <memory>
+#include <string>
+
+#include "../GenericNetRequest.h"
+#include "../GenericNetResponse.h"
+
 class RequestCancelGame_RTA : public GenericRequest
 {
 private:
@@ -11,12 +17,12 @@ public:
 		return std::make_unique< RequestCancelGame_RTA >();
 	}
 
-	sptr_generic_response ProcessRequest( sptr_user user, sptr_byte_stream stream ) override;
+	sptr_generic_response ProcessRequest( sptr_socket socket, sptr_byte_stream stream ) override;
 	void Deserialize( sptr_byte_stream stream ) override;
 };
 
 class ResultCancelGame_RTA : public GenericResponse {
 public:
 	ResultCancelGame_RTA( GenericRequest *request );
-	ByteStream &Serialize();
+	ByteBuffer &Serialize();
 };

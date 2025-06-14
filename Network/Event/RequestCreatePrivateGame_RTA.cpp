@@ -1,6 +1,9 @@
-#include "../../global_define.h"
-
 #include "RequestCreatePrivateGame_RTA.h"
+
+#include "../../Game/RealmUserManager.h"
+#include "../../Game/GameSessionManager.h"
+#include "../../configuration.h"
+#include "../../logging.h"
 
 void RequestCreatePrivateGame_RTA::Deserialize( sptr_byte_stream stream )
 {
@@ -10,11 +13,18 @@ void RequestCreatePrivateGame_RTA::Deserialize( sptr_byte_stream stream )
 	m_gameInfo = stream->read_utf16();
 }
 
-sptr_generic_response RequestCreatePrivateGame_RTA::ProcessRequest( sptr_user user, sptr_byte_stream stream )
+sptr_generic_response RequestCreatePrivateGame_RTA::ProcessRequest( sptr_socket socket, sptr_byte_stream stream )
 {
 	Deserialize( stream );
 
-	auto result = GameSessionManager::Get().CreatePrivateGameSession( user, m_gameInfo, user->m_clientType );
+	auto user = RealmUserManager::Get().FindUserBySocket( socket );
+	if( user == nullptr )
+	{
+		Log::Error( "User not found! [%S]", m_sessionId.c_str() );
+		return std::make_shared< ResultCreatePrivateGame2 >( this, CREATE_REPLY::FATAL_ERROR, "", 0 );
+	}
+
+	auto result = GameSessionManager::Get().CreatePrivateGameSession( user, m_gameInfo, user->m_gameType );
 
 	if( !result )
 	{
@@ -34,10 +44,10 @@ ResultCreatePrivateGame2::ResultCreatePrivateGame2( GenericRequest *request, int
 	m_discoveryPort = discoveryPort;
 }
 
-ByteStream &ResultCreatePrivateGame2::Serialize()
+ByteBuffer &ResultCreatePrivateGame2::Serialize()
 {
 	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( m_requestId );
+	m_stream.write_u32( m_trackId );
 	m_stream.write_u32( m_reply );
 
 	m_stream.write_sz_utf8( m_discoveryIp );

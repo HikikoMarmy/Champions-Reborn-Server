@@ -1,6 +1,9 @@
-#include "../../global_define.h"
-
 #include "RequestCreatePublicGame_RTA.h"
+
+#include "../../Game/RealmUserManager.h"
+#include "../../Game/GameSessionManager.h"
+#include "../../configuration.h"
+#include "../../logging.h"
 
 // Request
 void RequestCreatePublicGame_RTA::Deserialize( sptr_byte_stream stream )
@@ -19,16 +22,21 @@ void RequestCreatePublicGame_RTA::Deserialize( sptr_byte_stream stream )
 	auto unknown_e = stream->read_u32();
 	auto unknown_f = stream->read_u32();
 
-	m_localAddr = stream->read_utf16();
+	m_localAddr = Util::WideToUTF8(stream->read_utf16());
 }
 
-sptr_generic_response RequestCreatePublicGame_RTA::ProcessRequest( sptr_user user, sptr_byte_stream stream )
+sptr_generic_response RequestCreatePublicGame_RTA::ProcessRequest( sptr_socket socket, sptr_byte_stream stream )
 {
 	Deserialize( stream );
 
-	Log::Packet( stream->data, stream->data.size(), false );
+	auto user = RealmUserManager::Get().FindUserBySocket( socket );
+	if( user == nullptr )
+	{
+		Log::Error( "User not found! [%S]", m_sessionId.c_str() );
+		return std::make_shared< ResultCreatePublicGame_RTA >( this, CREATE_REPLY::GENERAL_ERROR, "", 0 );
+	}
 
-	auto result = GameSessionManager::Get().CreatePublicGameSession( user, m_gameInfo, user->m_clientType );
+	auto result = GameSessionManager::Get().CreatePublicGameSession( user, m_gameInfo, user->m_gameType );
 
 	if( !result )
 	{
@@ -36,7 +44,7 @@ sptr_generic_response RequestCreatePublicGame_RTA::ProcessRequest( sptr_user use
 		return std::make_shared< ResultCreatePublicGame_RTA >( this, CREATE_REPLY::GENERAL_ERROR, "", 0 );
 	}
 
-	user->m_localAddr = Utility::WideToUTF8( m_localAddr );
+	user->m_localAddr = m_localAddr;
 
 	Log::Info( "[%S] Create Public Game: %S", m_sessionId.c_str(), m_gameInfo.c_str() );
 
@@ -51,10 +59,10 @@ ResultCreatePublicGame_RTA::ResultCreatePublicGame_RTA( GenericRequest *request,
 	m_discoveryPort = discoveryPort;
 }
 
-ByteStream &ResultCreatePublicGame_RTA::Serialize()
+ByteBuffer &ResultCreatePublicGame_RTA::Serialize()
 {
 	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( m_requestId );
+	m_stream.write_u32( m_trackId );
 	m_stream.write_u32( m_reply );
 
 	m_stream.write_utf8( m_discoveryIp );

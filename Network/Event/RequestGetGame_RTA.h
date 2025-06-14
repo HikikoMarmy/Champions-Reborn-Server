@@ -1,9 +1,16 @@
 #pragma once
 
+#include <memory>
+#include <string>
+
+#include "../GenericNetRequest.h"
+#include "../GenericNetResponse.h"
+
 class RequestGetGame_RTA : public GenericRequest {
 private:
 	std::wstring m_sessionId;
-	std::wstring m_localAddr;
+	std::string m_localAddr;
+
 	uint32_t m_gameId;
 
 	enum REPLY {
@@ -17,7 +24,7 @@ public:
 	{
 		return std::make_unique< RequestGetGame_RTA >();
 	}
-	sptr_generic_response ProcessRequest( sptr_user user, sptr_byte_stream stream ) override;
+	sptr_generic_response ProcessRequest( sptr_socket socket, sptr_byte_stream stream ) override;
 	void Deserialize( sptr_byte_stream stream ) override;
 };
 
@@ -29,5 +36,5 @@ private:
 
 public:
 	ResultGetGame_RTA( GenericRequest *request, int32_t reply, std::string discoveryIp = "", int32_t discoveryPort = 0);
-	ByteStream &Serialize();
+	ByteBuffer &Serialize();
 };

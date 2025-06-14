@@ -1,5 +1,8 @@
-#include "../../global_define.h"
 #include "RequestCancelGame_RTA.h"
+
+#include "../../Game/RealmUserManager.h"
+#include "../../Game/GameSessionManager.h"
+#include "../../logging.h"
 
 void RequestCancelGame_RTA::Deserialize( sptr_byte_stream stream )
 {
@@ -8,9 +11,11 @@ void RequestCancelGame_RTA::Deserialize( sptr_byte_stream stream )
 	m_sessionId = stream->read_encrypted_utf16();
 }
 
-sptr_generic_response RequestCancelGame_RTA::ProcessRequest( sptr_user user, sptr_byte_stream stream )
+sptr_generic_response RequestCancelGame_RTA::ProcessRequest( sptr_socket socket, sptr_byte_stream stream )
 {
 	Deserialize( stream );
+
+	auto user = RealmUserManager::Get().FindUserBySocket( socket );
 
 	if( user == nullptr )
 	{
@@ -28,10 +33,10 @@ ResultCancelGame_RTA::ResultCancelGame_RTA( GenericRequest *request ) : GenericR
 	
 }
 
-ByteStream &ResultCancelGame_RTA::Serialize()
+ByteBuffer &ResultCancelGame_RTA::Serialize()
 {
 	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( m_requestId );
+	m_stream.write_u32( m_trackId );
 	m_stream.write_u32( 0 );
 
 	return m_stream;
