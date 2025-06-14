@@ -1,20 +1,22 @@
 #pragma once
 
-class DiscoveryServer {
-private:
-	static inline std::unique_ptr< DiscoveryServer > m_instance;
-	static inline std::mutex m_mutex;
+#include <memory>
+#include <string>
+#include <thread>
+#include <mutex>
+#include <atomic>
+#include <vector>
+#include <winsock2.h>
+#include <ws2tcpip.h>
 
+#include "../Common/ByteStream.h"
+
+class DiscoveryServer {
 public:
 	static DiscoveryServer &Get()
 	{
-		std::lock_guard< std::mutex > lock( m_mutex );
-		if( m_instance == nullptr )
-		{
-			m_instance.reset( new DiscoveryServer() );
-		}
-
-		return *m_instance;
+		static DiscoveryServer instance;
+		return instance;
 	}
 
 	DiscoveryServer( const DiscoveryServer & ) = delete;
