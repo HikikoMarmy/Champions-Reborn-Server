@@ -1,14 +1,13 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 #include <mutex>
+#include <winsock2.h>
 
-// Forward Declare GenericResponse
-class GenericResponse;
-typedef std::shared_ptr< GenericResponse > sptr_generic_response;
-
-// Forward Declare Generic Message
-class GenericMessage;
+#include "GenericNetRequest.h"
+#include "GenericNetResponse.h"
+#include "GenericNetMessage.h"
 
 class RealmSocket
 {
@@ -37,7 +36,8 @@ public:
 	SOCKET fd;
 
 	struct s_flag {
-		bool disconnected;
+		bool disconnected_wait;
+		bool disconnected_forced;
 		bool is_listener;
 		bool want_more_read_data;
 		bool want_more_write_data;
@@ -47,8 +47,7 @@ public:
 	sockaddr_in remote_addr;
 
 	std::string remote_ip;
-	int32_t remote_port;
-
+	uint32_t remote_port;
 	uint32_t last_write_position;
 
 	uint64_t latency;
@@ -64,4 +63,4 @@ public:
 	std::vector< uint8_t > m_pendingReadBuffer;
 };
 
-typedef std::shared_ptr< RealmSocket > sptr_socket;
+using sptr_socket = std::shared_ptr< RealmSocket >;

@@ -1,16 +1,18 @@
-#include "../global_define.h"
+#include "RealmSocket.h"
+#include "../Common/Utility.h"
 
 RealmSocket::RealmSocket()
 {
 	fd = INVALID_SOCKET;
 
-	memset( &local_addr, 0, sizeof( local_addr ) );
-	memset( &remote_addr, 0, sizeof( remote_addr ) );
+	std::memset( &local_addr, 0, sizeof( local_addr ) );
+	std::memset( &remote_addr, 0, sizeof( remote_addr ) );
 
 	remote_ip = "";
 	remote_port = 0;
 
-	flag.disconnected = 0;
+	flag.disconnected_wait = 0;
+	flag.disconnected_forced = 0;
 	flag.is_listener = 0;
 	flag.want_more_read_data = 0;
 	flag.want_more_write_data = 0;
@@ -32,13 +34,14 @@ RealmSocket::~RealmSocket()
 
 	fd = INVALID_SOCKET;
 
-	memset( &local_addr, 0, sizeof( local_addr ) );
-	memset( &remote_addr, 0, sizeof( remote_addr ) );
+	std::memset( &local_addr, 0, sizeof( local_addr ) );
+	std::memset( &remote_addr, 0, sizeof( remote_addr ) );
 
 	remote_ip = "";
 	remote_port = 0;
 
-	flag.disconnected = 0;
+	flag.disconnected_wait = 0;
+	flag.disconnected_forced = 0;
 	flag.is_listener = 0;
 	flag.want_more_read_data = 0;
 	flag.want_more_write_data = 0;
@@ -48,27 +51,26 @@ RealmSocket::~RealmSocket()
 	latency = 0;
 
 	m_pendingWriteBuffer.reserve( WRITE_BUFFER_SIZE );
-
 }
 
 void RealmSocket::send( const sptr_generic_response response )
 {
 	auto &stream = response->Serialize();
-	auto netSize = htonl( static_cast< uint32_t >( stream.get_position() ) + 4 );
+	auto netSize = Util::ByteSwap( static_cast< uint32_t >( stream.get_position() ) + 4 );
+
+	std::lock_guard< std::mutex > lock( write_mutex );
 
 	m_pendingWriteBuffer.insert( m_pendingWriteBuffer.end(), ( uint8_t * )&netSize, ( uint8_t * )&netSize + 4 );
-	m_pendingWriteBuffer.insert( m_pendingWriteBuffer.end(), stream.data.begin(), stream.data.end() );
-
-	Log::Packet( response->m_stream.data, response->m_stream.get_length(), true);
+	m_pendingWriteBuffer.insert( m_pendingWriteBuffer.end(), stream.m_buffer.begin(), stream.m_buffer.end() );
 }
 
 void RealmSocket::send( GenericMessage &message )
 {
 	auto &stream = message.Serialize();
-	auto netSize = htonl( static_cast< uint32_t >( stream.get_position() ) + 4 );
+	auto netSize = Util::ByteSwap( static_cast< uint32_t >( stream.get_position() ) + 4 );
+
+	std::lock_guard< std::mutex > lock( write_mutex );
 
 	m_pendingWriteBuffer.insert( m_pendingWriteBuffer.end(), ( uint8_t * )&netSize, ( uint8_t * )&netSize + 4 );
-	m_pendingWriteBuffer.insert( m_pendingWriteBuffer.end(), stream.data.begin(), stream.data.end() );
-
-	Log::Packet( stream.data, stream.get_length(), true );
+	m_pendingWriteBuffer.insert( m_pendingWriteBuffer.end(), stream.m_buffer.begin(), stream.m_buffer.end() );
 }
