@@ -1,5 +1,11 @@
 #pragma once
 
+#include <memory>
+#include <string>
+
+#include "../GenericNetRequest.h"
+#include "../GenericNetResponse.h"
+
 class RequestGetRules : public GenericRequest
 {
 private:
@@ -11,7 +17,7 @@ public:
 		return std::make_unique< RequestGetRules >();
 	}
 
-	sptr_generic_response ProcessRequest( sptr_user user, sptr_byte_stream stream ) override;
+	sptr_generic_response ProcessRequest( sptr_socket socket, sptr_byte_stream stream ) override;
 	void Deserialize( sptr_byte_stream stream ) override;
 };
 
@@ -21,5 +27,5 @@ private:
 
 public:
 	ResultGetRules( GenericRequest *request, std::wstring rules );
-	ByteStream &Serialize();
+	ByteBuffer &Serialize();
 };

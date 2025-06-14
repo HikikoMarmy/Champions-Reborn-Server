@@ -1,9 +1,11 @@
 #pragma once
 
+#include "../GenericNetMessage.h"
+
 class Notify_4C : public GenericMessage {
 private:
 
 public:
 	Notify_4C();
-	ByteStream &Serialize() override;
+	ByteBuffer &Serialize() override;
 };

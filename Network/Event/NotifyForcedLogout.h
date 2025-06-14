@@ -1,9 +1,11 @@
 #pragma once
 
+#include "../GenericNetMessage.h"
+
 class NotifyForcedLogout : public GenericMessage {
 private:
 
 public:
 	NotifyForcedLogout();
-	ByteStream &Serialize() override;
+	ByteBuffer &Serialize() override;
 };

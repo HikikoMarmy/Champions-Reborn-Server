@@ -1,8 +1,10 @@
 #pragma once
 
-// Account Creation is used in the Network Beta for CoN
-// but it isn't used or supported here because retail
-// uses "foo" and "bar" to login without user data.
+#include <memory>
+#include <string>
+
+#include "../GenericNetRequest.h"
+#include "../GenericNetResponse.h"
 
 class RequestCreateAccount : public GenericRequest
 {
@@ -11,6 +13,15 @@ class RequestCreateAccount : public GenericRequest
 		ERROR_FATAL,
 		ERROR_NOT_EXIST
 	};
+
+	std::string m_username;
+	std::string m_password;
+	std::string m_emailAddress;
+	std::string m_dateOfBirth;
+	std::string m_chatHandle;
+
+	bool VerifyUserData();
+
 public:
 	static std::unique_ptr< RequestCreateAccount > Create()
 	{
@@ -19,7 +30,7 @@ public:
 
 	CREATE_ACCOUNT_REPLY m_reply;
 
-	sptr_generic_response ProcessRequest( sptr_user user, sptr_byte_stream stream ) override;
+	sptr_generic_response ProcessRequest( sptr_socket socket, sptr_byte_stream stream ) override;
 	void Deserialize( sptr_byte_stream stream ) override;
 };
 
@@ -30,5 +41,5 @@ private:
 
 public:
 	ResultCreateAccount( GenericRequest *request, int32_t reply, std::wstring sessionId );
-	ByteStream &Serialize();
+	ByteBuffer &Serialize();
 };

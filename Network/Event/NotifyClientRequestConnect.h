@@ -1,5 +1,9 @@
 #pragma once
 
+#include <string>
+
+#include "../GenericNetMessage.h"
+
 class NotifyClientRequestConnect : public GenericMessage
 {
 private:
@@ -8,5 +12,5 @@ private:
 
 public:
 	NotifyClientRequestConnect( std::string clientIp, int32_t clientPort );
-	ByteStream &Serialize() override;
+	ByteBuffer &Serialize() override;
 };

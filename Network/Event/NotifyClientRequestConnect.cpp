@@ -1,5 +1,4 @@
-#include "../../global_define.h"
-#include "NotifyClientReqConnect.h"
+#include "NotifyClientRequestConnect.h"
 
 NotifyClientRequestConnect::NotifyClientRequestConnect( std::string clientIp, int32_t clientPort ) : GenericMessage( 0x3F )
 {
@@ -7,7 +6,7 @@ NotifyClientRequestConnect::NotifyClientRequestConnect( std::string clientIp, in
 	this->m_clientPort = clientPort;
 }
 
-ByteStream &NotifyClientRequestConnect::Serialize()
+ByteBuffer &NotifyClientRequestConnect::Serialize()
 {
 	m_stream.write_u16( m_packetId );
 	m_stream.write_u32( 0 );

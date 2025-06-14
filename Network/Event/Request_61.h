@@ -1,6 +1,10 @@
 #pragma once
 
-// Potentially character data.
+#include <memory>
+#include <string>
+
+#include "../GenericNetRequest.h"
+#include "../GenericNetResponse.h"
 
 class Request_61 : public GenericRequest
 {
@@ -10,12 +14,12 @@ public:
 		return std::make_unique< Request_61 >();
 	}
 
-	sptr_generic_response ProcessRequest( sptr_user user, sptr_byte_stream stream ) override;
+	sptr_generic_response ProcessRequest( sptr_socket socket, sptr_byte_stream stream ) override;
 	void Deserialize( sptr_byte_stream stream ) override;
 };
 
 class Result_61 : public GenericResponse {
 public:
 	Result_61( GenericRequest *request );
-	ByteStream &Serialize();
+	ByteBuffer &Serialize();
 };

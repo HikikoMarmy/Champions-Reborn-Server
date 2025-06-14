@@ -1,5 +1,11 @@
-#include "../../global_define.h"
 #include "RequestMatchGame.h"
+
+#include <format>
+
+#include "../../Common/Constant.h"
+#include "../../Game/RealmUserManager.h"
+#include "../../Game/GameSessionManager.h"
+#include "../../Game/RealmUser.h"
 
 void RequestMatchGame::Deserialize( sptr_byte_stream stream )
 {
@@ -33,54 +39,59 @@ void RequestMatchGame::Deserialize( sptr_byte_stream stream )
 	auto unknown_h = stream->read_u32();
 }
 
-sptr_generic_response RequestMatchGame::ProcessRequest( sptr_user user, sptr_byte_stream stream )
+sptr_generic_response RequestMatchGame::ProcessRequest( sptr_socket socket, sptr_byte_stream stream )
 {
 	Deserialize( stream );
 
-	return std::make_shared< ResultMatchGame >( this );
+	return std::make_shared< ResultMatchGame >( this, socket->remote_ip );
 }
 
-ResultMatchGame::ResultMatchGame( GenericRequest *request ) : GenericResponse( *request )
+ResultMatchGame::ResultMatchGame( GenericRequest *request, std::string userIp ) : GenericResponse( *request )
 {
-
+	m_userIp = userIp;
 }
 
-ByteStream &ResultMatchGame::Serialize()
+ByteBuffer &ResultMatchGame::Serialize()
 {
 	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( m_requestId );
+	m_stream.write_u32( m_trackId );
 	m_stream.write_u32( 0 );
 
-	auto publicGameList = GameSessionManager::Get().GetAvailableGameSessionList( RealmClientType::CHAMPIONS_OF_NORRATH );
-	auto publicGameCount = static_cast< uint32_t >( publicGameList.size() );
+	const auto publicGameList = GameSessionManager::Get().GetAvailableGameSessionList( RealmGameType::CHAMPIONS_OF_NORRATH );
+	const auto publicGameCount = static_cast< uint32_t >( publicGameList.size() );
 
 	m_stream.write_u32( publicGameCount );
 	{
-		for( auto &game : publicGameList )
-			m_stream.write_utf16( std::format( L"{}:{}", game->m_hostExternalAddr, game->m_hostPort ) );
+		for( const auto &game : publicGameList )
+		{
+			if( m_userIp == game->m_hostExternalAddr )
+				m_stream.write_utf16( std::format( L"{}:{}", Util::UTF8ToWide( game->m_hostLocalAddr ), game->m_hostPort ) );
+			else
+				m_stream.write_utf16( std::format( L"{}:{}", Util::UTF8ToWide( game->m_hostExternalAddr ), game->m_hostPort ) );
+		}
 	}
 
 	m_stream.write_u32( publicGameCount );
 	{
-		for( auto &game : publicGameList )
+		for( const auto &game : publicGameList )
 			m_stream.write_utf16( game->m_gameName );
 	}
 
 	m_stream.write_u32( publicGameCount );
 	{
-		for( auto &game : publicGameList )
+		for( const auto &game : publicGameList )
 			m_stream.write_utf16( game->m_ownerName );
 	}
 
 	m_stream.write_u32( publicGameCount );
 	{
-		for( auto &game : publicGameList )
+		for( const auto &game : publicGameList )
 			m_stream.write_u32( game->m_gameIndex );
 	}
 
 	m_stream.write_u32( publicGameCount );
 	{
-		for( auto &game : publicGameList )
+		for( const auto &game : publicGameList )
 			m_stream.write_utf8( game->m_gameData );
 	}
 

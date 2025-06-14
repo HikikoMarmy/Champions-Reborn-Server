@@ -1,4 +1,3 @@
-#include "../../global_define.h"
 #include "RequestGetEncryptionKey.h"
 
 void RequestGetEncryptionKey::Deserialize( sptr_byte_stream stream )
@@ -6,7 +5,7 @@ void RequestGetEncryptionKey::Deserialize( sptr_byte_stream stream )
 	DeserializeHeader( stream );
 }
 
-sptr_generic_response RequestGetEncryptionKey::ProcessRequest( sptr_user user, sptr_byte_stream stream )
+sptr_generic_response RequestGetEncryptionKey::ProcessRequest( sptr_socket socket, sptr_byte_stream stream )
 {
 	Deserialize( stream );
 
@@ -21,10 +20,10 @@ ResultGetEncryptionKey::ResultGetEncryptionKey( GenericRequest *request ) : Gene
 	m_symKey = RealmCrypt::getSymmetricKey();
 }
 
-ByteStream& ResultGetEncryptionKey::Serialize()
+ByteBuffer& ResultGetEncryptionKey::Serialize()
 {
 	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( m_requestId );
+	m_stream.write_u32( m_trackId );
 	m_stream.write_u32( 0 );
 
 	auto encrypted = RealmCrypt::encryptSymmetric( m_symKey );

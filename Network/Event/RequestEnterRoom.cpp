@@ -1,4 +1,3 @@
-#include "../../global_define.h"
 #include "RequestEnterRoom.h"
 
 void RequestEnterRoom::Deserialize( sptr_byte_stream stream )
@@ -6,7 +5,7 @@ void RequestEnterRoom::Deserialize( sptr_byte_stream stream )
 	DeserializeHeader( stream );
 }
 
-sptr_generic_response RequestEnterRoom::ProcessRequest( sptr_user user, sptr_byte_stream stream )
+sptr_generic_response RequestEnterRoom::ProcessRequest( sptr_socket socket, sptr_byte_stream stream )
 {
 	Deserialize( stream );
 
@@ -20,10 +19,10 @@ ResultEnterRoom::ResultEnterRoom( GenericRequest *request ) : GenericResponse( *
 {
 }
 
-ByteStream& ResultEnterRoom::Serialize()
+ByteBuffer& ResultEnterRoom::Serialize()
 {
 	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( m_requestId );
+	m_stream.write_u32( m_trackId );
 	m_stream.write_u32( 0 );
 
 	m_stream.write_utf16( L"Room Name" );

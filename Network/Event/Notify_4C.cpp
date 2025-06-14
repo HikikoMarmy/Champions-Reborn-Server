@@ -1,11 +1,10 @@
-#include "../../global_define.h"
 #include "Notify_4C.h"
 
 Notify_4C::Notify_4C() : GenericMessage( 0x4C )
 {
 }
 
-ByteStream &Notify_4C::Serialize()
+ByteBuffer &Notify_4C::Serialize()
 {
 	m_stream.write_u16( m_packetId );
 	m_stream.write_u32( 0 );

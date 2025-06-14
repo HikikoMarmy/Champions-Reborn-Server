@@ -1,5 +1,11 @@
 #pragma once
 
+#include <memory>
+#include <string>
+
+#include "../GenericNetRequest.h"
+#include "../GenericNetResponse.h"
+
 class RequestCreatePrivateGame : public GenericRequest
 {
 private:
@@ -20,7 +26,7 @@ public:
 		return std::make_unique< RequestCreatePrivateGame >();
 	}
 
-	sptr_generic_response ProcessRequest( sptr_user user, sptr_byte_stream stream ) override;
+	sptr_generic_response ProcessRequest( sptr_socket socket, sptr_byte_stream stream ) override;
 	void Deserialize( sptr_byte_stream stream ) override;
 };
 
@@ -32,5 +38,5 @@ private:
 
 public:
 	ResultCreatePrivateGame( GenericRequest *request, int32_t reply, std::string discoveryIp = "", int32_t discoveryPort = 0 );
-	ByteStream &Serialize();
+	ByteBuffer &Serialize();
 };

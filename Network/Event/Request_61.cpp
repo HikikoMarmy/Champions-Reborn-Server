@@ -1,4 +1,3 @@
-#include "../../global_define.h"
 #include "Request_61.h"
 
 void Request_61::Deserialize( sptr_byte_stream stream )
@@ -6,7 +5,7 @@ void Request_61::Deserialize( sptr_byte_stream stream )
 	DeserializeHeader( stream );
 }
 
-sptr_generic_response Request_61::ProcessRequest( sptr_user user, sptr_byte_stream stream )
+sptr_generic_response Request_61::ProcessRequest( sptr_socket socket, sptr_byte_stream stream )
 {
 	Deserialize( stream );
 
@@ -20,11 +19,22 @@ Result_61::Result_61( GenericRequest *request ) : GenericResponse( *request )
 {
 }
 
-ByteStream&Result_61::Serialize()
+ByteBuffer&Result_61::Serialize()
 {
 	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( m_requestId );
+	m_stream.write_u32( m_trackId );
 	m_stream.write_u32( 0 );
+
+	// Friends
+	m_stream.write_u32(1);
+	m_stream.write_utf16(L"String_1");
+
+	m_stream.write_u32(1);
+	m_stream.write_utf16(L"String_2");
+
+	// Ignore
+	m_stream.write_u32(1);
+	m_stream.write_utf16(L"String_3");
 
 	return m_stream;
 }

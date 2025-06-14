@@ -1,4 +1,3 @@
-#include "../../global_define.h"
 #include "RequestGetPublicRooms.h"
 
 void RequestGetPublicRooms::Deserialize( sptr_byte_stream stream )
@@ -6,7 +5,7 @@ void RequestGetPublicRooms::Deserialize( sptr_byte_stream stream )
 	DeserializeHeader( stream );
 }
 
-sptr_generic_response RequestGetPublicRooms::ProcessRequest( sptr_user user, sptr_byte_stream stream )
+sptr_generic_response RequestGetPublicRooms::ProcessRequest( sptr_socket socket, sptr_byte_stream stream )
 {
 	Deserialize( stream );
 
@@ -19,10 +18,10 @@ ResultGetPublicRooms::ResultGetPublicRooms( GenericRequest *request ) : GenericR
 {
 }
 
-ByteStream& ResultGetPublicRooms::Serialize()
+ByteBuffer& ResultGetPublicRooms::Serialize()
 {
 	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( m_requestId );
+	m_stream.write_u32( m_trackId );
 	m_stream.write_u32( 0 );
 
 	m_stream.write_u32( 0);

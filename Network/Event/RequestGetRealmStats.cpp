@@ -1,12 +1,13 @@
-#include "../../global_define.h"
 #include "RequestGetRealmStats.h"
+
+#include "../../Game/RealmUserManager.h"
 
 void RequestGetRealmStats::Deserialize( sptr_byte_stream stream )
 {
 	DeserializeHeader( stream );
 }
 
-sptr_generic_response RequestGetRealmStats::ProcessRequest( sptr_user user, sptr_byte_stream stream )
+sptr_generic_response RequestGetRealmStats::ProcessRequest( sptr_socket socket, sptr_byte_stream stream )
 {
 	Deserialize( stream );
 
@@ -18,10 +19,10 @@ ResultGetRealmStats::ResultGetRealmStats( GenericRequest *request ) : GenericRes
 	
 }
 
-ByteStream &ResultGetRealmStats::Serialize()
+ByteBuffer &ResultGetRealmStats::Serialize()
 {
 	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( m_requestId );
+	m_stream.write_u32( m_trackId );
 	m_stream.write_u32( 0 );
 
 	// Player count on the game page.

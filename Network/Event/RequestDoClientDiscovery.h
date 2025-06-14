@@ -1,5 +1,11 @@
 #pragma once
 
+#include <memory>
+#include <string>
+
+#include "../GenericNetRequest.h"
+#include "../GenericNetResponse.h"
+
 class RequestDoClientDiscovery : public GenericRequest
 {
 private:
@@ -18,7 +24,7 @@ public:
 		return std::make_unique< RequestDoClientDiscovery >();
 	}
 
-	sptr_generic_response ProcessRequest( sptr_user user, sptr_byte_stream stream ) override;
+	sptr_generic_response ProcessRequest( sptr_socket socket, sptr_byte_stream stream ) override;
 	void Deserialize( sptr_byte_stream stream ) override;
 };
 
@@ -30,5 +36,5 @@ private:
 
 public:
 	ResultDoClientDiscovery( GenericRequest *request, int32_t reply, std::string ip = "", int32_t port = 0);
-	ByteStream &Serialize();
+	ByteBuffer &Serialize();
 };

@@ -1,5 +1,11 @@
 #pragma once
 
+#include <memory>
+#include <string>
+
+#include "../GenericNetRequest.h"
+#include "../GenericNetResponse.h"
+
 class RequestGetEncryptionKey : public GenericRequest
 {
 public:
@@ -8,7 +14,7 @@ public:
 		return std::make_unique< RequestGetEncryptionKey >();
 	}
 
-	sptr_generic_response ProcessRequest( sptr_user user, sptr_byte_stream stream ) override;
+	sptr_generic_response ProcessRequest( sptr_socket socket, sptr_byte_stream stream ) override;
 	void Deserialize( sptr_byte_stream stream ) override;
 };
 
@@ -17,5 +23,5 @@ public:
 	std::vector< uint8_t > m_symKey;
 
 	ResultGetEncryptionKey( GenericRequest *request );
-	ByteStream &Serialize();
+	ByteBuffer &Serialize();
 };

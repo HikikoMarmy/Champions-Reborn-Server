@@ -1,6 +1,9 @@
-#include "../../global_define.h"
-
 #include "RequestCreatePublicGame.h"
+
+#include "../../Game/RealmUserManager.h"
+#include "../../Game/GameSessionManager.h"
+#include "../../configuration.h"
+#include "../../logging.h"
 
 // Request
 void RequestCreatePublicGame::Deserialize( sptr_byte_stream stream )
@@ -18,11 +21,18 @@ void RequestCreatePublicGame::Deserialize( sptr_byte_stream stream )
 	m_gameInfo = stream->read_utf16();
 }
 
-sptr_generic_response RequestCreatePublicGame::ProcessRequest( sptr_user user, sptr_byte_stream stream )
+sptr_generic_response RequestCreatePublicGame::ProcessRequest( sptr_socket socket, sptr_byte_stream stream )
 {
 	Deserialize( stream );
 
-	auto result = GameSessionManager::Get().CreatePublicGameSession( user, m_gameInfo, user->m_clientType );
+	auto user = RealmUserManager::Get().FindUserBySocket( socket );
+	if( user == nullptr )
+	{
+		Log::Error( "User not found! [%S]", m_sessionId.c_str() );
+		return std::make_shared< ResultCreatePublicGame >( this, CREATE_REPLY::FATAL_ERROR, "", 0 );
+	}
+
+	auto result = GameSessionManager::Get().CreatePublicGameSession( user, m_gameInfo, user->m_gameType );
 
 	if( !result )
 	{
@@ -43,10 +53,10 @@ ResultCreatePublicGame::ResultCreatePublicGame( GenericRequest *request, int32_t
 	m_discoveryPort = discoveryPort;
 }
 
-ByteStream &ResultCreatePublicGame::Serialize()
+ByteBuffer &ResultCreatePublicGame::Serialize()
 {
 	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( m_requestId );
+	m_stream.write_u32( m_trackId );
 	m_stream.write_u32( m_reply );
 
 	m_stream.write_sz_utf8( m_discoveryIp );

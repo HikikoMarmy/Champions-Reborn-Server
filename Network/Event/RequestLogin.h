@@ -1,10 +1,10 @@
 #pragma once
 
-// Account Login is used in the Network Beta for CoN.
-// In the retail version, the game simply logs in with
-// "foo" and "bar" as the username and password.
-//
-// A unique Session ID is generated and assigned to the player.
+#include <memory>
+#include <string>
+
+#include "../GenericNetRequest.h"
+#include "../GenericNetResponse.h"
 
 class RequestLogin : public GenericRequest
 {
@@ -12,11 +12,11 @@ private:
 	enum LOGIN_REPLY {
 		SUCCESS = 0,
 		FATAL_ERROR,
-		NOT_EXIST,
+		ACCOUNT_INVALID = 4,
 	};
 
-	std::wstring m_username;
-	std::wstring m_password;
+	std::string m_username;
+	std::string m_password;
 	std::wstring m_sessionId;
 
 public:
@@ -25,8 +25,11 @@ public:
 		return std::make_unique< RequestLogin >();
 	}
 
-	sptr_generic_response ProcessRequest( sptr_user user, sptr_byte_stream stream ) override;
+	sptr_generic_response ProcessRequest( sptr_socket socket, sptr_byte_stream stream ) override;
 	void Deserialize( sptr_byte_stream stream ) override;
+
+	sptr_generic_response ProcessLoginCON( sptr_user user );
+	sptr_generic_response ProcessLoginRTA( sptr_user user );
 };
 
 class ResultLogin : public GenericResponse {
@@ -36,5 +39,5 @@ private:
 
 public:
 	ResultLogin( GenericRequest *request, int32_t reply, std::wstring sessionId );
-	ByteStream &Serialize();
+	ByteBuffer &Serialize();
 };

@@ -1,5 +1,11 @@
 #pragma once
 
+#include <memory>
+#include <string>
+
+#include "../GenericNetRequest.h"
+#include "../GenericNetResponse.h"
+
 class RequestLogout : public GenericRequest
 {
 private:
@@ -10,7 +16,7 @@ public:
 	{
 		return std::make_unique< RequestLogout >();
 	}
-	sptr_generic_response ProcessRequest( sptr_user user, sptr_byte_stream stream ) override;
+	sptr_generic_response ProcessRequest( sptr_socket socket, sptr_byte_stream stream ) override;
 	void Deserialize( sptr_byte_stream stream ) override;
 };
 
@@ -19,5 +25,5 @@ private:
 	int32_t m_reply;
 public:
 	ResultLogout( GenericRequest *request, int32_t reply );
-	ByteStream &Serialize();
+	ByteBuffer &Serialize();
 };

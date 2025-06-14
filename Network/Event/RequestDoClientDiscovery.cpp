@@ -1,5 +1,8 @@
-#include "../../global_define.h"
 #include "RequestDoClientDiscovery.h"
+
+#include "../../Game/RealmUserManager.h"
+#include "../../Game/GameSessionManager.h"
+#include "../../configuration.h"
 
 void RequestDoClientDiscovery::Deserialize( sptr_byte_stream stream )
 {
@@ -9,11 +12,17 @@ void RequestDoClientDiscovery::Deserialize( sptr_byte_stream stream )
 	m_gameId = stream->read_u32();
 }
 
-sptr_generic_response RequestDoClientDiscovery::ProcessRequest( sptr_user user, sptr_byte_stream stream )
+sptr_generic_response RequestDoClientDiscovery::ProcessRequest( sptr_socket socket, sptr_byte_stream stream )
 {
 	Deserialize( stream );
 
-	auto session = GameSessionManager::Get().FindGame( m_gameId );
+	auto user = RealmUserManager::Get().FindUserBySocket( socket );
+	if( user == nullptr )
+	{
+		return std::make_shared< ResultDoClientDiscovery >( this, DISCOVERY_REPLY::FATAL_ERROR, "", 0 );
+	}
+
+	auto session = GameSessionManager::Get().FindGame( m_gameId, user->m_gameType );
 	if( session == nullptr )
 	{
 		return std::make_shared< ResultDoClientDiscovery >( this, DISCOVERY_REPLY::FATAL_ERROR, "", 0 );
@@ -37,10 +46,10 @@ ResultDoClientDiscovery::ResultDoClientDiscovery( GenericRequest *request, int32
 	m_discoveryPort = port;
 }
 
-ByteStream &ResultDoClientDiscovery::Serialize()
+ByteBuffer &ResultDoClientDiscovery::Serialize()
 {
 	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( m_requestId );
+	m_stream.write_u32( m_trackId );
 	m_stream.write_u32( m_reply );
 
 	m_stream.write_sz_utf8( m_discoveryIP );

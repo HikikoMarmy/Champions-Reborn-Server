@@ -1,5 +1,9 @@
-#include "../../global_define.h"
 #include "RequestGetGame.h"
+
+#include "../../Game/RealmUserManager.h"
+#include "../../Game/GameSessionManager.h"
+#include "../../Game/RealmUser.h"
+#include "../../logging.h"
 
 void RequestGetGame::Deserialize( sptr_byte_stream stream )
 {
@@ -9,17 +13,18 @@ void RequestGetGame::Deserialize( sptr_byte_stream stream )
 	m_gameName = stream->read_utf16();
 }
 
-sptr_generic_response RequestGetGame::ProcessRequest( sptr_user user, sptr_byte_stream stream )
+sptr_generic_response RequestGetGame::ProcessRequest( sptr_socket socket, sptr_byte_stream stream )
 {
 	Deserialize( stream );
 
+	auto user = RealmUserManager::Get().FindUserBySocket( socket );
 	if( user == nullptr )
 	{
 		Log::Error( "User not found! [%S]", m_sessionId.c_str() );
 		return std::make_shared< ResultGetGame >( this, TIMEOUT );
 	}
 
-	auto session = GameSessionManager::Get().FindGame( m_gameName );
+	auto session = GameSessionManager::Get().FindGame( m_gameName, user->m_gameType );
 
 	if( session == nullptr )
 	{
@@ -53,10 +58,10 @@ ResultGetGame::ResultGetGame( GenericRequest *request, int32_t reply, int32_t ga
 	m_gameId = gameId;
 }
 
-ByteStream &ResultGetGame::Serialize()
+ByteBuffer &ResultGetGame::Serialize()
 {
 	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( m_requestId );
+	m_stream.write_u32( m_trackId );
 	m_stream.write_u32( m_reply );
 
 	// TODO: These may come in from the UpdateGameData event

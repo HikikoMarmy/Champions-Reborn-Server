@@ -1,4 +1,3 @@
-#include "../../global_define.h"
 #include "RequestGetRoom.h"
 
 void RequestGetRoom::Deserialize( sptr_byte_stream stream )
@@ -8,7 +7,7 @@ void RequestGetRoom::Deserialize( sptr_byte_stream stream )
 	auto sessionId = stream->read_encrypted_utf16();
 }
 
-sptr_generic_response RequestGetRoom::ProcessRequest( sptr_user user, sptr_byte_stream stream )
+sptr_generic_response RequestGetRoom::ProcessRequest( sptr_socket socket, sptr_byte_stream stream )
 {
 	Deserialize( stream );
 
@@ -19,10 +18,10 @@ ResultGetRoom::ResultGetRoom( GenericRequest *request ) : GenericResponse( *requ
 {
 }
 
-ByteStream &ResultGetRoom::Serialize()
+ByteBuffer &ResultGetRoom::Serialize()
 {
 	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( m_requestId );
+	m_stream.write_u32( m_trackId );
 	m_stream.write_u32( 0 );
 
 	m_stream.write_utf16( L"Room Name" );
