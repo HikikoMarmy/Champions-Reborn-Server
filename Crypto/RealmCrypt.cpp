@@ -1,6 +1,6 @@
 
 #include "RealmCrypt.h"
-#include "../misc/Utility.h"
+#include "../Common/Utility.h"
 
 RealmCrypt::RealmCrypt()
 {
@@ -63,40 +63,63 @@ std::string RealmCrypt::decryptString( std::string &input )
 	return std::string( reinterpret_cast< const char * >( result ), input.size() );
 }
 
-std::wstring RealmCrypt::encryptString( std::wstring &input )
+std::vector<uint8_t> RealmCrypt::encryptString( const std::wstring &input )
 {
-	if( input.size() % 16 != 0 )
+	// Convert UTF-16 string to raw bytes
+	std::vector<uint8_t> utf16Bytes;
+	utf16Bytes.reserve( input.size() * 2 );
+	for( wchar_t ch : input )
 	{
-		input.append( 16 - ( input.size() % 16 ), L'\0' );
+		utf16Bytes.push_back( static_cast< uint8_t >( ch & 0xFF ) );
+		utf16Bytes.push_back( static_cast< uint8_t >( ( ch >> 8 ) & 0xFF ) );
 	}
 
-	rijndael aes;
+	// Pad to nearest 16 bytes
+	if( utf16Bytes.size() % 16 != 0 )
+	{
+		utf16Bytes.resize( ( utf16Bytes.size() / 16 + 1 ) * 16, 0 );
+	}
 
-	auto result = aes.EncryptECB( reinterpret_cast< const uint8_t * >(
-		input.c_str() ),
-		static_cast< uint32_t >( input.size() ),
+	// Encrypt using AES ECB
+	rijndael aes;
+	auto encrypted = aes.EncryptECB(
+		reinterpret_cast< const uint8_t * >( utf16Bytes.data() ),
+		static_cast< uint32_t >( utf16Bytes.size() ),
 		default_sym_key.data()
 	);
 
-	return std::wstring( reinterpret_cast< const wchar_t * >( result ), input.size() );
+	// Return the raw encrypted bytes
+	return std::vector<uint8_t>( encrypted, encrypted + utf16Bytes.size() );
 }
 
-std::wstring RealmCrypt::decryptString( std::wstring &input )
+std::wstring RealmCrypt::decryptString( std::vector<uint8_t> &input )
 {
+	// Ensure input is a multiple of 16 bytes
 	if( input.size() % 16 != 0 )
 	{
-		input.append( 16 - ( input.size() % 16 ), L'\0' );
+		input.resize( ( input.size() / 16 + 1 ) * 16, 0 );
 	}
 
 	rijndael aes;
 
-	auto result = aes.DecryptECB( reinterpret_cast< const uint8_t * >(
-		input.c_str() ),
+	auto result = aes.DecryptECB(
+		reinterpret_cast< const uint8_t * >( input.data() ),
 		static_cast< uint32_t >( input.size() ),
 		default_sym_key.data()
 	);
 
-	return std::wstring( reinterpret_cast< const wchar_t * >( result ), input.size() );
+	// Convert decrypted bytes back into a wstring
+	std::wstring output;
+	output.reserve( input.size() / 2 );
+
+	for( size_t i = 0; i + 1 < input.size(); i += 2 )
+	{
+		uint16_t ch = static_cast< uint16_t >( input[ i ] | ( input[ i + 1 ] << 8 ) );
+		if( ch == 0 ) break; // Optional: stop at null terminator
+		output.push_back( static_cast< wchar_t >( ch ) );
+	}
+
+	return output;
 }
 
 std::vector< uint8_t > RealmCrypt::encryptSymmetric( std::span< const uint8_t > input )

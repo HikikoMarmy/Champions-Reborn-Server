@@ -34,8 +34,8 @@ public:
 	// Encrypt and decrypt strings.
 	static std::string encryptString( std::string &input );
 	static std::string decryptString( std::string &input );
-	static std::wstring encryptString( std::wstring &input );
-	static std::wstring decryptString( std::wstring &input );
+	static std::vector<uint8_t> encryptString( const std::wstring &input );
+	static std::wstring decryptString( std::vector<uint8_t> &input );
 
 	// Encrypt and decrypt byte arrays.
 	static std::vector< uint8_t > encryptSymmetric( std::span< const uint8_t > input );
