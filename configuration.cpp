@@ -3,8 +3,8 @@
 bool Config::Load( std::string filename )
 {
 	service_ip = "0.0.0.0";
-	con_lobby_port = 40801;
-	rta_lobby_port = 40810;
+	con_lobby_port = 40900;
+	rta_lobby_port = 40910;
 	discovery_port = 10101;
 
 	// Read configuration from ini file
