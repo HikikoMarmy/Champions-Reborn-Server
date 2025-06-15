@@ -256,7 +256,7 @@ void LobbyServer::CheckSocketProblem()
 	}
 }
 
-void LobbyServer::AcceptGateway( SOCKET socket, RealmGameType clientType )
+void LobbyServer::AcceptGateway( SOCKET socket, RealmGameType gameType )
 {
 	sockaddr_in clientInfo{};
 	int32_t addrSize = sizeof( clientInfo );
@@ -273,12 +273,13 @@ void LobbyServer::AcceptGateway( SOCKET socket, RealmGameType clientType )
 	new_socket->remote_addr = clientInfo;
 	new_socket->remote_ip = inet_ntoa( clientInfo.sin_addr );
 	new_socket->remote_port = ntohs( clientInfo.sin_port );
+	new_socket->gameType = gameType;
 	m_clientSockets.push_back( new_socket );
 
 	Log::Info( "New Gateway Client Connected : (%s)", new_socket->remote_ip.c_str() );
 }
 
-void LobbyServer::AcceptClient( SOCKET socket, RealmGameType clientType )
+void LobbyServer::AcceptClient( SOCKET socket, RealmGameType gameType )
 {
 	sockaddr_in clientInfo{};
 	int32_t addrSize = sizeof( clientInfo );
@@ -295,10 +296,10 @@ void LobbyServer::AcceptClient( SOCKET socket, RealmGameType clientType )
 	new_socket->remote_addr = clientInfo;
 	new_socket->remote_ip = inet_ntoa( clientInfo.sin_addr );
 	new_socket->remote_port = ntohs( clientInfo.sin_port );
-
+	new_socket->gameType = gameType;
 	m_clientSockets.push_back( new_socket );
 
-	RealmUserManager::Get().CreateUser( new_socket, clientType );
+	RealmUserManager::Get().CreateUser( new_socket, gameType );
 
 	Log::Info( "New Client Connected : (%s)", new_socket->remote_ip.c_str() );
 }

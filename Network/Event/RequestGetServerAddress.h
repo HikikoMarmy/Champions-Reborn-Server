@@ -22,7 +22,7 @@ class ResultGetServerAddress : public GenericResponse {
 public:
 	std::string m_ip;
 	int32_t		m_port;
-	RealmGameType m_clientType;
+	RealmGameType m_gameType;
 
 	ResultGetServerAddress( GenericRequest *request, std::string ip, int32_t port, RealmGameType clientType );
 	ByteBuffer &Serialize();

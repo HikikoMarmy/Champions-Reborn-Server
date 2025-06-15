@@ -15,27 +15,21 @@ sptr_generic_response RequestGetServerAddress::ProcessRequest( sptr_socket socke
 {
 	Deserialize( stream );
 
-	auto user = RealmUserManager::Get().FindUserBySocket( socket );
-	if( user == nullptr )
+	if( socket->gameType == RealmGameType::RETURN_TO_ARMS )
 	{
-		return std::make_shared< ResultGetServerAddress >( this, "", 0, RealmGameType::RETURN_TO_ARMS );
-	}
-
-	if (user->m_gameType == RealmGameType::RETURN_TO_ARMS)
-	{
-		return std::make_shared< ResultGetServerAddress >(this, Config::service_ip, Config::rta_lobby_port, user->m_gameType);
+		return std::make_shared< ResultGetServerAddress >( this, Config::service_ip, Config::rta_lobby_port, socket->gameType );
 	}
 	else
 	{
-		return std::make_shared< ResultGetServerAddress >(this, Config::service_ip, Config::con_lobby_port, user->m_gameType);
+		return std::make_shared< ResultGetServerAddress >( this, Config::service_ip, Config::con_lobby_port, socket->gameType );
 	}
 }
 
-ResultGetServerAddress::ResultGetServerAddress( GenericRequest *request, std::string ip, int32_t port, RealmGameType clientType ) : GenericResponse( *request )
+ResultGetServerAddress::ResultGetServerAddress( GenericRequest *request, std::string ip, int32_t port, RealmGameType gameType ) : GenericResponse( *request )
 {
 	m_ip = ip;
 	m_port = port;
-	m_clientType = clientType;
+	m_gameType = gameType;
 }
 
 ByteBuffer &ResultGetServerAddress::Serialize()
@@ -44,7 +38,7 @@ ByteBuffer &ResultGetServerAddress::Serialize()
 	m_stream.write_u32( m_trackId );
 	m_stream.write_u32( 0 );
 
-	if( m_clientType == RealmGameType::RETURN_TO_ARMS )
+	if( m_gameType == RealmGameType::RETURN_TO_ARMS )
 		m_stream.write_utf8( m_ip );
 	else
 		m_stream.write_sz_utf8( m_ip );

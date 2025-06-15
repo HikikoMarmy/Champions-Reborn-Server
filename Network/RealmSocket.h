@@ -8,6 +8,7 @@
 #include "GenericNetRequest.h"
 #include "GenericNetResponse.h"
 #include "GenericNetMessage.h"
+#include "../Common/Constant.h"
 
 class RealmSocket
 {
@@ -46,6 +47,7 @@ public:
 	sockaddr_in local_addr;
 	sockaddr_in remote_addr;
 
+	RealmGameType gameType;
 	std::string remote_ip;
 	uint32_t remote_port;
 	uint32_t last_write_position;
