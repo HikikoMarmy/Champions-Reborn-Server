@@ -11,6 +11,8 @@ class RequestCreatePublicGame : public GenericRequest
 private:
 	std::wstring m_sessionId;
 	std::wstring m_gameInfo;
+	std::wstring m_gameName;
+	std::wstring m_stageName;
 
 	int32_t m_minimumLevel;
 	int32_t m_maximumLevel;
@@ -22,6 +24,7 @@ private:
 		GAME_NAME_IN_USE = 38,
 		GAME_PENDING = 40,
 	};
+
 public:
 	static std::unique_ptr< RequestCreatePublicGame > Create()
 	{
@@ -29,6 +32,8 @@ public:
 	}
 	sptr_generic_response ProcessRequest( sptr_socket socket, sptr_byte_stream stream ) override;
 	void Deserialize( sptr_byte_stream stream ) override;
+
+	std::tuple< std::wstring, std::wstring > ParseNameAndStage( const std::wstring &gameInfo );
 };
 
 class ResultCreatePublicGame : public GenericResponse {
@@ -39,5 +44,5 @@ private:
 
 public:
 	ResultCreatePublicGame( GenericRequest *request, int32_t reply, std::string discoveryIp = "", int32_t discoveryPort = 0 );
-	ByteBuffer &Serialize();
+	void Serialize( ByteBuffer &out ) const;
 };

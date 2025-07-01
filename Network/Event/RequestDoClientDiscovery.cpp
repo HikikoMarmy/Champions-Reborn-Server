@@ -3,6 +3,7 @@
 #include "../../Game/RealmUserManager.h"
 #include "../../Game/GameSessionManager.h"
 #include "../../configuration.h"
+#include "../../logging.h"
 
 void RequestDoClientDiscovery::Deserialize( sptr_byte_stream stream )
 {
@@ -16,7 +17,9 @@ sptr_generic_response RequestDoClientDiscovery::ProcessRequest( sptr_socket sock
 {
 	Deserialize( stream );
 
-	auto user = RealmUserManager::Get().FindUserBySocket( socket );
+	Log::Packet( stream->get_buffer(), stream->get_length(), false );	
+
+	auto user = UserManager::Get().FindUserBySocket( socket );
 	if( user == nullptr )
 	{
 		return std::make_shared< ResultDoClientDiscovery >( this, DISCOVERY_REPLY::FATAL_ERROR, "", 0 );
@@ -28,7 +31,7 @@ sptr_generic_response RequestDoClientDiscovery::ProcessRequest( sptr_socket sock
 		return std::make_shared< ResultDoClientDiscovery >( this, DISCOVERY_REPLY::FATAL_ERROR, "", 0 );
 	}
 
-	if( session->m_currentPlayers >= session->m_maximumPlayers )
+	if( !session->IsJoinable( user ) )
 	{
 		return std::make_shared< ResultDoClientDiscovery >( this, DISCOVERY_REPLY::GAME_FULL, "", 0 );
 	}
@@ -46,14 +49,12 @@ ResultDoClientDiscovery::ResultDoClientDiscovery( GenericRequest *request, int32
 	m_discoveryPort = port;
 }
 
-ByteBuffer &ResultDoClientDiscovery::Serialize()
+void ResultDoClientDiscovery::Serialize( ByteBuffer &out ) const
 {
-	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( m_trackId );
-	m_stream.write_u32( m_reply );
+	out.write_u16( m_packetId );
+	out.write_u32( m_trackId );
+	out.write_u32( m_reply );
 
-	m_stream.write_sz_utf8( m_discoveryIP );
-	m_stream.write( m_discoveryPort );
-
-	return m_stream;
+	out.write_sz_utf8( m_discoveryIP );
+	out.write( m_discoveryPort );
 }

@@ -32,18 +32,16 @@ ResultGetServerAddress::ResultGetServerAddress( GenericRequest *request, std::st
 	m_gameType = gameType;
 }
 
-ByteBuffer &ResultGetServerAddress::Serialize()
+void ResultGetServerAddress::Serialize( ByteBuffer &out ) const
 {
-	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( m_trackId );
-	m_stream.write_u32( 0 );
+	out.write_u16( m_packetId );
+	out.write_u32( m_trackId );
+	out.write_u32( 0 );
 
 	if( m_gameType == RealmGameType::RETURN_TO_ARMS )
-		m_stream.write_utf8( m_ip );
+		out.write_utf8( m_ip );
 	else
-		m_stream.write_sz_utf8( m_ip );
+		out.write_sz_utf8( m_ip );
 
-	m_stream.write( m_port );
-
-	return m_stream;
+	out.write( m_port );
 }

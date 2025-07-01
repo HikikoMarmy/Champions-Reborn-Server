@@ -27,5 +27,5 @@ private:
 
 public:
 	ResultGetRules( GenericRequest *request, std::wstring rules );
-	ByteBuffer &Serialize();
+	void Serialize( ByteBuffer &out ) const;
 };

@@ -11,11 +11,11 @@ void RequestCreateAccount::Deserialize( sptr_byte_stream stream )
 {
 	DeserializeHeader( stream );
 
-	m_username = Util::WideToUTF8( stream->read_encrypted_utf16() );
-	m_password = Util::WideToUTF8( stream->read_encrypted_utf16() );
-	m_emailAddress = Util::WideToUTF8( stream->read_encrypted_utf16() );
-	m_dateOfBirth = Util::WideToUTF8( stream->read_encrypted_utf16() );
-	m_chatHandle = Util::WideToUTF8( stream->read_encrypted_utf16() );
+	m_username = stream->read_encrypted_utf16();
+	m_password = stream->read_encrypted_utf16();
+	m_emailAddress = stream->read_encrypted_utf16();
+	m_dateOfBirth = stream->read_encrypted_utf16();
+	m_chatHandle = stream->read_encrypted_utf16();
 }
 
 bool RequestCreateAccount::VerifyUserData()
@@ -45,34 +45,40 @@ sptr_generic_response RequestCreateAccount::ProcessRequest( sptr_socket socket, 
 {
 	Deserialize( stream );
 
-	auto user = RealmUserManager::Get().FindUserBySocket( socket );
+	auto user = UserManager::Get().FindUserBySocket( socket );
 	if( nullptr == user || user->m_gameType != RealmGameType::RETURN_TO_ARMS )
 	{
-		return std::make_shared< ResultCreateAccount >( this, CREATE_ACCOUNT_REPLY::ERROR_FATAL, L"" );
+		return std::make_shared< ResultCreateAccount >( this, ERROR_FATAL, L"" );
 	}
 
 	if( m_username.empty() || m_password.empty() || m_emailAddress.empty() || m_dateOfBirth.empty() || m_chatHandle.empty() )
 	{
 		Log::Error( "RequestCreateAccount::ProcessRequest() - Missing required fields for account creation." );
-		return std::make_shared< ResultCreateAccount >( this, CREATE_ACCOUNT_REPLY::ERROR_FATAL, L"" );
+		return std::make_shared< ResultCreateAccount >( this, ERROR_FATAL, L"" );
 	}
 
 	auto result = Database::Get().CreateNewAccount
 	(
-		m_username,
-		m_password,
-		m_emailAddress,
-		m_dateOfBirth,
-		m_chatHandle
+		Util::WideToUTF8( m_username ),
+		Util::WideToUTF8( m_password ),
+		Util::WideToUTF8( m_emailAddress ),
+		Util::WideToUTF8( m_dateOfBirth ),
+		Util::WideToUTF8( m_chatHandle )
 	);
 
 	if( !result )
 	{
-		Log::Error( "RequestCreateAccount::ProcessRequest() - Failed to create account for user: %s", m_username.c_str() );
-		return std::make_shared< ResultCreateAccount >( this, CREATE_ACCOUNT_REPLY::ERROR_FATAL, L"" );
+		Log::Error( "RequestCreateAccount::ProcessRequest() - Failed to create account for user: {}", m_username );
+		return std::make_shared< ResultCreateAccount >( this, ERROR_FATAL, L"" );
 	}
 
-	return std::make_shared< ResultCreateAccount >( this, CREATE_ACCOUNT_REPLY::SUCCESS, user->m_sessionId );
+	user->m_isLoggedIn = true;
+	user->m_sessionId = UserManager::Get().GenerateSessionId();
+	user->m_accountId = result;
+	user->m_username = m_username;
+	user->m_chatHandle = m_chatHandle;
+
+	return std::make_shared< ResultCreateAccount >( this, SUCCESS, user->m_sessionId );
 }
 
 ResultCreateAccount::ResultCreateAccount( GenericRequest *request, int32_t reply, std::wstring sessionId ) : GenericResponse( *request )
@@ -81,13 +87,11 @@ ResultCreateAccount::ResultCreateAccount( GenericRequest *request, int32_t reply
 	m_sessionId = sessionId;
 }
 
-ByteBuffer &ResultCreateAccount::Serialize()
+void ResultCreateAccount::Serialize( ByteBuffer &out ) const
 {
-	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( m_trackId );
-	m_stream.write_u32( m_reply );
+	out.write_u16( m_packetId );
+	out.write_u32( m_trackId );
+	out.write_u32( m_reply );
 
-	m_stream.write_encrypted_utf16( m_sessionId );
-
-	return m_stream;
+	out.write_encrypted_utf16( m_sessionId );
 }

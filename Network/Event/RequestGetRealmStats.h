@@ -20,5 +20,5 @@ public:
 class ResultGetRealmStats : public GenericResponse {
 public:
 	ResultGetRealmStats( GenericRequest *request );
-	ByteBuffer &Serialize();
+	void Serialize( ByteBuffer &out ) const;
 };

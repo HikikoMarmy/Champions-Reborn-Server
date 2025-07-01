@@ -36,5 +36,5 @@ private:
 
 public:
 	ResultDoClientDiscovery( GenericRequest *request, int32_t reply, std::string ip = "", int32_t port = 0);
-	ByteBuffer &Serialize();
+	void Serialize( ByteBuffer &out ) const;
 };

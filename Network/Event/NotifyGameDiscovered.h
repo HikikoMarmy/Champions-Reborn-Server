@@ -14,5 +14,5 @@ private:
 
 public:
 	NotifyGameDiscovered( std::string clientIp, int32_t clientPort, RealmGameType clientType );
-	ByteBuffer &Serialize() override;
+	void Serialize(ByteBuffer &out) const override;
 };

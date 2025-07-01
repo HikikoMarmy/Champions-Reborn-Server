@@ -13,9 +13,16 @@ sptr_generic_response RequestMatchGame_RTA::ProcessRequest( sptr_socket socket, 
 {
 	Deserialize( stream );
 
-	auto user = RealmUserManager::Get().FindUserBySocket( socket );
+	auto user = UserManager::Get().FindUserBySocket( socket );
 	if( user == nullptr )
 	{
+		UserManager::Get().Disconnect( socket, "User not found!" );
+		return std::make_shared< ResultMatchGame_RTA >( this, "" );
+	}
+
+	if( !user->m_isLoggedIn )
+	{
+		UserManager::Get().Disconnect( user, "User is not logged in!" );
 		return std::make_shared< ResultMatchGame_RTA >( this, "" );
 	}
 
@@ -27,72 +34,60 @@ ResultMatchGame_RTA::ResultMatchGame_RTA( GenericRequest *request, std::string u
 	m_userIp = userIp;
 }
 
-ByteBuffer&ResultMatchGame_RTA::Serialize()
+void ResultMatchGame_RTA::Serialize( ByteBuffer &out ) const
 {
-	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( m_trackId );
-	m_stream.write_u32( 0 );
+	out.write_u16( m_packetId );
+	out.write_u32( m_trackId );
+	out.write_u32( 0 );
 
 	const auto publicGameList = GameSessionManager::Get().GetAvailableGameSessionList( RealmGameType::RETURN_TO_ARMS );
 	const auto publicGameCount = static_cast< uint32_t >( publicGameList.size() );
 
-	m_stream.write_u32( publicGameCount );
+	out.write_u32( publicGameCount );
 	{
 		for( const auto &game : publicGameList )
-			m_stream.write_utf16( game->m_gameName );
+			out.write_utf16( Util::UTF8ToWide( game->m_gameData ) );
 	}
 
-	m_stream.write_u32( publicGameCount );
+	out.write_u32( publicGameCount );
 	{
 		for( const auto &game : publicGameList )
-			m_stream.write_utf16( game->m_playerCount );
+			out.write_utf16( game->m_playerCount );
 	}
 
-	m_stream.write_u32( publicGameCount );
+	out.write_u32( publicGameCount );
 	{
 		for( const auto &game : publicGameList )
-			m_stream.write_u32( game->m_gameIndex );
+			out.write_u32( game->m_gameId );
 	}
 
-	m_stream.write_u32( publicGameCount );
+	// Something about filtering.
+	out.write_u32( publicGameCount );
 	{
-		m_stream.write_u32( 0 );	// Size
-		// Blob Data
+		out.write_u32( 0 );	// Size
 	}
 
-	m_stream.write_u32( publicGameCount );
+	out.write_u32(publicGameCount);
 	{
-		for( const auto &game : publicGameList )
-		{
-			if( m_userIp == game->m_hostExternalAddr )
-				m_stream.write_utf16( Util::UTF8ToWide( game->m_hostLocalAddr ) );
-			else
-				m_stream.write_utf16( Util::UTF8ToWide( game->m_hostExternalAddr ) );
-		}
+		for (const auto& game : publicGameList)
+			out.write_utf16(Util::UTF8ToWide(game->m_hostExternalAddr));
 	}
 
-	m_stream.write_u32( publicGameCount );
+	out.write_u32(publicGameCount);
 	{
-		for( const auto &game : publicGameList )
-			m_stream.write_u32( game->m_hostPort );
+		for (const auto& game : publicGameList)
+			out.write_u32(game->m_hostNatPort);
 	}
 
-	m_stream.write_u32( publicGameCount );
+	out.write_u32(publicGameCount);
 	{
-		for( const auto &game : publicGameList )
-		{
-			if( m_userIp == game->m_hostExternalAddr )
-				m_stream.write_utf16( Util::UTF8ToWide( game->m_hostLocalAddr ) );
-			else
-				m_stream.write_utf16( Util::UTF8ToWide( game->m_hostExternalAddr ) );
-		}
+		for (const auto& game : publicGameList)
+			out.write_utf16(Util::UTF8ToWide(game->m_hostLocalAddr));
 	}
 
-	m_stream.write_u32( publicGameCount );
+	out.write_u32(publicGameCount);
 	{
-		for( const auto &game : publicGameList )
-			m_stream.write_u32( game->m_hostPort );
+		for (const auto& game : publicGameList)
+			out.write_u32(game->m_hostLocalPort);
 	}
-
-	return m_stream;
 }

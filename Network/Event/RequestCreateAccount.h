@@ -8,17 +8,18 @@
 
 class RequestCreateAccount : public GenericRequest
 {
+private:
 	enum CREATE_ACCOUNT_REPLY {
 		SUCCESS = 0,
 		ERROR_FATAL,
 		ERROR_NOT_EXIST
 	};
 
-	std::string m_username;
-	std::string m_password;
-	std::string m_emailAddress;
-	std::string m_dateOfBirth;
-	std::string m_chatHandle;
+	std::wstring m_username;
+	std::wstring m_password;
+	std::wstring m_emailAddress;
+	std::wstring m_dateOfBirth;
+	std::wstring m_chatHandle;
 
 	bool VerifyUserData();
 
@@ -41,5 +42,5 @@ private:
 
 public:
 	ResultCreateAccount( GenericRequest *request, int32_t reply, std::wstring sessionId );
-	ByteBuffer &Serialize();
+	void Serialize( ByteBuffer &out ) const;
 };

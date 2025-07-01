@@ -24,5 +24,5 @@ public:
 class ResultCancelGame : public GenericResponse {
 public:
 	ResultCancelGame( GenericRequest *request );
-	ByteBuffer &Serialize();
+	void Serialize( ByteBuffer &out ) const;
 };

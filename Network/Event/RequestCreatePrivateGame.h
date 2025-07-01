@@ -10,7 +10,7 @@ class RequestCreatePrivateGame : public GenericRequest
 {
 private:
 	std::wstring m_sessionId;
-	std::wstring m_gameInfo;
+	std::wstring m_gameName;
 
 	enum CREATE_REPLY {
 		SUCCESS = 0,
@@ -38,5 +38,5 @@ private:
 
 public:
 	ResultCreatePrivateGame( GenericRequest *request, int32_t reply, std::string discoveryIp = "", int32_t discoveryPort = 0 );
-	ByteBuffer &Serialize();
+	void Serialize( ByteBuffer &out ) const;
 };

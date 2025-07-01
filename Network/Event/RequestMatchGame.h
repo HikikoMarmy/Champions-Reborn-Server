@@ -24,5 +24,5 @@ private:
 
 public:
 	ResultMatchGame( GenericRequest *request, std::string userIp );
-	ByteBuffer &Serialize();
+	void Serialize( ByteBuffer &out ) const;
 };

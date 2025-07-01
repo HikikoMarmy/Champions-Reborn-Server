@@ -51,49 +51,47 @@ ResultMatchGame::ResultMatchGame( GenericRequest *request, std::string userIp ) 
 	m_userIp = userIp;
 }
 
-ByteBuffer &ResultMatchGame::Serialize()
+void ResultMatchGame::Serialize( ByteBuffer &out ) const
 {
-	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( m_trackId );
-	m_stream.write_u32( 0 );
+	out.write_u16( m_packetId );
+	out.write_u32( m_trackId );
+	out.write_u32( 0 );
 
 	const auto publicGameList = GameSessionManager::Get().GetAvailableGameSessionList( RealmGameType::CHAMPIONS_OF_NORRATH );
 	const auto publicGameCount = static_cast< uint32_t >( publicGameList.size() );
 
-	m_stream.write_u32( publicGameCount );
+	out.write_u32( publicGameCount );
 	{
 		for( const auto &game : publicGameList )
 		{
 			if( m_userIp == game->m_hostExternalAddr )
-				m_stream.write_utf16( std::format( L"{}:{}", Util::UTF8ToWide( game->m_hostLocalAddr ), game->m_hostPort ) );
+				out.write_utf16( std::format( L"{}:{}", Util::UTF8ToWide( game->m_hostLocalAddr ), game->m_hostNatPort ) );
 			else
-				m_stream.write_utf16( std::format( L"{}:{}", Util::UTF8ToWide( game->m_hostExternalAddr ), game->m_hostPort ) );
+				out.write_utf16( std::format( L"{}:{}", Util::UTF8ToWide( game->m_hostExternalAddr ), game->m_hostNatPort ) );
 		}
 	}
 
-	m_stream.write_u32( publicGameCount );
+	out.write_u32( publicGameCount );
 	{
 		for( const auto &game : publicGameList )
-			m_stream.write_utf16( game->m_gameName );
+			out.write_utf16( game->m_gameName );
 	}
 
-	m_stream.write_u32( publicGameCount );
+	out.write_u32( publicGameCount );
 	{
 		for( const auto &game : publicGameList )
-			m_stream.write_utf16( game->m_ownerName );
+			out.write_utf16( game->m_ownerName );
 	}
 
-	m_stream.write_u32( publicGameCount );
+	out.write_u32( publicGameCount );
 	{
 		for( const auto &game : publicGameList )
-			m_stream.write_u32( game->m_gameIndex );
+			out.write_u32( game->m_gameId );
 	}
 
-	m_stream.write_u32( publicGameCount );
+	out.write_u32( publicGameCount );
 	{
 		for( const auto &game : publicGameList )
-			m_stream.write_utf8( game->m_gameData );
+			out.write_utf8( game->m_gameData );
 	}
-
-	return m_stream;
 }

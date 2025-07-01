@@ -1,18 +1,18 @@
 #include "NotifyClientRequestConnect.h"
 
-NotifyClientRequestConnect::NotifyClientRequestConnect( std::string clientIp, int32_t clientPort ) : GenericMessage( 0x3F )
+#include "../../Game/RealmUser.h"
+
+NotifyClientRequestConnect::NotifyClientRequestConnect( sptr_user user ) : GenericMessage( 0x3F )
 {
-	this->m_clientIp = std::move( clientIp );
-	this->m_clientPort = clientPort;
+	this->m_clientIp = user->m_discoveryAddr;
+	this->m_clientPort = user->m_discoveryPort;
 }
 
-ByteBuffer &NotifyClientRequestConnect::Serialize()
+void NotifyClientRequestConnect::Serialize( ByteBuffer &out ) const
 {
-	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( 0 );
+	out.write_u16( m_packetId );
+	out.write_u32( 0 );
 
-	m_stream.write_sz_utf8( m_clientIp );
-	m_stream.write_u32( m_clientPort );
-
-	return m_stream;
+	out.write_sz_utf8( m_clientIp );
+	out.write_u32( m_clientPort );
 }

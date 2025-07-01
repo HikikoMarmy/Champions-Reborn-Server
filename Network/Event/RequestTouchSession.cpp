@@ -14,11 +14,11 @@ sptr_generic_response RequestTouchSession::ProcessRequest( sptr_socket socket, s
 {
 	Deserialize( stream );
 
-	auto user = RealmUserManager::Get().FindUserBySocket( socket );
+	auto user = UserManager::Get().FindUserBySocket( socket );
 
 	if( user == nullptr )
 	{
-		Log::Error( "User not found! [%S]", m_sessionId.c_str() );
+		Log::Error( "User not found! [{}]", m_sessionId );
 		return std::make_shared< ResultTouchSession >( this );
 	}
 
@@ -30,11 +30,9 @@ ResultTouchSession::ResultTouchSession( GenericRequest *request ) : GenericRespo
 	
 }
 
-ByteBuffer &ResultTouchSession::Serialize()
+void ResultTouchSession::Serialize( ByteBuffer &out ) const
 {
-	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( m_trackId );
-	m_stream.write_u32( 0 );
-
-	return m_stream;
+	out.write_u16( m_packetId );
+	out.write_u32( m_trackId );
+	out.write_u32( 0 );
 }

@@ -17,11 +17,12 @@
 /* 000F */	#include "Event/RequestGetRealmStats.h"
 
 /* 0011 */	#include "Event/RequestGetRoom.h"
-
+/* 0015 */	#include "Event/RequestLeaveRoom.h"
 /* 0016 */	#include "Event/RequestLogin.h"
 /* 0017 */	#include "Event/RequestLogout.h"
 /* 0018 */	#include "Event/RequestMatchGame.h"
 
+/* 0022 */	#include "Event/RequestSendRoomMessage.h"
 /* 0023 */	#include "Event/RequestStartGame.h"
 /* 0024 */	#include "Event/RequestTouchSession.h"
 /* 0025 */	#include "Event/RequestDoClientDiscovery.h"
@@ -35,17 +36,18 @@
 /* 0054 */	#include "Event/RequestCreatePublicGame_RTA.h"
 /* 0055 */	#include "Event/RequestMatchGame_RTA.h"
 /* 0056 */	#include "Event/RequestCreatePrivateGame_RTA.h"
+/* 0057 */	#include "Event/RequestGetGame_RTA.h"
 
 /* 0058 */	#include "Event/RequestCreateNewCharacter_RTA.h"
 /* 005B */	#include "Event/RequestGetNetCharacterList_RTA.h"
 /* 005C */	#include "Event/RequestGetCharacterData_RTA.h"
-/* 005D */	#include "Event/Request_5D.h"
+/* 005D */	#include "Event/RequestAppendCharacterData.h"
 /* 005E */	#include "Event/RequestSaveCharacter_RTA.h"
-/* 005F */	#include "Event/Request_5F.h"
+/* 005F */	#include "Event/RequestUserJoinSuccess.h"
 /* 0060 */	#include "Event/RequestCancelGame_RTA.h"
-/* 0061 */	#include "Event/Request_61.h"
+/* 0061 */	#include "Event/RequestGetFriendList.h"
 
-/* 0066 */	#include "Event/RequestGetGame_RTA.h"
+/* 0066 */	#include "Event/RequestDoClientDiscovery_RTA.h"
 
 
 const std::map< int16_t, std::function< std::unique_ptr< GenericRequest >() > > REQUEST_EVENT =
@@ -100,6 +102,11 @@ const std::map< int16_t, std::function< std::unique_ptr< GenericRequest >() > > 
 			return std::make_unique< RequestGetRoom >();
 		}
 	},
+	{ 0x0015, []() -> std::unique_ptr< GenericRequest >
+		{
+			return std::make_unique< RequestLeaveRoom >();
+		}
+	},
 	{ 0x0016, []() -> std::unique_ptr< GenericRequest >
 		{
 			return std::make_unique< RequestLogin >();
@@ -113,6 +120,11 @@ const std::map< int16_t, std::function< std::unique_ptr< GenericRequest >() > > 
 	{ 0x0018, []() -> std::unique_ptr< GenericRequest >
 		{
 			return std::make_unique< RequestMatchGame >();
+		}
+	},
+	{ 0x0022, []() -> std::unique_ptr< GenericRequest >
+		{
+			return std::make_unique< RequestSendRoomMessage >();
 		}
 	},
 	{ 0x0023, []() -> std::unique_ptr< GenericRequest >
@@ -165,6 +177,11 @@ const std::map< int16_t, std::function< std::unique_ptr< GenericRequest >() > > 
 	  return std::make_unique< RequestCreatePrivateGame_RTA >();
 	  }
 	},
+	{ 0x0057, []() -> std::unique_ptr< GenericRequest >
+	  {
+	  return std::make_unique< RequestGetGame_RTA >();
+	  }
+	},
 	{ 0x0058, []() -> std::unique_ptr< GenericRequest >
 	  {
 	  return std::make_unique< RequestCreateNewCharacter_RTA >();
@@ -182,7 +199,7 @@ const std::map< int16_t, std::function< std::unique_ptr< GenericRequest >() > > 
 	},
 	{ 0x005D, []() -> std::unique_ptr< GenericRequest >
 	  {
-	  return std::make_unique< Request_5D >();
+	  return std::make_unique< RequestAppendCharacterData >();
 	  }
 	},
 	{ 0x005E, []() -> std::unique_ptr< GenericRequest >
@@ -192,7 +209,7 @@ const std::map< int16_t, std::function< std::unique_ptr< GenericRequest >() > > 
 	},
 	{ 0x005F, []() -> std::unique_ptr< GenericRequest >
 	  {
-	  return std::make_unique< Request_5F >();
+	  return std::make_unique< RequestUserJoinSuccess >();
 	  }
 	},
 	{ 0x0060, []() -> std::unique_ptr< GenericRequest >
@@ -202,12 +219,12 @@ const std::map< int16_t, std::function< std::unique_ptr< GenericRequest >() > > 
 	},
 	{ 0x0061, []() -> std::unique_ptr< GenericRequest >
 	  {
-	  return std::make_unique< Request_61 >();
+	  return std::make_unique< RequestGetFriendList >();
 	  }
 	},
 	{ 0x0066, []() -> std::unique_ptr< GenericRequest >
 	 {
-		return std::make_unique< RequestGetGame_RTA >();
+		return std::make_unique< RequestDoClientDiscovery_RTA >();
 	 }
 	},
 };

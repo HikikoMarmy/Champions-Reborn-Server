@@ -17,7 +17,7 @@ public:
 	}
 
 	virtual ~GenericResponse() = default;
-	virtual ByteBuffer& Serialize() = 0;
+	virtual void Serialize( ByteBuffer& out ) const = 0;
 };
 
-typedef std::shared_ptr< GenericResponse > sptr_generic_response;
+using sptr_generic_response = std::shared_ptr< GenericResponse >;

@@ -1,20 +1,19 @@
 #include "NotifyClientDiscovered_RTA.h"
 
 #include "../../Common/Constant.h"
+#include "../../Game/RealmUser.h"
 
-NotifyClientDiscovered_RTA::NotifyClientDiscovered_RTA( std::string clientIp, int32_t clientPort ) : GenericMessage( 0x40 )
+NotifyClientDiscovered_RTA::NotifyClientDiscovered_RTA( sptr_user user ) : GenericMessage( 0x40 )
 {
-	this->m_clientIp = std::move( clientIp );
-	this->m_clientPort = clientPort;
+	this->m_clientIp = user->m_discoveryAddr;
+	this->m_clientPort = user->m_discoveryPort;
 }
 
-ByteBuffer & NotifyClientDiscovered_RTA::Serialize()
+void  NotifyClientDiscovered_RTA::Serialize( ByteBuffer &out ) const
 {
-	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( 0 );
+	out.write_u16( m_packetId );
+	out.write_u32( 0 );
 
-	m_stream.write_utf8( m_clientIp );
-	m_stream.write_u32( m_clientPort );
-
-	return m_stream;
+	out.write_utf8( m_clientIp );
+	out.write_u32( m_clientPort );
 }

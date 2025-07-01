@@ -16,7 +16,7 @@ sptr_generic_response RequestGetRules::ProcessRequest( sptr_socket socket, sptr_
 {
 	Deserialize( stream );
 
-	auto user = RealmUserManager::Get().FindUserBySocket( socket );
+	auto user = UserManager::Get().FindUserBySocket( socket );
 	if( user == nullptr )
 	{
 		return std::make_shared< ResultGetRules >( this, L"" );
@@ -25,24 +25,24 @@ sptr_generic_response RequestGetRules::ProcessRequest( sptr_socket socket, sptr_
 	// TODO: Get rules/eula based on language
 	// and move it info a MOTD file.
 	std::wstring rules;
-	
-	if (user->m_gameType == RealmGameType::RETURN_TO_ARMS)
+
+	if( user->m_gameType == RealmGameType::RETURN_TO_ARMS )
 	{
-		rules = L"Welcome to the Norrath Emulated Server!\n\n"
+		rules = L"Welcome to the Champions Emulated Server!\n\n"
 			L"RETURN TO ARMS network support is currently a\n"
 			L"work in progress and can not guarantee stability.\n\n"
 			L"[IMPORTANT]:\n"
-			L"Please note that ONLINE character data will not be saved.\n"
-			L"You must import an offline save file for now.\n";
+			L"Please note that ONLINE character saves may be unstable.\n"
+			L"Use them at your own risk.\n";
 	}
 	else
 	{
-		rules = L"Welcome to the Norrath Emulated Server!\n\n"
+		rules = L"Welcome to the Champions Emulated Server!\n\n"
 			L"This server is currently in development\n"
 			L"and may not be fully functional.\n\n";
 	}
 
-	 return std::make_shared< ResultGetRules >( this, rules );
+	return std::make_shared< ResultGetRules >( this, rules );
 }
 
 ResultGetRules::ResultGetRules( GenericRequest *request, std::wstring rules ) : GenericResponse( *request )
@@ -50,13 +50,13 @@ ResultGetRules::ResultGetRules( GenericRequest *request, std::wstring rules ) : 
 	m_rules = rules;
 }
 
-ByteBuffer &ResultGetRules::Serialize()
+void ResultGetRules::Serialize( ByteBuffer &out ) const
 {
-	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( m_trackId );
-	m_stream.write_u32( 0 );
+	out.write_u16( m_packetId );
+	out.write_u32( m_trackId );
+	out.write_u32( 0 );
 
-	m_stream.write_utf16( m_rules );
+	out.write_utf16( m_rules );
 
-	return m_stream;
+
 }

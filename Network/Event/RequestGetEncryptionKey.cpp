@@ -20,17 +20,15 @@ ResultGetEncryptionKey::ResultGetEncryptionKey( GenericRequest *request ) : Gene
 	m_symKey = RealmCrypt::getSymmetricKey();
 }
 
-ByteBuffer& ResultGetEncryptionKey::Serialize()
+void ResultGetEncryptionKey::Serialize( ByteBuffer &out ) const
 {
-	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( m_trackId );
-	m_stream.write_u32( 0 );
+	out.write_u16( m_packetId );
+	out.write_u32( m_trackId );
+	out.write_u32( 0 );
 
 	auto encrypted = RealmCrypt::encryptSymmetric( m_symKey );
 
-	m_stream.write_u32( encrypted.size() + 4 );
-	m_stream.write_u32( m_symKey.size() );
-	m_stream.write_bytes( encrypted );
-
-	return m_stream;
+	out.write_u32( encrypted.size() + 4 );
+	out.write_u32( m_symKey.size() );
+	out.write_bytes( encrypted );
 }

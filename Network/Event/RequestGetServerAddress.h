@@ -25,5 +25,5 @@ public:
 	RealmGameType m_gameType;
 
 	ResultGetServerAddress( GenericRequest *request, std::string ip, int32_t port, RealmGameType clientType );
-	ByteBuffer &Serialize();
+	void Serialize( ByteBuffer &out ) const;
 };

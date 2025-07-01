@@ -6,6 +6,8 @@
 #include "../GenericNetRequest.h"
 #include "../GenericNetResponse.h"
 
+#include "../../Game/ChatRoomSession.h"
+
 class RequestGetPublicRooms : public GenericRequest
 {
 public:
@@ -19,7 +21,10 @@ public:
 };
 
 class ResultGetPublicRooms : public GenericResponse {
+private:
+	std::vector< sptr_chat_room_session > m_rooms;
+
 public:
-	ResultGetPublicRooms( GenericRequest *request );
-	ByteBuffer &Serialize();
+	ResultGetPublicRooms( GenericRequest *request, std::vector< sptr_chat_room_session > rooms );
+	void Serialize( ByteBuffer &out ) const;
 };

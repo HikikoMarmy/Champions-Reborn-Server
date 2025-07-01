@@ -3,14 +3,14 @@
 #include <string>
 
 #include "../GenericNetMessage.h"
+#include "../../Common/ForwardDecl.h"
 
-class NotifyClientRequestConnect : public GenericMessage
-{
+class NotifyClientRequestConnect : public GenericMessage {
 private:
 	std::string m_clientIp;
 	int32_t m_clientPort;
 
 public:
-	NotifyClientRequestConnect( std::string clientIp, int32_t clientPort );
-	ByteBuffer &Serialize() override;
+	NotifyClientRequestConnect( sptr_user user );
+	void Serialize( ByteBuffer &out ) const override;
 };

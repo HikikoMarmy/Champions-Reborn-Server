@@ -6,10 +6,11 @@
 #include "../GenericNetRequest.h"
 #include "../GenericNetResponse.h"
 
-class Request_5D : public GenericRequest
+class RequestUserJoinSuccess : public GenericRequest
 {
 private:
-	std::vector< uint8_t > m_data;
+	std::wstring m_sessionId;
+	std::wstring m_ownerSessionId;
 
 	enum CREATE_REPLY {
 		SUCCESS = 0,
@@ -17,20 +18,20 @@ private:
 		GENERAL_ERROR,
 	};
 public:
-	static std::unique_ptr< Request_5D > Create()
+	static std::unique_ptr< RequestUserJoinSuccess > Create()
 	{
-		return std::make_unique< Request_5D >();
+		return std::make_unique< RequestUserJoinSuccess >();
 	}
 
 	sptr_generic_response ProcessRequest( sptr_socket socket, sptr_byte_stream stream ) override;
 	void Deserialize( sptr_byte_stream stream ) override;
 };
 
-class Result_5D : public GenericResponse {
+class ResultUserJoinSuccess : public GenericResponse {
 private:
 	int32_t m_reply;
 
 public:
-	Result_5D( GenericRequest *request, int32_t reply );
-	ByteBuffer &Serialize();
+	ResultUserJoinSuccess( GenericRequest *request, int32_t reply );
+	void Serialize( ByteBuffer &out ) const;
 };

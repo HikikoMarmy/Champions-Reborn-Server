@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <string>
+#include <array>
 
 #include "../GenericNetRequest.h"
 #include "../GenericNetResponse.h"
@@ -11,8 +12,11 @@ class RequestCreatePublicGame_RTA : public GenericRequest
 private:
 	std::wstring m_sessionId;
 	std::wstring m_gameInfo;
-
+	std::wstring m_gameName;
 	std::string m_localAddr;
+	int32_t m_localPort;
+
+	std::array< int8_t, 5 > m_attributes;
 
 	enum CREATE_REPLY {
 		SUCCESS = 0,
@@ -21,6 +25,7 @@ private:
 		GAME_NAME_IN_USE = 38,
 		GAME_PENDING = 40,
 	};
+
 public:
 	static std::unique_ptr< RequestCreatePublicGame_RTA > Create()
 	{
@@ -28,6 +33,7 @@ public:
 	}
 	sptr_generic_response ProcessRequest( sptr_socket socket, sptr_byte_stream stream ) override;
 	void Deserialize( sptr_byte_stream stream ) override;
+	bool ParseGameInfo();
 };
 
 class ResultCreatePublicGame_RTA : public GenericResponse {
@@ -38,5 +44,5 @@ private:
 
 public:
 	ResultCreatePublicGame_RTA( GenericRequest *request, int32_t reply, std::string discoveryIp = "", int32_t discoveryPort = 0 );
-	ByteBuffer &Serialize();
+	void Serialize( ByteBuffer &out ) const;
 };

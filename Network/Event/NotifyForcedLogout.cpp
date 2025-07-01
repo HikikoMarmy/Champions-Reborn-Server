@@ -4,12 +4,9 @@ NotifyForcedLogout::NotifyForcedLogout() : GenericMessage( 0x41 )
 {
 }
 
-ByteBuffer &NotifyForcedLogout::Serialize()
+void NotifyForcedLogout::Serialize( ByteBuffer &out ) const
 {
-	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( 0 );
-
-	m_stream.write_u32( 0 );
-
-	return m_stream;
+	out.write_u16( m_packetId );
+	out.write_u32( 0 );
+	out.write_u32( 0 );
 }

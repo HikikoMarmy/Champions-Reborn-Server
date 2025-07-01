@@ -7,5 +7,5 @@ private:
 
 public:
 	Notify_4C();
-	ByteBuffer &Serialize() override;
+	void Serialize(ByteBuffer &out) const override;
 };

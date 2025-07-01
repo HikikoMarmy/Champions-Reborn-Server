@@ -7,22 +7,22 @@
 void RequestCreatePrivateRoom::Deserialize( sptr_byte_stream stream )
 {
 	DeserializeHeader( stream );
+
+	m_sessionId = stream->read_encrypted_utf16();
+	m_roomName = stream->read_utf16();
 }
 
 sptr_generic_response RequestCreatePrivateRoom::ProcessRequest( sptr_socket socket, sptr_byte_stream stream )
 {
 	Deserialize( stream );
 
-	auto user = RealmUserManager::Get().FindUserBySocket( socket );
+	auto user = UserManager::Get().FindUserBySocket( socket );
 	if( user == nullptr )
 	{
 		return std::make_shared< ResultCreatePrivateRoom >( this );
 	}
 
-	auto sessionId = stream->read_encrypted_utf16();
-	auto roomName = stream->read_utf16();
-
-	auto result = ChatRoomManager::Get().CreatePrivateChatSession( user, roomName );
+	auto result = ChatRoomManager::Get().CreateGameChatSession( user, m_roomName );
 
 	if( !result )
 	{
@@ -37,11 +37,9 @@ ResultCreatePrivateRoom::ResultCreatePrivateRoom( GenericRequest *request ) : Ge
 {
 }
 
-ByteBuffer&ResultCreatePrivateRoom::Serialize()
+void ResultCreatePrivateRoom::Serialize( ByteBuffer &out ) const
 {
-	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( m_trackId );
-	m_stream.write_u32( 0 );
-
-	return m_stream;
+	out.write_u16( m_packetId );
+	out.write_u32( m_trackId );
+	out.write_u32( 0 );
 }

@@ -24,5 +24,5 @@ private:
 
 public:
 	ResultMatchGame_RTA( GenericRequest *request, std::string userIp );
-	ByteBuffer &Serialize();
+	void Serialize( ByteBuffer &out ) const;
 };

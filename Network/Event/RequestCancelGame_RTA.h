@@ -24,5 +24,5 @@ public:
 class ResultCancelGame_RTA : public GenericResponse {
 public:
 	ResultCancelGame_RTA( GenericRequest *request );
-	ByteBuffer &Serialize();
+	void Serialize( ByteBuffer &out ) const;
 };

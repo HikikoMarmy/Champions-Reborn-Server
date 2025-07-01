@@ -13,9 +13,9 @@ sptr_generic_response RequestLogout::ProcessRequest( sptr_socket socket, sptr_by
 {
 	Deserialize( stream );
 
-	RealmUserManager::Get().RemoveUser( socket );
+	UserManager::Get().RemoveUser( socket );
 
-	Log::Debug( "[%S] Logout", m_sessionId.c_str() );
+	Log::Debug( "[{}] Logout", m_sessionId );
 
 	return std::make_shared< ResultLogout >( this, 0 );
 }
@@ -25,11 +25,9 @@ ResultLogout::ResultLogout( GenericRequest *request, int32_t reply ) : GenericRe
 	m_reply = reply;
 }
 
-ByteBuffer &ResultLogout::Serialize()
+void ResultLogout::Serialize( ByteBuffer &out ) const
 {
-	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( m_trackId );
-	m_stream.write_u32( m_reply );
-
-	return m_stream;
+	out.write_u16( m_packetId );
+	out.write_u32( m_trackId );
+	out.write_u32( m_reply );
 }

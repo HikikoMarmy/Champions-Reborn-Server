@@ -19,22 +19,21 @@ ResultGetRealmStats::ResultGetRealmStats( GenericRequest *request ) : GenericRes
 	
 }
 
-ByteBuffer &ResultGetRealmStats::Serialize()
+void ResultGetRealmStats::Serialize( ByteBuffer &out ) const
 {
-	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( m_trackId );
-	m_stream.write_u32( 0 );
+	out.write_u16( m_packetId );
+	out.write_u32( m_trackId );
+	out.write_u32( 0 );
 
 	// Player count on the game page.
-	m_stream.write_u32( RealmUserManager::Get().GetUserCount() );	// Users Logged In Game
+	out.write_u32( UserManager::Get().GetUserCount() );	// Users Logged In Game
 
 	// I'm not sure this appears anywhere in the game.
-	m_stream.write_u32( 0 );	// Users Logged In Realm
-	m_stream.write_u32( 0 );	// Users Running Game
-	m_stream.write_u32( 0 );	// Users Running Realm
-	m_stream.write_u32( 0 );	// Users Playing Game
-	m_stream.write_u32( 0 );	// Users Playing Realm
-	m_stream.write_u32( 0 );	// unmatchedGamesGame
-	m_stream.write_u32( 0 );	// unmatchedGamesRealm
-	return m_stream;
+	out.write_u32( 0 );	// Users Logged In Realm
+	out.write_u32( 0 );	// Users Running Game
+	out.write_u32( 0 );	// Users Running Realm
+	out.write_u32( 0 );	// Users Playing Game
+	out.write_u32( 0 );	// Users Playing Realm
+	out.write_u32( 0 );	// unmatchedGamesGame
+	out.write_u32( 0 );	// unmatchedGamesRealm
 }

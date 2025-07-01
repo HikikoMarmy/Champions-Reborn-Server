@@ -55,8 +55,9 @@ RealmSocket::~RealmSocket()
 
 void RealmSocket::send( const sptr_generic_response response )
 {
-	auto &stream = response->Serialize();
-	auto netSize = Util::ByteSwap( static_cast< uint32_t >( stream.get_position() ) + 4 );
+	ByteBuffer stream;
+	response->Serialize( stream );
+	const auto netSize = Util::ByteSwap( static_cast< uint32_t >( stream.get_position() ) + 4 );
 
 	std::lock_guard< std::mutex > lock( write_mutex );
 
@@ -64,10 +65,11 @@ void RealmSocket::send( const sptr_generic_response response )
 	m_pendingWriteBuffer.insert( m_pendingWriteBuffer.end(), stream.m_buffer.begin(), stream.m_buffer.end() );
 }
 
-void RealmSocket::send( GenericMessage &message )
+void RealmSocket::send( const GenericMessage &message )
 {
-	auto &stream = message.Serialize();
-	auto netSize = Util::ByteSwap( static_cast< uint32_t >( stream.get_position() ) + 4 );
+	ByteBuffer stream;
+	message.Serialize( stream );
+	const auto netSize = Util::ByteSwap( static_cast< uint32_t >( stream.get_position() ) + 4 );
 
 	std::lock_guard< std::mutex > lock( write_mutex );
 

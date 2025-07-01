@@ -9,13 +9,15 @@ class RequestCreateNewCharacter_RTA : public GenericRequest
 {
 private:
 	std::wstring m_sessionId;
-	sptr_realm_character m_newCharacterData;
+	CharacterSlotData m_metaData;
+	std::vector< uint8_t > m_characterData;
 	
 	enum CREATE_REPLY {
 		SUCCESS = 0,
 		FATAL_ERROR,
 		GENERAL_ERROR,
 	};
+
 public:
 	static std::unique_ptr< RequestCreateNewCharacter_RTA > Create()
 	{
@@ -32,5 +34,5 @@ private:
 
 public:
 	ResultCreateNewCharacter_RTA( GenericRequest *request, int32_t reply );
-	ByteBuffer &Serialize();
+	void Serialize( ByteBuffer &out ) const;
 };

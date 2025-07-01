@@ -2,6 +2,7 @@
 
 #include "../../Game/RealmUserManager.h"
 #include "../../Game/GameSessionManager.h"
+#include "../../Game/ChatRoomManager.h"
 #include "../../Game/RealmUser.h"
 #include "../../logging.h"
 
@@ -16,7 +17,7 @@ sptr_generic_response RequestStartGame::ProcessRequest( sptr_socket socket, sptr
 {
 	Deserialize( stream );
 
-	auto user = RealmUserManager::Get().FindUserBySocket( socket );
+	auto user = UserManager::Get().FindUserBySocket( socket );
 	if( user == nullptr )
 	{
 		return std::make_shared< ResultStartGame >( this, FATAL_ERROR );
@@ -29,7 +30,16 @@ sptr_generic_response RequestStartGame::ProcessRequest( sptr_socket socket, sptr
 		return std::make_shared< ResultStartGame >( this, FATAL_ERROR );
 	}
 
-	GameSessionManager::Get().RequestStart(user);
+	if( !GameSessionManager::Get().RequestStart( user ) )
+	{
+		Log::Error( "Failed to start game session [{}]", user->m_gameId );
+		return std::make_shared< ResultStartGame >( this, FATAL_ERROR );
+	}
+
+	if( !ChatRoomManager::Get().CloseGameChatSession( session->m_gameName ) )
+	{
+		Log::Error( "Failed to close chat room for game session [{}]", session->m_gameName );
+	}
 
 	return std::make_shared< ResultStartGame >( this, SUCCESS );
 }
@@ -39,11 +49,9 @@ ResultStartGame::ResultStartGame( GenericRequest *request, int32_t reply ) : Gen
 	m_reply = reply;
 }
 
-ByteBuffer& ResultStartGame::Serialize()
+void ResultStartGame::Serialize( ByteBuffer &out ) const
 {
-	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( m_trackId );
-	m_stream.write_u32( m_reply );
-
-	return m_stream;
+	out.write_u16( m_packetId );
+	out.write_u32( m_trackId );
+	out.write_u32( m_reply );
 }

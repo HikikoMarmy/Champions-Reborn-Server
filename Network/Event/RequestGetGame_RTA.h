@@ -9,9 +9,7 @@
 class RequestGetGame_RTA : public GenericRequest {
 private:
 	std::wstring m_sessionId;
-	std::string m_localAddr;
-
-	uint32_t m_gameId;
+	std::wstring m_gameName;
 
 	enum REPLY {
 		SUCCESS = 0,
@@ -31,10 +29,13 @@ public:
 class ResultGetGame_RTA : public GenericResponse {
 private:
 	int32_t m_reply;
-	std::string m_discoveryIp;
-	int32_t m_discoveryPort;
+	int32_t m_gameId;
+
+	std::wstring m_discoveryAddr;
+	std::wstring m_localAddr;
+	int32_t m_port;
 
 public:
-	ResultGetGame_RTA( GenericRequest *request, int32_t reply, std::string discoveryIp = "", int32_t discoveryPort = 0);
-	ByteBuffer &Serialize();
+	ResultGetGame_RTA( GenericRequest *request, int32_t reply, int32_t gameId = -1, std::string discoveryAddr = "", std::string localAddr = "", int32_t discoveryPort = 0 );
+	void Serialize( ByteBuffer &out ) const;
 };

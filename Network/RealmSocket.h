@@ -20,7 +20,7 @@ public:
 	~RealmSocket();
 
 	void send( const sptr_generic_response response );
-	void send( GenericMessage &message );
+	void send( const GenericMessage &message );
 
 	// Comparison operator for sorting
 	bool operator<( const RealmSocket &rhs ) const

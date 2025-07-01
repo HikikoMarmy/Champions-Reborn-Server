@@ -7,5 +7,5 @@ private:
 
 public:
 	NotifyForcedLogout();
-	ByteBuffer &Serialize() override;
+	void Serialize( ByteBuffer &out ) const override;
 };

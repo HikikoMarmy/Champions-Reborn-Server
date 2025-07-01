@@ -15,8 +15,8 @@ private:
 		ACCOUNT_INVALID = 4,
 	};
 
-	std::string m_username;
-	std::string m_password;
+	std::wstring m_username;
+	std::wstring m_password;
 	std::wstring m_sessionId;
 
 public:
@@ -39,5 +39,5 @@ private:
 
 public:
 	ResultLogin( GenericRequest *request, int32_t reply, std::wstring sessionId );
-	ByteBuffer &Serialize();
+	void Serialize( ByteBuffer &out ) const;
 };

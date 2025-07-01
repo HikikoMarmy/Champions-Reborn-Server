@@ -6,8 +6,18 @@
 #include "../GenericNetRequest.h"
 #include "../GenericNetResponse.h"
 
+#include "../../Game/ChatRoomSession.h"
+
 class RequestEnterRoom : public GenericRequest
 {
+private:
+	std::wstring m_roomName;
+
+	enum REPLY {
+		SUCCESS = 0,
+		GENERAL_ERROR
+	};
+
 public:
 	static std::unique_ptr< RequestEnterRoom > Create()
 	{
@@ -19,7 +29,11 @@ public:
 };
 
 class ResultEnterRoom : public GenericResponse {
+private:
+	int32_t m_reply;
+	sptr_chat_room_session m_room;
+
 public:
-	ResultEnterRoom( GenericRequest *request );
-	ByteBuffer &Serialize();
+	ResultEnterRoom( GenericRequest *request, int32_t reply, sptr_chat_room_session room );
+	void Serialize( ByteBuffer &out ) const;
 };

@@ -4,6 +4,7 @@
 
 #include "../GenericNetMessage.h"
 #include "../../Common/Constant.h"
+#include "../../Common/ForwardDecl.h"
 
 class NotifyClientDiscovered_RTA : public GenericMessage {
 private:
@@ -11,6 +12,6 @@ private:
 	int32_t m_clientPort;
 
 public:
-	NotifyClientDiscovered_RTA( std::string clientIp, int32_t clientPort );
-	ByteBuffer &Serialize() override;
+	NotifyClientDiscovered_RTA( sptr_user user );
+	void Serialize( ByteBuffer &out ) const override;
 };

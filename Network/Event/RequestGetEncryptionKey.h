@@ -23,5 +23,5 @@ public:
 	std::vector< uint8_t > m_symKey;
 
 	ResultGetEncryptionKey( GenericRequest *request );
-	ByteBuffer &Serialize();
+	void Serialize( ByteBuffer &out ) const;
 };

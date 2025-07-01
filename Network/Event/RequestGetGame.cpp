@@ -17,10 +17,10 @@ sptr_generic_response RequestGetGame::ProcessRequest( sptr_socket socket, sptr_b
 {
 	Deserialize( stream );
 
-	auto user = RealmUserManager::Get().FindUserBySocket( socket );
+	auto user = UserManager::Get().FindUserBySocket( socket );
 	if( user == nullptr )
 	{
-		Log::Error( "User not found! [%S]", m_sessionId.c_str() );
+		Log::Error( "User not found! [{}]", m_sessionId );
 		return std::make_shared< ResultGetGame >( this, TIMEOUT );
 	}
 
@@ -28,28 +28,28 @@ sptr_generic_response RequestGetGame::ProcessRequest( sptr_socket socket, sptr_b
 
 	if( session == nullptr )
 	{
-		Log::Error( "Game session not found! [%S]", m_gameName.c_str() );
+		Log::Error( "Game session not found! [{}]", m_gameName );
 		return std::make_shared< ResultGetGame >( this, NOT_FOUND );
 	}
 
 	if( session->m_currentPlayers >= session->m_maximumPlayers )
 	{
-		Log::Error( "Game session is full! [%S]", m_gameName.c_str() );
+		Log::Error( "Game session is full! [{}]", m_gameName );
 		return std::make_shared< ResultGetGame >( this, TIMEOUT );
 	}
 
-	auto host_user = session->m_owner.lock();
+	auto host_user = session->GetOwner();
 
 	if( host_user == nullptr )
 	{
-		Log::Error( "Game session owner not found! [%S]", m_gameName.c_str() );
+		Log::Error( "Game session owner not found! [{}]", m_gameName );
 		return std::make_shared< ResultGetGame >( this, TIMEOUT );
 	}
 
 	user->m_isHost = false;
-	user->m_gameId = session->m_gameIndex;
+	user->m_gameId = session->m_gameId;
 
-	return std::make_shared< ResultGetGame >( this, SUCCESS, session->m_gameIndex );
+	return std::make_shared< ResultGetGame >( this, SUCCESS, session->m_gameId );
 }
 
 ResultGetGame::ResultGetGame( GenericRequest *request, int32_t reply, int32_t gameId ) : GenericResponse( *request )
@@ -58,17 +58,15 @@ ResultGetGame::ResultGetGame( GenericRequest *request, int32_t reply, int32_t ga
 	m_gameId = gameId;
 }
 
-ByteBuffer &ResultGetGame::Serialize()
+void ResultGetGame::Serialize( ByteBuffer &out ) const
 {
-	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( m_trackId );
-	m_stream.write_u32( m_reply );
+	out.write_u16( m_packetId );
+	out.write_u32( m_trackId );
+	out.write_u32( m_reply );
 
 	// TODO: These may come in from the UpdateGameData event
-	m_stream.write_utf16( L"Kelethin" );
-	m_stream.write_utf16( L"OwnerName" );
+	out.write_utf16( L"Kelethin" );
+	out.write_utf16( L"OwnerName" );
 
-	m_stream.write_u32( m_gameId );
-
-	return m_stream;
+	out.write_u32( m_gameId );
 }

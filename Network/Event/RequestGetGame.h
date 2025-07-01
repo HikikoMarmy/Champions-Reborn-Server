@@ -33,5 +33,5 @@ private:
 
 public:
 	ResultGetGame( GenericRequest *request, int32_t reply, int32_t gameId = 0 );
-	ByteBuffer &Serialize();
+	void Serialize( ByteBuffer &out ) const;
 };

@@ -1,22 +1,25 @@
 #include "NotifyClientRequestConnect_RTA.h"
 
-NotifyClientRequestConnect_RTA::NotifyClientRequestConnect_RTA( std::string localAddr, std::string remoteAddr, int32_t port ) : GenericMessage( 0x65 )
+#include "../../Game/RealmUser.h"
+
+NotifyClientRequestConnect_RTA::NotifyClientRequestConnect_RTA( sptr_user user ) : GenericMessage( 0x65 )
 {
-	this->m_localAddr = localAddr;
-	this->m_remoteAddr = remoteAddr;
-	this->m_port = port;
+	this->m_remoteAddr = user->m_discoveryAddr;
+	this->m_remotePort = user->m_discoveryPort;
+
+	this->m_localAddr = user->m_localAddr;
+	this->m_localPort = user->m_localPort;
+
 }
 
-ByteBuffer &NotifyClientRequestConnect_RTA::Serialize()
+void NotifyClientRequestConnect_RTA::Serialize( ByteBuffer &out ) const
 {
-	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( 0 );
+	out.write_u16( m_packetId );
+	out.write_u32( 0 );
 
-	m_stream.write_utf8( this->m_localAddr);
-	m_stream.write_u32( this->m_port );
+	out.write_utf8( this->m_remoteAddr );
+	out.write_u32( this->m_remotePort );
 
-	m_stream.write_utf8( this->m_localAddr );
-	m_stream.write_u32( this->m_port );
-
-	return m_stream;
+	out.write_utf8( this->m_localAddr );
+	out.write_u32( this->m_localPort );
 }

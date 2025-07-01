@@ -9,7 +9,8 @@
 class Request_5F : public GenericRequest
 {
 private:
-	std::vector< uint8_t > m_data;
+	std::wstring m_sessionId;
+	std::wstring m_memberSessionId;
 
 	enum CREATE_REPLY {
 		SUCCESS = 0,

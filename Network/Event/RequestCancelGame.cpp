@@ -15,27 +15,21 @@ sptr_generic_response RequestCancelGame::ProcessRequest( sptr_socket socket, spt
 {
 	Deserialize( stream );
 
-	auto user = RealmUserManager::Get().FindUserBySocket( socket );
-
+	auto user = UserManager::Get().FindUserBySocket( socket );
 	if( user == nullptr )
 	{
-		Log::Error( "User not found! [%S]", m_sessionId.c_str() );
+		Log::Error( "User not found! [{}]", m_sessionId );
 		return std::make_shared< ResultCancelGame >( this );
 	}
 
-	if (user->m_isHost)
+	if( user->m_gameType != RealmGameType::CHAMPIONS_OF_NORRATH )
 	{
-		auto result = GameSessionManager::Get().RequestCancel(user);
-
-		if( false == result )
-		{
-			Log::Error( "Failed to cancel game session for user [%S]", user->m_sessionId.c_str() );
-		}
+		return std::make_shared< ResultCancelGame >( this );
 	}
-	else
+
+	if( !GameSessionManager::Get().RequestCancel( user ) )
 	{
-		user->m_isHost = false;
-		user->m_gameId = -1;
+		Log::Error( "Failed to cancel game session for user [{}]", user->m_sessionId );
 	}
 
 	return std::make_shared< ResultCancelGame >( this );
@@ -43,14 +37,12 @@ sptr_generic_response RequestCancelGame::ProcessRequest( sptr_socket socket, spt
 
 ResultCancelGame::ResultCancelGame( GenericRequest *request ) : GenericResponse( *request )
 {
-	
+
 }
 
-ByteBuffer &ResultCancelGame::Serialize()
+void ResultCancelGame::Serialize( ByteBuffer &out ) const
 {
-	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( m_trackId );
-	m_stream.write_u32( 0 );
-
-	return m_stream;
+	out.write_u16( m_packetId );
+	out.write_u32( m_trackId );
+	out.write_u32( 0 );
 }

@@ -27,14 +27,20 @@ public:
 
 	sptr_generic_response ProcessRequest( sptr_socket socket, sptr_byte_stream stream ) override;
 	void Deserialize( sptr_byte_stream stream ) override;
+
+	sptr_generic_response SendCharacterData(sptr_socket socket, sptr_realm_character data);
 };
 
 class ResultGetNetCharacterData_RTA : public GenericResponse {
 private:
 	int32_t m_reply;
-	sptr_realm_character m_data;
+	int32_t m_endOfData;
+	std::vector< uint8_t > m_chunk;
 
 public:
-	ResultGetNetCharacterData_RTA( GenericRequest *request, int32_t reply, sptr_realm_character data );
-	ByteBuffer &Serialize();
+	ResultGetNetCharacterData_RTA( GenericRequest *request, int32_t reply,
+		std::optional< std::vector< uint8_t > > data = std::nullopt,
+		std::optional < int32_t > endOfData = std::nullopt );
+
+	void Serialize( ByteBuffer &out ) const;
 };

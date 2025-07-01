@@ -25,5 +25,5 @@ private:
 	int32_t m_reply;
 public:
 	ResultLogout( GenericRequest *request, int32_t reply );
-	ByteBuffer &Serialize();
+	void Serialize( ByteBuffer &out ) const;
 };

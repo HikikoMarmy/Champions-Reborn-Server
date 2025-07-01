@@ -13,7 +13,7 @@ public:
 	}
 
 	virtual ~GenericMessage() = default;
-	virtual ByteBuffer& Serialize() = 0;
+	virtual void Serialize( ByteBuffer &out ) const = 0;
 };
 
 typedef std::shared_ptr< GenericMessage > sptr_generic_message;

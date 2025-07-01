@@ -3,7 +3,7 @@
 #include <string>
 
 #include "../GenericNetMessage.h"
-#include "../../Common/Constant.h"
+#include "../../Common/ForwardDecl.h"
 
 class NotifyClientDiscovered : public GenericMessage {
 private:
@@ -11,6 +11,6 @@ private:
 	int32_t m_clientPort;
 
 public:
-	NotifyClientDiscovered( std::string clientIp, int32_t clientPort );
-	ByteBuffer &Serialize() override;
+	NotifyClientDiscovered( sptr_user user );
+	void Serialize( ByteBuffer &out ) const override;
 };

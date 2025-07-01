@@ -8,6 +8,10 @@
 
 class RequestCreatePrivateRoom : public GenericRequest
 {
+private:
+	std::wstring m_sessionId;
+	std::wstring m_roomName;
+
 public:
 	static std::unique_ptr< RequestCreatePrivateRoom > Create()
 	{
@@ -21,5 +25,5 @@ public:
 class ResultCreatePrivateRoom : public GenericResponse {
 public:
 	ResultCreatePrivateRoom( GenericRequest *request );
-	ByteBuffer &Serialize();
+	void Serialize( ByteBuffer &out ) const;
 };

@@ -31,9 +31,9 @@ public:
 class ResultGetNetCharacterList_RTA : public GenericResponse {
 private:
 	int32_t m_reply;
-	std::map< int32_t, RealmCharacterMetaData > m_characterList;
+	std::map< uint32_t, CharacterSlotData > m_characterList;
 
 public:
-	ResultGetNetCharacterList_RTA( GenericRequest *request, int32_t reply, std::map< int32_t, RealmCharacterMetaData > list );
-	ByteBuffer &Serialize();
+	ResultGetNetCharacterList_RTA( GenericRequest *request, int32_t reply, std::optional< std::map< uint32_t, CharacterSlotData > > list );
+	void Serialize( ByteBuffer &out ) const;
 };

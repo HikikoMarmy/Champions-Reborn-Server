@@ -23,5 +23,5 @@ public:
 class ResultTouchSession : public GenericResponse {
 public:
 	ResultTouchSession( GenericRequest *request );
-	ByteBuffer &Serialize();
+	void Serialize( ByteBuffer &out ) const;
 };

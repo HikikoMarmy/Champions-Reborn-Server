@@ -10,58 +10,77 @@ void RequestLogin::Deserialize( sptr_byte_stream stream )
 {
 	DeserializeHeader( stream );
 
-	m_username =  Util::WideToUTF8( stream->read_encrypted_utf16() );
-	m_password =  Util::WideToUTF8( stream->read_encrypted_utf16() );
+	m_username = stream->read_encrypted_utf16();
+	m_password = stream->read_encrypted_utf16();
 }
 
-sptr_generic_response RequestLogin::ProcessLoginCON(sptr_user user)
+sptr_generic_response RequestLogin::ProcessLoginCON( sptr_user user )
 {
-	if (m_username != "foo" && m_password != "bar")
+	if( m_username != L"foo" && m_password != L"bar" )
 	{
 		// Network Beta CoN uses login information, but it's invalid because of version 2.0
 		// which used "foo" and "bar" as the login credentials.
-		Log::Debug("RequestLogin : Champions of Norrath v1.0");
+		Log::Debug( "RequestLogin : Champions of Norrath v1.0" );
 
 		// TODO: Either block this, or add support for the network beta.
-		return std::make_shared< ResultLogin >(this, LOGIN_REPLY::ACCOUNT_INVALID, L"");
+		return std::make_shared< ResultLogin >( this, LOGIN_REPLY::ACCOUNT_INVALID, L"" );
 	}
 
+	user->m_isLoggedIn = true;
 	user->m_accountId = -1;
-	user->m_sessionId = RealmUserManager::Get().GenerateSessionId();
+	user->m_sessionId = UserManager::Get().GenerateSessionId();
 
-	return std::make_shared< ResultLogin >(this, SUCCESS, user->m_sessionId);
+	return std::make_shared< ResultLogin >( this, SUCCESS, user->m_sessionId );
 }
 
-sptr_generic_response RequestLogin::ProcessLoginRTA(sptr_user user)
+sptr_generic_response RequestLogin::ProcessLoginRTA( sptr_user user )
 {
 	// Return to Arms uses login information.
-	Log::Debug("RequestLogin : Return to Arms");
+	Log::Debug( "RequestLogin : Return to Arms" );
+
+	auto &UserManager = UserManager::Get();
+	auto &Database = Database::Get();
 
 	// Verify the account exists
-	auto accountId = Database::Get().VerifyAccount(m_username, m_password);
+	auto accountId = Database.VerifyAccount( m_username, m_password );
 
-	if (accountId < 0)
+	if( accountId < 0 )
 	{
-		Log::Error("RequestLogin::ProcessRequest() - Invalid account ID: " + std::to_string(accountId));
-		return std::make_shared< ResultLogin >(this, ACCOUNT_INVALID, L"");
+		Log::Error( "RequestLogin::ProcessRequest() - Invalid account ID: " + std::to_string( accountId ) );
+		return std::make_shared< ResultLogin >( this, ACCOUNT_INVALID, L"" );
 	}
 
-	user->m_accountId = accountId;
-	user->m_sessionId = RealmUserManager::Get().GenerateSessionId();
+	// Check if the user is already logged in
+	for( const auto &existingUser : UserManager.GetUserList() )
+	{
+		if( existingUser->m_username == m_username || existingUser->m_accountId == accountId )
+		{
+			return std::make_shared< ResultLogin >( this, FATAL_ERROR, L"" );
+		}
+	}
 
-	Database::Get().CreateSession(
+	auto [result, chatHandle] = Database.LoadAccount( accountId );
+
+	// Login Success
+	user->m_isLoggedIn = true;
+	user->m_username = m_username;
+	user->m_accountId = accountId;
+	user->m_chatHandle = chatHandle;
+	user->m_sessionId = UserManager.GenerateSessionId();
+	
+	Database.CreateSession(
 		user->m_accountId,
 		user->m_sessionId,
-		user->sock->remote_ip);
+		user->sock->remote_ip );
 
-	return std::make_shared< ResultLogin >(this, SUCCESS, user->m_sessionId);
+	return std::make_shared< ResultLogin >( this, SUCCESS, user->m_sessionId );
 }
 
 sptr_generic_response RequestLogin::ProcessRequest( sptr_socket socket, sptr_byte_stream stream )
 {
 	Deserialize( stream );
 
-	auto user = RealmUserManager::Get().FindUserBySocket( socket );
+	auto user = UserManager::Get().FindUserBySocket( socket );
 	if( user == nullptr )
 	{
 		Log::Error( "RequestLogin::ProcessRequest() - User not found" );
@@ -90,14 +109,12 @@ ResultLogin::ResultLogin( GenericRequest *request, int32_t reply, std::wstring s
 	m_sessionId = sessionId;
 }
 
-ByteBuffer &ResultLogin::Serialize()
+void ResultLogin::Serialize( ByteBuffer &out ) const
 {
-	m_stream.write_u16( m_packetId );
-	m_stream.write_u32( m_trackId );
-	m_stream.write_u32( m_reply );
+	out.write_u16( m_packetId );
+	out.write_u32( m_trackId );
+	out.write_u32( m_reply );
 
-	m_stream.write_encrypted_utf16( m_sessionId );
-	m_stream.write_encrypted_utf16( L"UNKNOWN DUMMY STRING" );
-
-	return m_stream;
+	out.write_encrypted_utf16( m_sessionId );
+	out.write_encrypted_utf16( L"UNKNOWN DUMMY STRING" );
 }
