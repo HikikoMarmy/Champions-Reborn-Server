@@ -1,20 +1,28 @@
 #include "RealmCharacterMetaKV.h"
 
+#include "../Common/ByteBufferReader.hpp"
 #include "../Common/ByteStream.h"
 #include "../Common/Utility.h"
 #include "../logging.h"
 
-RealmCharacterMetaData::RealmCharacterMetaData( const std::vector<uint8_t> &data )
+CharacterSlotData::CharacterSlotData(const std::vector<uint8_t>& data)
 {
-	ByteBuffer stream( data );
-	Deserialize( stream );
+	if( !data.empty() )
+	{
+		Deserialize(data);
+	}
+	else
+	{
+		m_metaData.clear();
+	}
 }
 
-void RealmCharacterMetaData::Deserialize( ByteBuffer &stream )
+void CharacterSlotData::Deserialize(const std::vector< uint8_t >& data)
 {
-	auto numberOfKeys = stream.read_u32();
+	ByteBuffer reader(data);
 
-	if( !Util::IsInRange< int32_t >( numberOfKeys, 0, 4 ) )
+	auto numberOfKeys = reader.read_i32();
+	if( !Util::IsInRange( numberOfKeys, 0, 4 ) )
 	{
 		m_metaData.clear();
 		return;
@@ -25,25 +33,43 @@ void RealmCharacterMetaData::Deserialize( ByteBuffer &stream )
 
 	for( auto i = 0; i < numberOfKeys; ++i )
 	{
-		std::wstring key = stream.read_utf16();
+		std::wstring key = reader.read_utf16();
 		m_metaData.emplace_back( key, L"" );
 	}
 
-	auto numberOfValues = stream.read_u32();
-
+	auto numberOfValues = reader.read_i32();
 	for( auto &pair : m_metaData )
 	{
-		pair.second = stream.read_utf16();
+		pair.second = reader.read_utf16();
 	}
 }
 
-void RealmCharacterMetaData::Deserialize( const std::vector<uint8_t> &data )
+void CharacterSlotData::Deserialize(const sptr_byte_stream stream)
 {
-	ByteBuffer stream( data );
-	Deserialize( stream );
+	auto numberOfKeys = stream->read_i32();
+	if (!Util::IsInRange(numberOfKeys, 0, 4))
+	{
+		m_metaData.clear();
+		return;
+	}
+
+	m_metaData.clear();
+	m_metaData.reserve(numberOfKeys);
+
+	for (auto i = 0; i < numberOfKeys; ++i)
+	{
+		std::wstring key = stream->read_utf16();
+		m_metaData.emplace_back(key, L"");
+	}
+
+	auto numberOfValues = stream->read_i32();
+	for (auto& pair : m_metaData)
+	{
+		pair.second = stream->read_utf16();
+	}
 }
 
-std::vector< uint8_t > RealmCharacterMetaData::Serialize() const
+std::vector< uint8_t > CharacterSlotData::Serialize() const
 {
 	ByteBuffer stream;
 
