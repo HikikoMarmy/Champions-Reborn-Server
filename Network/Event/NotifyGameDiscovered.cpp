@@ -1,10 +1,11 @@
 #include "NotifyGameDiscovered.h"
+#include "../../Game/RealmUser.h"
 
-NotifyGameDiscovered::NotifyGameDiscovered( std::string clientIp, int32_t clientPort, RealmGameType clientType ) : GenericMessage( 0x3E )
+NotifyGameDiscovered::NotifyGameDiscovered( sptr_user user ) : GenericMessage( 0x3E )
 {
-	this->m_clientIp = std::move( clientIp );
-	this->m_clientPort = clientPort;
-	this->m_clientType = clientType;
+	this->m_clientIp = user->m_discoveryAddr;
+	this->m_clientPort = user->m_discoveryPort;
+	this->m_clientType = user->m_gameType;
 }
 
 void NotifyGameDiscovered::Serialize( ByteBuffer &out ) const

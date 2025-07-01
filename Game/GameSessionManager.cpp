@@ -220,8 +220,7 @@ bool GameSessionManager::RequestOpen( sptr_user user )
 	session->m_state = GameSession::GameState::Open;
 
 	// Tell the host its own address.
-	NotifyGameDiscovered msg( user->m_discoveryAddr, user->m_discoveryPort, user->m_gameType );
-	user->sock->send( msg );
+	user->sock->send( NotifyGameDiscovered( user ) );
 
 	Log::Info( "Game Session [{}] Discoverable on {}", gameId, user->m_discoveryAddr );
 
@@ -403,12 +402,10 @@ std::vector<sptr_game_session> GameSessionManager::GetPrivateGameSessionList( co
 void GameSessionManager::ProcessJoinNorrath( sptr_user join, sptr_user host )
 {
 	// Tell the joining user its own address
-	NotifyClientDiscovered msgClientDiscovered( join );
-	join->sock->send( msgClientDiscovered );
+	join->sock->send( NotifyClientDiscovered( join ) );
 
 	// Tell the host the joining user's address.
-	NotifyClientRequestConnect msgNotifyReqConnect( join );
-	host->sock->send( msgNotifyReqConnect );
+	host->sock->send( NotifyClientRequestConnect( join ) );
 }
 
 void GameSessionManager::ProcessJoinArms( sptr_user join, sptr_user host )
@@ -420,10 +417,8 @@ void GameSessionManager::ProcessJoinArms( sptr_user join, sptr_user host )
 		host->m_localAddr, host->m_localPort, host->m_discoveryAddr, host->m_discoveryPort );
 
 	// Tell the joining user its own address
-	NotifyClientDiscovered_RTA msgClientDiscovered( join );
-	join->sock->send( msgClientDiscovered );
+	join->sock->send( NotifyClientDiscovered_RTA( join ) );
 
 	// Tell the host the joining user's address.
-	NotifyClientRequestConnect_RTA msgNotifyReqConnect( join );
-	host->sock->send( msgNotifyReqConnect );
+	host->sock->send( NotifyClientRequestConnect_RTA( join ) );
 }
