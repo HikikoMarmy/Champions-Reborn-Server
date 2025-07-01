@@ -1,6 +1,9 @@
 #include <algorithm>
 #include <cmath>
 #include <string>
+#include <cstdint>
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #include <windows.h>
 
 #include "Utility.h"
@@ -46,6 +49,17 @@ uint32_t Util::ByteSwap( uint32_t val )
 		( ( val << 8 ) & 0x00FF0000 ) |
 		( ( val >> 8 ) & 0x0000FF00 ) |
 		( ( val >> 24 ) & 0x000000FF );
+}
+
+std::string Util::IPFromAddr( const sockaddr_in &addr )
+{
+	char buffer[ INET_ADDRSTRLEN ] = {};
+	const char *result = inet_ntop( AF_INET, &addr.sin_addr, buffer, sizeof( buffer ) );
+
+	if( result )
+		return std::string( buffer );
+	else
+		return {};
 }
 
 std::string Util::WideToUTF8( const std::wstring &wstr )

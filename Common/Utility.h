@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include <WinSock2.h>
 
 namespace Util
 {
@@ -16,6 +17,8 @@ namespace Util
 	{
 		return ( value >= min && value <= max );
 	}
+
+	std::string IPFromAddr( const sockaddr_in &addr );
 
 	std::string WideToUTF8( const std::wstring &wstr );
 	std::wstring UTF8ToWide( const std::string &str );
