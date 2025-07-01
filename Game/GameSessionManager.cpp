@@ -1,17 +1,16 @@
 #include "GameSessionManager.h"
 
 #include "RealmUser.h"
+#include "../Network/Event/NotifyGameDiscovered.h"
 #include "../Network/Event/NotifyClientDiscovered.h"
 #include "../Network/Event/NotifyClientDiscovered_RTA.h"
 #include "../Network/Event/NotifyClientRequestConnect.h"
 #include "../Network/Event/NotifyClientRequestConnect_RTA.h"
-#include "../Network/Event/NotifyGameDiscovered.h"
-#include "../Network/Event/NotifyReserveUserSlot_RTA.h"
 #include "../../logging.h"
 
 GameSessionManager::GameSessionManager()
 {
-	m_gameIndex = 0;
+	m_uniqueGameIndex = 0;
 	m_gameSessionList[ 0 ].clear();
 	m_gameSessionList[ 1 ].clear();
 }
@@ -32,86 +31,101 @@ void GameSessionManager::OnDisconnectUser( sptr_user user )
 	if( !session )
 		return;
 
-	auto owner = session->m_owner.lock();
+	const auto owner = session->GetOwner();
 	if( !owner )
 	{
-		Log::Error( "Game session owner not found! [%d]", gameId );
+		Log::Error( "Game session owner not found! [{}]", gameId );
 		ForceTerminateGame( gameId, gameType );
 		return;
 	}
 
 	if( owner->m_sessionId == user->m_sessionId )
 	{
-		Log::Info( "Game session owner disconnected! [%d]", gameId );
+		Log::Info( "Game session owner disconnected! [{}]", gameId );
 		ForceTerminateGame( gameId, gameType );
 	}
 }
 
-bool GameSessionManager::CreatePublicGameSession( sptr_user owner, std::wstring gameName, RealmGameType clientType )
+bool GameSessionManager::CreateGameSession_CON( sptr_user user,
+												const std::wstring gameInfo,
+												const std::wstring name,
+												const std::wstring stage,
+												bool isPrivateGame )
 {
-	auto new_session = std::make_shared< GameSession >();
+	if( name.empty() )
+	{
+		Log::Error( "Invalid parameters for creating game session!" );
+		return false;
+	}
 
-	new_session->m_type = GameSession::GameType::Public;
-	new_session->m_gameIndex = m_gameIndex;
-	new_session->m_hostLocalAddr.clear();
-	new_session->m_hostExternalAddr.clear();
-	new_session->m_gameName = gameName;
-	new_session->m_currentPlayers = 1;
-	new_session->m_maximumPlayers = 4;
+	auto new_session = std::make_shared< GameSession >( m_uniqueGameIndex++ );
 
-	new_session->m_gameData.resize( 256 );
+	if( isPrivateGame )
+	{
+		new_session->m_type = GameSession::GameType::Private;
+		new_session->m_gameName = name;
+	}
+	else
+	{
+		new_session->m_type = GameSession::GameType::Public;
+		new_session->m_gameName = name + L" [" + stage + L"]";
+	}
 
-	owner->m_isHost = true;
-	owner->m_discoveryAddr = "";
+	user->m_isHost = true;
+	user->m_gameId = new_session->m_gameId;
+	user->m_discoveryAddr = "";
+	user->m_discoveryPort = 0;
 
-	owner->m_gameId = m_gameIndex;
-	new_session->m_owner = owner;
+	new_session->AddMember( user );
 
 	std::lock_guard< std::mutex > lock( m_dataMutex );
-	m_gameSessionList[ clientType ].push_back( new_session );
-
-	m_gameIndex++;
+	m_gameSessionList[ RealmGameType::CHAMPIONS_OF_NORRATH ].push_back( new_session );
 
 	return true;
 }
 
-bool GameSessionManager::CreatePrivateGameSession( sptr_user owner, std::wstring gameName, RealmGameType clientType )
+bool GameSessionManager::CreateGameSession_RTA(
+	sptr_user user,
+	const std::wstring gameInfo,
+	const std::wstring name,
+	const std::array< int8_t, 5 > &attributes,
+	const bool isPrivateGame )
 {
-	// Check if the game name or host session id is already in use
-	for( const auto &gameSession : m_gameSessionList[ clientType ] )
+	if( nullptr != FindGame( name, RealmGameType::RETURN_TO_ARMS ) )
 	{
-		if( gameSession->m_type != GameSession::GameType::Private )
-			continue;
-
-		if( gameSession->m_gameName == gameName )
-		{
-			Log::Error( "Game name is already in use! [%S]", gameName.c_str() );
-			return false;
-		}
+		Log::Error( "Game name is already in use! [{}]", name );
+		return false;
 	}
 
-	auto new_session = std::make_shared< GameSession >();
+	auto new_session = std::make_shared< GameSession >( m_uniqueGameIndex++ );
 
-	new_session->m_type = GameSession::GameType::Private;
-	new_session->m_gameIndex = m_gameIndex;
-	new_session->m_hostLocalAddr.clear();
-	new_session->m_hostExternalAddr.clear();
-	new_session->m_gameName = gameName;
-	new_session->m_currentPlayers = 1;
-	new_session->m_maximumPlayers = 4;
+	if( isPrivateGame )
+	{
+		new_session->m_type = GameSession::GameType::Private;
+	}
+	else
+	{
+		new_session->m_type = GameSession::GameType::Public;
 
-	new_session->m_gameData.resize( 256 );
+		new_session->m_gameData = Util::WideToUTF8( gameInfo );
+		new_session->m_difficulty = attributes[ 0 ];
+		new_session->m_gameMode = attributes[ 1 ];
+		new_session->m_unknown = attributes[ 2 ];
+		new_session->m_mission = attributes[ 3 ];
+		new_session->m_networkSave = attributes[ 4 ];
+	}
 
-	owner->m_isHost = true;
-	owner->m_discoveryAddr = "";
+	new_session->m_gameName = name;
 
-	owner->m_gameId = m_gameIndex;
-	new_session->m_owner = owner;
+	user->m_isHost = true;
+	user->m_gameId = new_session->m_gameId;
+	user->m_discoveryAddr = "";
+	user->m_discoveryPort = 0;
+
+	new_session->AddMember( user );
 
 	std::lock_guard< std::mutex > lock( m_dataMutex );
-	m_gameSessionList[ clientType ].push_back( new_session );
-
-	m_gameIndex++;
+	m_gameSessionList[ RealmGameType::RETURN_TO_ARMS ].push_back( new_session );
 
 	return true;
 }
@@ -128,7 +142,7 @@ bool GameSessionManager::ForceTerminateGame( int32_t gameId, RealmGameType clien
 	const auto &gameList = m_gameSessionList[ clientType ];
 	const auto it = std::find_if( gameList.begin(), gameList.end(), [ &gameId ]( sptr_game_session gameSession )
 	{
-		return gameSession->m_gameIndex == gameId;
+		return gameSession->m_gameId == gameId;
 	} );
 
 	if( it != m_gameSessionList[ clientType ].end() )
@@ -148,7 +162,7 @@ sptr_game_session GameSessionManager::FindGame( const int32_t gameId, const Real
 
 	for( auto &gameSession : m_gameSessionList[ gameType ] )
 	{
-		if( gameSession->m_gameIndex == gameId )
+		if( gameSession->m_gameId == gameId )
 		{
 			return gameSession;
 		}
@@ -182,7 +196,7 @@ bool GameSessionManager::RequestOpen( sptr_user user )
 
 	if( session == nullptr )
 	{
-		Log::Error( "Game session not found! [%d]", gameId );
+		Log::Error( "Game session not found! [{}]", gameId );
 		return false;
 	}
 
@@ -193,13 +207,15 @@ bool GameSessionManager::RequestOpen( sptr_user user )
 
 	if( user->m_discoveryAddr.empty() )
 	{
-		Log::Error( "User discovery address is empty! [%d]", gameId );
+		Log::Error( "User discovery address is empty! [{}]", gameId );
 		return false;
 	}
 
-	session->m_hostExternalAddr = user->m_discoveryAddr;
 	session->m_hostLocalAddr = user->m_localAddr;
-	session->m_hostPort = user->m_discoveryPort;
+	session->m_hostLocalPort = user->m_localPort;
+
+	session->m_hostExternalAddr = user->m_discoveryAddr;
+	session->m_hostNatPort = user->m_discoveryPort;
 
 	session->m_state = GameSession::GameState::Open;
 
@@ -207,14 +223,11 @@ bool GameSessionManager::RequestOpen( sptr_user user )
 	NotifyGameDiscovered msg( user->m_discoveryAddr, user->m_discoveryPort, user->m_gameType );
 	user->sock->send( msg );
 
-	Log::Info( "Game Session [%d] Discoverable on %s", gameId, user->m_discoveryAddr.c_str() );
+	Log::Info( "Game Session [{}] Discoverable on {}", gameId, user->m_discoveryAddr );
 
 	return true;
 }
 
-// NOTE:
-// This might solely be for a user that is LEAVING the game (I.E "CancelJoining")
-// instead of a game being cancelled overall. RTA has a dedicated endgame event.
 bool GameSessionManager::RequestCancel( sptr_user user )
 {
 	if( !user || user->m_gameId < 0 )
@@ -229,7 +242,7 @@ bool GameSessionManager::RequestCancel( sptr_user user )
 	const auto it = std::find_if( gameList.begin(), gameList.end(),
 								  [ gameId ]( const sptr_game_session &gameSession )
 	{
-		return gameSession->m_gameIndex == gameId;
+		return gameSession->m_gameId == gameId;
 	} );
 
 	if( it == gameList.end() )
@@ -237,21 +250,22 @@ bool GameSessionManager::RequestCancel( sptr_user user )
 
 	const auto &session = *it;
 
-	auto owner = session->m_owner.lock();
-	if( !owner )
+	if( false == session->RemoveMember( user ) )
 	{
-		Log::Error( "Game session owner not found! [%d]", gameId );
-		ForceTerminateGame( gameId, gameType );
-		return false;
+		Log::Error( "Failed to remove user [{}] from game session [{}]", user->m_username, gameId );
 	}
 
-	if( owner->m_sessionId != user->m_sessionId )
+	if( session->m_currentPlayers <= 0 )
 	{
-		Log::Error( "User is not the host! [%d]", gameId );
-		return false;
+		Log::Info( "Game session [{}] is empty, removing it", gameId );
+		gameList.erase( it );
+	}
+	else
+	{
+		Log::Info( "User [{}] left game session [{}], remaining players: {}",
+				   user->m_username, gameId, session->m_currentPlayers );
 	}
 
-	gameList.erase( it );
 	return true;
 }
 
@@ -263,28 +277,28 @@ bool GameSessionManager::RequestJoin( sptr_user join_user )
 
 	if( session == nullptr )
 	{
-		Log::Error( "Game session not found! [%d]", gameId );
+		Log::Error( "Game session not found! [{}]", gameId );
 		return false;
 	}
 
 	if( session->m_state != GameSession::GameState::Open )
 	{
-		Log::Error( "Game session not open! [%d]", gameId );
+		Log::Error( "Game session not open! [{}]", gameId );
 		return false;
 	}
 
-	auto host_user = session->m_owner.lock();
+	auto host_user = session->GetOwner();
 
 	if( host_user == nullptr )
 	{
-		Log::Error( "Host not found! [%d]", gameId );
+		Log::Error( "Host not found! [{}]", gameId );
 		ForceTerminateGame( gameId, gameType );
 		return false;
 	}
 
 	if( host_user->m_discoveryAddr.empty() )
 	{
-		Log::Error( "User discovery address is empty! [%d]", gameId );
+		Log::Error( "User discovery address is empty! [{}]", gameId );
 		ForceTerminateGame( gameId, gameType );
 		return false;
 	}
@@ -300,7 +314,7 @@ bool GameSessionManager::RequestJoin( sptr_user join_user )
 		ProcessJoinArms( join_user, host_user );
 	}
 
-	Log::Info( "User [%S] Joining game session... [%d]", join_user->m_sessionId.c_str(), gameId );
+	Log::Info( "User [{}] Joining game session... [{}]", join_user->m_sessionId, gameId );
 
 	return true;
 }
@@ -308,16 +322,16 @@ bool GameSessionManager::RequestJoin( sptr_user join_user )
 // NOTE:
 // Request Start seems to be for RTA only.
 // CON will disconnect from the server at start time.
-bool GameSessionManager::RequestStart(sptr_user user)
+bool GameSessionManager::RequestStart( sptr_user user )
 {
 	const auto gameId = user->m_gameId;
-	const auto gameType = user->m_gameType;	
+	const auto gameType = user->m_gameType;
 
 	auto session = FindGame( gameId, gameType );
 
 	if( session == nullptr )
 	{
-		Log::Error( "Game session not found! [%d]", gameId );
+		Log::Error( "Game session not found! [{}]", gameId );
 		return false;
 	}
 
@@ -325,13 +339,13 @@ bool GameSessionManager::RequestStart(sptr_user user)
 
 	session->m_state = GameSession::GameState::Started;
 
-	// Temp (or permanent) remove the game from the list.
+	// Remove the game from the list.
 	auto &gameList = m_gameSessionList[ gameType ];
 
 	const auto it = std::find_if( gameList.begin(), gameList.end(),
 								  [ gameId ]( const sptr_game_session &gameSession )
 	{
-		return gameSession->m_gameIndex == gameId;
+		return gameSession->m_gameId == gameId;
 	} );
 
 	if( it != gameList.end() )
@@ -339,7 +353,7 @@ bool GameSessionManager::RequestStart(sptr_user user)
 		gameList.erase( it );
 	}
 
-	Log::Info( "Game session [%d] started", gameId );
+	Log::Info( "Game session [{}] started", gameId );
 
 	return true;
 }
@@ -386,56 +400,30 @@ std::vector<sptr_game_session> GameSessionManager::GetPrivateGameSessionList( co
 	return list;
 }
 
-void GameSessionManager::ProcessJoinNorrath(sptr_user join, sptr_user host)
+void GameSessionManager::ProcessJoinNorrath( sptr_user join, sptr_user host )
 {
-	std::string hostAddr = host->m_discoveryAddr;
-	std::string joinAddr = join->m_discoveryAddr;
-
-	if (hostAddr == joinAddr)
-	{
-		hostAddr = host->m_localAddr;
-		// I don't think the joiner ever reports its local address for CON.
-		// At best, we can report the hosts local IP and hope communication works.
-	}
-
-	// Tell the joining user the hosts address.
-	NotifyClientDiscovered msgClientDiscovered( hostAddr, host->m_discoveryPort );
-	join->sock->send(msgClientDiscovered);
+	// Tell the joining user its own address
+	NotifyClientDiscovered msgClientDiscovered( join );
+	join->sock->send( msgClientDiscovered );
 
 	// Tell the host the joining user's address.
-	NotifyClientRequestConnect msgNotifyReqConnect(
-		joinAddr,
-		join->m_discoveryPort
-	);
-
-	host->sock->send(msgNotifyReqConnect);
+	NotifyClientRequestConnect msgNotifyReqConnect( join );
+	host->sock->send( msgNotifyReqConnect );
 }
 
-void GameSessionManager::ProcessJoinArms(sptr_user join, sptr_user host)
+void GameSessionManager::ProcessJoinArms( sptr_user join, sptr_user host )
 {
-	std::string hostAddr = host->m_discoveryAddr;
-	std::string joinAddr = join->m_discoveryAddr;
+	Log::Debug("Join User IPs : [{}:{}] -> [{}:{}]",
+		join->m_localAddr, join->m_localPort, join->m_discoveryAddr, join->m_discoveryPort );
 
-	if (hostAddr == joinAddr)
-	{
-		hostAddr = host->m_localAddr;
-		joinAddr = join->m_localAddr;
-	}
+	Log::Debug("Host User IPs : [{}:{}] -> [{}:{}]",
+		host->m_localAddr, host->m_localPort, host->m_discoveryAddr, host->m_discoveryPort );
 
-	// Tell the joining user the hosts address.
-	NotifyClientDiscovered_RTA msgClientDiscovered(hostAddr, host->m_discoveryPort);
-	join->sock->send(msgClientDiscovered);
-
-	// Reserve a slot for the joining user.
-	NotifyReserveUserSlot_RTA msgNotifyReserveUser(joinAddr, join->m_discoveryPort);
-	host->sock->send(msgNotifyReserveUser);
+	// Tell the joining user its own address
+	NotifyClientDiscovered_RTA msgClientDiscovered( join );
+	join->sock->send( msgClientDiscovered );
 
 	// Tell the host the joining user's address.
-	NotifyClientRequestConnect_RTA msgNotifyReqConnect(
-		joinAddr,
-		join->m_discoveryAddr,
-		join->m_discoveryPort
-	);
-
-	host->sock->send(msgNotifyReqConnect);
+	NotifyClientRequestConnect_RTA msgNotifyReqConnect( join );
+	host->sock->send( msgNotifyReqConnect );
 }

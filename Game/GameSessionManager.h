@@ -6,13 +6,15 @@
 
 #include "GameSession.h"
 
+#include "../Common/Constant.h"
+
 class GameSessionManager {
 private:
 	static inline std::unique_ptr< GameSessionManager > m_instance;
 	static inline std::mutex m_mutex;
 	static inline std::mutex m_dataMutex;
 
-	int32_t m_gameIndex;
+	int32_t m_uniqueGameIndex;
 	std::vector< sptr_game_session > m_gameSessionList[ 2 ];
 
 public:
@@ -34,8 +36,18 @@ public:
 
 	void OnDisconnectUser( sptr_user user );
 
-	bool CreatePublicGameSession( sptr_user user, const std::wstring gameName, const RealmGameType clientType );
-	bool CreatePrivateGameSession( sptr_user user, const std::wstring gameName, const RealmGameType clientType );
+	bool CreateGameSession_CON( sptr_user user,
+								const std::wstring gameInfo,
+								const std::wstring name,
+								const std::wstring stage,
+								const bool isPrivateGame );
+
+	bool CreateGameSession_RTA( sptr_user user,
+								const std::wstring gameInfo,
+								const std::wstring name,
+								const std::array< int8_t, 5 > &attributes,
+								const bool isPrivateGame );
+
 	bool ForceTerminateGame( const int32_t gameId, RealmGameType clientType );
 	sptr_game_session FindGame( const int32_t gameId, RealmGameType clientType );
 	sptr_game_session FindGame( const std::wstring &gameName, RealmGameType clientType );
