@@ -31,7 +31,6 @@ std::string HashPassword( const std::string &password, uint32_t iterations, size
 
 }
 
-#include "../../logging.h"
 bool VerifyPassword( const std::string &password, const std::string &storedHash )
 {
     auto parts = std::vector<std::string>();
