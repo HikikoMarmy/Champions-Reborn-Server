@@ -1,6 +1,6 @@
-﻿// ╔╗╔╔═╗╦═╗╦═╗╔═╗╔╦╗╦ ╦                          
-// ║║║║ ║╠╦╝╠╦╝╠═╣ ║ ╠═╣                          
-// ╝╚╝╚═╝╩╚═╩╚═╩ ╩ ╩ ╩ ╩                          
+﻿// ╔═╗ ╦ ╦ ╔═╗ ╔╦╗ ╔═╗ ╦ ╔═╗ ╔╗╔ ╔═╗
+// ║   ╠═╣ ╠═╣ ║║║ ╠═╝ ║ ║ ║ ║║║ ╚═╗
+// ╚═╝ ╩ ╩ ╩ ╩ ╩ ╩ ╩   ╩ ╚═╝ ╝╚╝ ╚═╝                      
 // ╔╦╗╦╔═╗╔═╗╔═╗╦  ╦╔═╗╦═╗╦ ╦  ╔═╗╔═╗╦═╗╦  ╦╔═╗╦═╗
 //  ║║║╚═╗║  ║ ║╚╗╔╝║╣ ╠╦╝╚╦╝  ╚═╗║╣ ╠╦╝╚╗╔╝║╣ ╠╦╝
 // ═╩╝╩╚═╝╚═╝╚═╝ ╚╝ ╚═╝╩╚═ ╩   ╚═╝╚═╝╩╚═ ╚╝ ╚═╝╩╚═
@@ -26,45 +26,45 @@ DiscoveryServer::~DiscoveryServer()
 	Log::Info( "Discovery Server stopped." );
 }
 
-void DiscoveryServer::Start(std::string ip, int32_t port)
+void DiscoveryServer::Start( std::string ip, int32_t port )
 {
-	m_socket = socket(AF_INET, SOCK_DGRAM, 0);
+	m_socket = socket( AF_INET, SOCK_DGRAM, 0 );
 
-	if (m_socket == INVALID_SOCKET)
+	if( m_socket == INVALID_SOCKET )
 	{
-		Log::Error("Failed to create socket.");
+		Log::Error( "Failed to create socket." );
 		return;
 	}
 
 	sockaddr_in service{};
 	service.sin_family = AF_INET;
-	service.sin_port = htons(port);
+	service.sin_port = htons( port );
 
-	if (ip == "0.0.0.0")
+	if( ip == "0.0.0.0" )
 	{
 		service.sin_addr.s_addr = INADDR_ANY;
 	}
 	else
 	{
-		if (InetPtonA(AF_INET, ip.c_str(), &service.sin_addr) != 1)
+		if( InetPtonA( AF_INET, ip.c_str(), &service.sin_addr ) != 1 )
 		{
-			Log::Error("Invalid IP address format: %s", ip.c_str());
-			closesocket(m_socket);
+			Log::Error( "Invalid IP address format: {}", ip );
+			closesocket( m_socket );
 			return;
 		}
 	}
 
-	if (bind(m_socket, reinterpret_cast<SOCKADDR*>(&service), sizeof(service)) == SOCKET_ERROR)
+	if( bind( m_socket, reinterpret_cast< SOCKADDR * >( &service ), sizeof( service ) ) == SOCKET_ERROR )
 	{
-		Log::Error("Failed to bind socket.");
-		closesocket(m_socket);
+		Log::Error( "Failed to bind socket." );
+		closesocket( m_socket );
 		return;
 	}
 
 	m_running = true;
-	m_thread = std::thread(&DiscoveryServer::Run, this);
+	m_thread = std::thread( &DiscoveryServer::Run, this );
 
-	Log::Info("Discovery Server started %s:%d", ip.c_str(), port);
+	Log::Info( "Discovery Server started {}:{}", ip, port );
 }
 
 void DiscoveryServer::Stop()
@@ -108,25 +108,26 @@ void DiscoveryServer::ProcessPacket( sockaddr_in *clientAddr, sptr_byte_stream s
 	std::memcpy( sessionId.data(), decryptedBytes.data(), 0x20 );
 
 	// Validate the session ID is 16 characters long and not all 0's
-	if (sessionId.size() != 16 || std::all_of(sessionId.begin(), sessionId.end(), [](wchar_t ch) {
-		return ch == L'\0';
-		}))
+	if( sessionId.size() != 16 || std::all_of( sessionId.begin(), sessionId.end(), []( wchar_t ch )
 	{
-		Log::Error("Invalid session id.");
+		return ch == L'\0';
+	} ) )
+	{
+		Log::Error( "Invalid session id." );
 		return;
 	}
 
 	// Get the users remote IP and Port for discovery.
-	char remoteIp[INET_ADDRSTRLEN];
-	InetNtopA(AF_INET, &clientAddr->sin_addr, remoteIp, INET_ADDRSTRLEN);
+	char remoteIp[ INET_ADDRSTRLEN ];
+	InetNtopA( AF_INET, &clientAddr->sin_addr, remoteIp, INET_ADDRSTRLEN );
 
 	uint16_t remotePort = ntohs( clientAddr->sin_port );
 
 	// Find the user associated with the session ID
-	auto user = RealmUserManager::Get().FindUserBySessionId( sessionId );
+	auto user = UserManager::Get().FindUserBySessionId( sessionId );
 	if( user == nullptr )
 	{
-		Log::Error( "User not found! [%S]", sessionId.c_str() );
+		Log::Error( "User not found! [{}]", sessionId );
 		return;
 	}
 
@@ -140,7 +141,7 @@ void DiscoveryServer::ProcessPacket( sockaddr_in *clientAddr, sptr_byte_stream s
 	user->m_discoveryAddr = remoteIp;
 	user->m_discoveryPort = remotePort;
 
-	Log::Debug("Discovery Handshake from %s:%d", remoteIp, remotePort);
+	Log::Debug( "Discovery Handshake from {}:{}", remoteIp, remotePort );
 
 	if( user->m_isHost )
 	{

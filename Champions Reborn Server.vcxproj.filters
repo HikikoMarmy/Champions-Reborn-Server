@@ -128,10 +128,10 @@
     <ClInclude Include="Network\Event\RequestGetNetCharacterList_RTA.h">
       <Filter>Header Files\Network\Event</Filter>
     </ClInclude>
-    <ClInclude Include="Network\Event\Request_5D.h">
+    <ClInclude Include="Network\Event\RequestAppendCharacterData.h">
       <Filter>Header Files\Network\Event</Filter>
     </ClInclude>
-    <ClInclude Include="Network\Event\Request_61.h">
+    <ClInclude Include="Network\Event\RequestGetFriendList.h">
       <Filter>Header Files\Network\Event</Filter>
     </ClInclude>
     <ClInclude Include="Network\Event\RequestCancelGame.h">
@@ -200,7 +200,7 @@
     <ClInclude Include="Network\Event\RequestCreateNewCharacter_RTA.h">
       <Filter>Header Files\Network\Event</Filter>
     </ClInclude>
-    <ClInclude Include="Network\Event\RequestGetGame_RTA.h">
+    <ClInclude Include="Network\Event\RequestDoClientDiscovery_RTA.h">
       <Filter>Header Files\Network\Event</Filter>
     </ClInclude>
     <ClInclude Include="Network\Event\RequestCreatePrivateRoom.h">
@@ -257,7 +257,7 @@
     <ClInclude Include="Network\Event\NotifyClientDiscovered_RTA.h">
       <Filter>Header Files\Network\Event</Filter>
     </ClInclude>
-    <ClInclude Include="Network\Event\Request_5F.h">
+    <ClInclude Include="Network\Event\RequestUserJoinSuccess.h">
       <Filter>Header Files\Network\Event</Filter>
     </ClInclude>
     <ClInclude Include="Network\Event\RequestSaveCharacter_RTA.h">
@@ -267,6 +267,30 @@
       <Filter>Header Files\Common</Filter>
     </ClInclude>
     <ClInclude Include="Network\Event\RequestStartGame.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\ByteBufferReader.hpp">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\CharacterSaveTask.h">
+      <Filter>Header Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\CharacterSaveManager.h">
+      <Filter>Header Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\NotifyRoomMessage.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestLeaveRoom.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestSendRoomMessage.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\ForwardDecl.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestGetGame_RTA.h">
       <Filter>Header Files\Network\Event</Filter>
     </ClInclude>
   </ItemGroup>
@@ -325,13 +349,13 @@
     <ClCompile Include="Network\Event\RequestGetNetCharacterList_RTA.cpp">
       <Filter>Source Files\Network\Event</Filter>
     </ClCompile>
-    <ClCompile Include="Network\Event\Request_5D.cpp">
+    <ClCompile Include="Network\Event\RequestAppendCharacterData.cpp">
       <Filter>Source Files\Network\Event</Filter>
     </ClCompile>
     <ClCompile Include="Network\Event\RequestMatchGame_RTA.cpp">
       <Filter>Source Files\Network\Event</Filter>
     </ClCompile>
-    <ClCompile Include="Network\Event\Request_61.cpp">
+    <ClCompile Include="Network\Event\RequestGetFriendList.cpp">
       <Filter>Source Files\Network\Event</Filter>
     </ClCompile>
     <ClCompile Include="Network\Event\RequestCancelGame.cpp">
@@ -391,7 +415,7 @@
     <ClCompile Include="Network\Event\RequestCreateNewCharacter_RTA.cpp">
       <Filter>Source Files\Network\Event</Filter>
     </ClCompile>
-    <ClCompile Include="Network\Event\RequestGetGame_RTA.cpp">
+    <ClCompile Include="Network\Event\RequestDoClientDiscovery_RTA.cpp">
       <Filter>Source Files\Network\Event</Filter>
     </ClCompile>
     <ClCompile Include="Network\Event\RequestCreatePrivateRoom.cpp">
@@ -430,9 +454,6 @@
     <ClCompile Include="Dependency\sqlite\sqlite3.c">
       <Filter>Dependency\sqlite3</Filter>
     </ClCompile>
-    <ClCompile Include="Network\GenericNetRequest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Game\RealmCharacter.cpp">
       <Filter>Source Files\Game</Filter>
     </ClCompile>
@@ -451,7 +472,7 @@
     <ClCompile Include="Network\Event\NotifyClientDiscovered_RTA.cpp">
       <Filter>Source Files\Network\Event</Filter>
     </ClCompile>
-    <ClCompile Include="Network\Event\Request_5F.cpp">
+    <ClCompile Include="Network\Event\RequestUserJoinSuccess.cpp">
       <Filter>Source Files\Network\Event</Filter>
     </ClCompile>
     <ClCompile Include="Network\Event\RequestSaveCharacter_RTA.cpp">
@@ -460,9 +481,30 @@
     <ClCompile Include="Network\Event\RequestStartGame.cpp">
       <Filter>Source Files\Network\Event</Filter>
     </ClCompile>
+    <ClCompile Include="Game\RealmCharacterSaveTask.cpp">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\CharacterSaveManager.cpp">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\NotifyRoomMessage.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestLeaveRoom.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestSendRoomMessage.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestGetGame_RTA.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\GenericNetRequest.cpp">
+      <Filter>Source Files\Network</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Norrath Server.rc" />
+    <ResourceCompile Include="Champions Server.rc" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="C:\Users\Adam\Desktop\icon.ico" />

@@ -24,7 +24,7 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>MasterServer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>Norrath Server</ProjectName>
+    <ProjectName>Champions Reborn Server</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -81,7 +81,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>.\bin\</OutDir>
-    <TargetName>NorrathServer_64</TargetName>
+    <TargetName>Server_64</TargetName>
     <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -92,6 +92,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <TargetName>Server_64</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -125,15 +126,16 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.\Dependency\sqlite;.\Dependency\bcrypt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\Dependency\sqlite\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>.\lib</AdditionalLibraryDirectories>
-      <OutputFile>.\bin\NorrathServer_64.exe</OutputFile>
+      <OutputFile>.\bin\Server_64.exe</OutputFile>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -167,13 +169,13 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\dependency\wolfssl;..\dependency\boost;..\dependency\json;..\dependency\clementine_ui\include;..\tools\src\;..\dependency\asio\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>.\Dependency\sqlite\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -185,8 +187,10 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Common\ByteBufferReader.hpp" />
     <ClInclude Include="Common\ByteStream.h" />
     <ClInclude Include="Common\Constant.h" />
+    <ClInclude Include="Common\ForwardDecl.h" />
     <ClInclude Include="Common\RLEZ.hpp" />
     <ClInclude Include="Common\Utility.h" />
     <ClInclude Include="configuration.h" />
@@ -195,10 +199,12 @@
     <ClInclude Include="Crypto\rijndael.h" />
     <ClInclude Include="Database\Database.h" />
     <ClInclude Include="Discovery Server\DiscoveryServer.h" />
+    <ClInclude Include="Game\CharacterSaveManager.h" />
     <ClInclude Include="Game\ChatRoomSession.h" />
     <ClInclude Include="Game\ChatRoomManager.h" />
     <ClInclude Include="Game\RealmCharacter.h" />
     <ClInclude Include="Game\RealmCharacterMetaKV.h" />
+    <ClInclude Include="Game\CharacterSaveTask.h" />
     <ClInclude Include="Game\RealmUser.h" />
     <ClInclude Include="Game\RealmUserManager.h" />
     <ClInclude Include="Game\GameSession.h" />
@@ -214,6 +220,7 @@
     <ClInclude Include="Network\Event\Notify_4C.h" />
     <ClInclude Include="Network\Event\NotifyClientRequestConnect_RTA.h" />
     <ClInclude Include="Network\Event\NotifyReserveUserSlot_RTA.h" />
+    <ClInclude Include="Network\Event\NotifyRoomMessage.h" />
     <ClInclude Include="Network\Event\RequestCancelGame.h" />
     <ClInclude Include="Network\Event\RequestCancelGame_RTA.h" />
     <ClInclude Include="Network\Event\RequestCreateAccount.h" />
@@ -227,25 +234,28 @@
     <ClInclude Include="Network\Event\RequestGetCharacterData_RTA.h" />
     <ClInclude Include="Network\Event\RequestGetEncryptionKey.h" />
     <ClInclude Include="Network\Event\RequestGetGame.h" />
+    <ClInclude Include="Network\Event\RequestDoClientDiscovery_RTA.h" />
     <ClInclude Include="Network\Event\RequestGetGame_RTA.h" />
     <ClInclude Include="Network\Event\RequestGetPublicRooms.h" />
     <ClInclude Include="Network\Event\RequestGetRealmStats.h" />
     <ClInclude Include="Network\Event\RequestGetRoom.h" />
     <ClInclude Include="Network\Event\RequestGetRules.h" />
     <ClInclude Include="Network\Event\RequestGetServerAddress.h" />
+    <ClInclude Include="Network\Event\RequestLeaveRoom.h" />
     <ClInclude Include="Network\Event\RequestLogin.h" />
     <ClInclude Include="Network\Event\RequestLogout.h" />
     <ClInclude Include="Network\Event\RequestMatchGame.h" />
     <ClInclude Include="Network\Event\RequestMatchGame_RTA.h" />
     <ClInclude Include="Network\Event\RequestCreateNewCharacter_RTA.h" />
     <ClInclude Include="Network\Event\RequestSaveCharacter_RTA.h" />
+    <ClInclude Include="Network\Event\RequestSendRoomMessage.h" />
     <ClInclude Include="Network\Event\RequestStartGame.h" />
     <ClInclude Include="Network\Event\RequestTouchSession.h" />
     <ClInclude Include="Network\Event\RequestUpdateGameData.h" />
     <ClInclude Include="Network\Event\RequestGetNetCharacterList_RTA.h" />
-    <ClInclude Include="Network\Event\Request_5D.h" />
-    <ClInclude Include="Network\Event\Request_5F.h" />
-    <ClInclude Include="Network\Event\Request_61.h" />
+    <ClInclude Include="Network\Event\RequestAppendCharacterData.h" />
+    <ClInclude Include="Network\Event\RequestUserJoinSuccess.h" />
+    <ClInclude Include="Network\Event\RequestGetFriendList.h" />
     <ClInclude Include="Network\GenericNetMessage.h" />
     <ClInclude Include="Network\GenericNetRequest.h" />
     <ClInclude Include="Network\GenericNetResponse.h" />
@@ -264,10 +274,12 @@
     <ClCompile Include="Database\Database.cpp" />
     <ClCompile Include="Dependency\sqlite\sqlite3.c" />
     <ClCompile Include="Discovery Server\DiscoveryServer.cpp" />
+    <ClCompile Include="Game\CharacterSaveManager.cpp" />
     <ClCompile Include="Game\ChatRoom.cpp" />
     <ClCompile Include="Game\ChatRoomManager.cpp" />
     <ClCompile Include="Game\RealmCharacter.cpp" />
     <ClCompile Include="Game\RealmCharacterMetaKV.cpp" />
+    <ClCompile Include="Game\RealmCharacterSaveTask.cpp" />
     <ClCompile Include="Game\RealmUser.cpp" />
     <ClCompile Include="Game\RealmUserManager.cpp" />
     <ClCompile Include="Game\GameSession.cpp" />
@@ -283,6 +295,7 @@
     <ClCompile Include="Network\Event\Notify_4C.cpp" />
     <ClCompile Include="Network\Event\NotifyClientRequestConnect_RTA.cpp" />
     <ClCompile Include="Network\Event\NotifyReserveUserSlot_RTA.cpp" />
+    <ClCompile Include="Network\Event\NotifyRoomMessage.cpp" />
     <ClCompile Include="Network\Event\RequestCancelGame.cpp" />
     <ClCompile Include="Network\Event\RequestCancelGame_RTA.cpp" />
     <ClCompile Include="Network\Event\RequestCreateAccount.cpp" />
@@ -296,25 +309,28 @@
     <ClCompile Include="Network\Event\RequestGetCharacterData_RTA.cpp" />
     <ClCompile Include="Network\Event\RequestGetEncryptionKey.cpp" />
     <ClCompile Include="Network\Event\RequestGetGame.cpp" />
+    <ClCompile Include="Network\Event\RequestDoClientDiscovery_RTA.cpp" />
     <ClCompile Include="Network\Event\RequestGetGame_RTA.cpp" />
     <ClCompile Include="Network\Event\RequestGetRealmStats.cpp" />
     <ClCompile Include="Network\Event\RequestGetRoom.cpp" />
     <ClCompile Include="Network\Event\RequestGetRules.cpp" />
     <ClCompile Include="Network\Event\RequestGetServerAddress.cpp" />
+    <ClCompile Include="Network\Event\RequestLeaveRoom.cpp" />
     <ClCompile Include="Network\Event\RequestLogin.cpp" />
     <ClCompile Include="Network\Event\RequestLogout.cpp" />
     <ClCompile Include="Network\Event\RequestMatchGame.cpp" />
     <ClCompile Include="Network\Event\RequestCreateNewCharacter_RTA.cpp" />
     <ClCompile Include="Network\Event\RequestSaveCharacter_RTA.cpp" />
+    <ClCompile Include="Network\Event\RequestSendRoomMessage.cpp" />
     <ClCompile Include="Network\Event\RequestStartGame.cpp" />
     <ClCompile Include="Network\Event\RequestTouchSession.cpp" />
     <ClCompile Include="Network\Event\RequestUpdateGameData.cpp" />
     <ClCompile Include="Network\Event\RequestGetPublicRooms.cpp" />
     <ClCompile Include="Network\Event\RequestMatchGame_RTA.cpp" />
     <ClCompile Include="Network\Event\RequestGetNetCharacterList_RTA.cpp" />
-    <ClCompile Include="Network\Event\Request_5D.cpp" />
-    <ClCompile Include="Network\Event\Request_5F.cpp" />
-    <ClCompile Include="Network\Event\Request_61.cpp" />
+    <ClCompile Include="Network\Event\RequestAppendCharacterData.cpp" />
+    <ClCompile Include="Network\Event\RequestUserJoinSuccess.cpp" />
+    <ClCompile Include="Network\Event\RequestGetFriendList.cpp" />
     <ClCompile Include="Network\GenericNetRequest.cpp" />
     <ClCompile Include="network\RealmSocket.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -325,7 +341,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Norrath Server.rc" />
+    <ResourceCompile Include="Champions Server.rc" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="C:\Users\Adam\Desktop\icon.ico" />
