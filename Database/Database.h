@@ -3,36 +3,39 @@
 #include <memory>
 #include <mutex>
 #include <string>
-#include <vector>
+#include <tuple>
+#include <chrono>
 #include <map>
-#include <sqlite3.h>
 
+#include <sqlite3.h>
 #include "../../Game/RealmCharacter.h"
 #include "../../Game/RealmCharacterMetaKV.h"
 
 enum class QueryID {
 	CreateAccount,
 	VerifyAccount,
+	LoadAccount,
 
 	CreateSession,
 	UpdateSession,
 	DeleteSession,
 	GetSession,
+	DeleteOldSessions,
+
+	LoadCharacterSlots,
 
 	CreateNewCharacter,
 	SaveCharacter,
-	SaveInventory,
-
 	LoadCharacter,
-	LoadAllCharacterMetaData,
 };
 
 class Database {
 private:
 	static inline std::unique_ptr<Database> m_instance;
 	static inline std::mutex m_mutex;
+	static inline std::chrono::time_point< std::chrono::steady_clock > m_lastMaintenance;
 
-	sqlite3* m_db = nullptr;
+	sqlite3 *m_db = nullptr;
 	std::unordered_map< QueryID, sqlite3_stmt * > m_statements;
 
 public:
@@ -50,34 +53,34 @@ public:
 	Database();
 	~Database();
 
+	void Process();
+
 public:
 	int64_t CreateNewAccount( const std::string &username,
-						   const std::string &password,
-						   const std::string &email_address,
-						   const std::string &date_of_birth,
-						   const std::string &chat_handle );
+							  const std::string &password,
+							  const std::string &email_address,
+							  const std::string &date_of_birth,
+							  const std::string &chat_handle );
 
-	int64_t VerifyAccount( const std::string &username, const std::string &password );
+	int64_t VerifyAccount( const std::wstring &username, const std::wstring &password );
+	std::tuple< bool, std::wstring > LoadAccount( const int64_t account_id );
 
 	bool CreateSession( const int64_t account_id, const std::wstring &session_id, const std::string &ip_address );
-	bool UpdateSession( const std::wstring &session_id );
+	bool UpdateSession( const std::wstring &session_id, const uint32_t character_id );
 	bool DeleteSession( const std::wstring &session_id );
-	int64_t GetSession(std::wstring& session_id, std::string& ip_address);
 
-	int32_t CreateNewCharacter( const int64_t account_id,
-							 const std::vector< uint8_t > &meta_data,
-							 const std::vector< uint8_t > &character_blob );
+	std::tuple< int64_t, uint32_t > GetSession( const std::wstring &session_id, const std::string &ip_address );
+
+	uint32_t CreateNewCharacter( const int64_t account_id,
+								 const CharacterSlotData meta,
+								 const std::vector< uint8_t > &blob );
 
 	bool SaveCharacter( const int64_t account_id,
 						const int32_t character_id,
-						const std::vector< uint8_t > &meta_data,
-						const std::vector< uint8_t > &character_blob );
+						const CharacterSlotData meta,
+						const std::vector< uint8_t > &blob );
 
-	bool SaveInventory( const int64_t account_id,
-						const int32_t character_id,
-						const std::vector< uint8_t > &inventory_data );
-
-	std::map< int32_t, RealmCharacterMetaData > LoadCharacterList( const int64_t account_id );
+	std::map< uint32_t, CharacterSlotData > LoadCharacterSlots( const int64_t account_id );
 
 	sptr_realm_character LoadCharacterData( const int64_t account_id, const int32_t character_id );
 
@@ -86,4 +89,6 @@ private:
 	void PrepareStatements();
 	void FinalizeStatements();
 	void Execute( const char *sql );
+
+	void DeleteOldSessions();
 };
