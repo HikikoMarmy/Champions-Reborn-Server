@@ -183,7 +183,8 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent>
-      <Command>echo F|xcopy /y /f "$(SolutionDir)../dependency/clementine_ui/bin/clementine_ui.dll" "$(TargetDir)/clementine_ui.dll"  </Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
