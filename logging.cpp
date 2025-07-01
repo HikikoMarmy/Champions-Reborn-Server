@@ -1,12 +1,10 @@
-
-#include <fstream>
 #include "logging.h"
 
-
-static const char* LOG_PATH[] = {
+static const char *LOG_PATH[] = {
 	"./generic",
 	"./debug",
-	"./error"
+	"./error",
+	"./warning",
 };
 
 Log::Log()
@@ -68,73 +66,26 @@ void Log::CheckFileStatus( LOG_TYPE type )
 	}
 }
 
-void Log::WriteToLog( LOG_TYPE type, std::string format )
+void Log::WriteToLog( LOG_TYPE type, const std::string &message )
 {
-	log_lock.lock();
+	std::lock_guard lock( log_lock );
 
 	HANDLE hConsole = GetStdHandle( STD_OUTPUT_HANDLE );
 	SetConsoleTextAttribute( hConsole, type + 10 );
 
 	switch( type )
 	{
-		case LOG_TYPE::log_generic: printf( "[INFO]: " ); break;
-		case LOG_TYPE::log_debug: printf( "[DEBUG]: " ); break;
-		case LOG_TYPE::log_warn: printf( "[WARN]: " ); break;
-		case LOG_TYPE::log_error: printf( "[ERROR]: " ); break;
+		case log_generic: printf( "[INFO]: " ); break;
+		case log_debug:   printf( "[DEBUG]: " ); break;
+		case log_warn:    printf( "[WARN]: " ); break;
+		case log_error:   printf( "[ERROR]: " ); break;
 	}
-	
-	SetConsoleTextAttribute( hConsole, 15 );
 
-	printf( "%s\n", format.c_str() );
+	SetConsoleTextAttribute( hConsole, 15 );
+	printf( "%s\n", message.c_str() );
 
 	CheckFileStatus( type );
-	file_stream[ type ] << GetTimeStamp() << format << '\n';
-	file_stream[ type ].close();
-	log_lock.unlock();
-}
-
-void Log::Info( std::string format, ... )
-{
-	std::vector< char > buf( 512 );
-	va_list args;
-	va_start( args, format );
-	vsnprintf_s( &buf[ 0 ], buf.size(), buf.size() + strlen( format.c_str() ), format.c_str(), args );
-	va_end( args );
-
-	WriteToLog( log_generic, &buf[ 0 ] );
-}
-
-void Log::Warn( std::string format, ... )
-{
-	std::vector< char > buf( 512 );
-	va_list args;
-	va_start( args, format );
-	vsnprintf_s( &buf[ 0 ], buf.size(), buf.size() + strlen( format.c_str() ), format.c_str(), args );
-	va_end( args );
-
-	WriteToLog( log_warn, &buf[ 0 ] );
-}
-
-void Log::Debug( std::string format, ... )
-{
-	std::vector< char > buf( 512 );
-	va_list args;
-	va_start( args, format );
-	vsnprintf_s( &buf[ 0 ], buf.size(), buf.size() + strlen( format.c_str() ), format.c_str(), args );
-	va_end( args );
-
-	WriteToLog( log_debug, &buf[ 0 ] );
-}
-
-void Log::Error( std::string format, ... )
-{
-	std::vector< char > buf( 512 );
-	va_list args;
-	va_start( args, format );
-	vsnprintf_s( &buf[ 0 ], buf.size(), buf.size() + strlen( format.c_str() ), format.c_str(), args );
-	va_end( args );
-
-	WriteToLog( log_error, &buf[ 0 ] );
+	file_stream[ type ] << GetTimeStamp() << message << '\n';
 }
 
 void Log::Packet( std::vector<uint8_t> p, size_t size, bool send )
@@ -175,7 +126,7 @@ void Log::Packet( std::vector<uint8_t> p, size_t size, bool send )
 		line[ r++ ] = p[ i ];
 
 		// Highlight packet type or flags
-		if( i == 4 || i == 5 )
+		if( i == 0 || i == 1 )
 		{
 			SetConsoleTextAttribute( hConsole, send ? 11 : 10 );
 			printf( "%02X ", p[ i ] );
@@ -206,31 +157,31 @@ void Log::Packet( std::vector<uint8_t> p, size_t size, bool send )
 	printf( "\n\n" );
 }
 
-void Log::PacketToFile( std::string prefix, std::vector<uint8_t> p, size_t size)
+void Log::ToFile( std::string prefix, std::vector<uint8_t> p, size_t size )
 {
-	static char timestamp[64] = "";
+	static char timestamp[ 64 ] = "";
 
-	time_t t; time(&t);
+	time_t t; time( &t );
 	struct tm date_tm;
-	localtime_s(&date_tm, &t);
+	localtime_s( &date_tm, &t );
 
-	_snprintf_s(timestamp, _TRUNCATE, 63,
+	_snprintf_s( timestamp, _TRUNCATE, 63,
 				 "%02d-%02d-%02d.packet.bin",
 				 date_tm.tm_hour,
 				 date_tm.tm_min,
-				 date_tm.tm_sec);
+				 date_tm.tm_sec );
 
 	std::string filename = prefix + '_' + timestamp;
 
 	std::fstream file;
-	file.open(filename, std::ios::out | std::ios::binary);
+	file.open( filename, std::ios::out | std::ios::binary );
 
-	if (!file.is_open())
+	if( !file.is_open() )
 	{
-		Error("Failed to open packet log file: %s", filename.c_str());
+		Error( "Failed to open packet log file: %s", filename.c_str() );
 		return;
 	}
 
-	file.write(reinterpret_cast<const char*>(p.data()), size);
+	file.write( reinterpret_cast< const char * >( p.data() ), size );
 	file.close();
 }
