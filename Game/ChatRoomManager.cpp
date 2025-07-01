@@ -2,141 +2,294 @@
 
 #include "RealmUser.h"
 
+#include "../Network/Event/NotifyRoomMessage.h"
 #include "../logging.h"
 
 ChatRoomManager::ChatRoomManager()
 {
-	m_chatIndex = 0;
 	m_chatSessionList.clear();
+	m_roomIndex = 0;
+
+	CreatePublicRooms();
 }
 
 ChatRoomManager::~ChatRoomManager()
 {
 }
 
-void ChatRoomManager::OnDisconnectUser( sptr_user user )
+void ChatRoomManager::CreatePublicRooms()
 {
-	if( !user || user->m_gameId < 0 )
-		return;
+	std::vector< std::wstring > RoomNames = {
+		L"Champions Reborn",
+		L"Adventurous",
+		L"Courageous",
+		L"Champion",
+		L"Legendary",
+		L"Epic"
+	};
 
-	const auto gameId = user->m_gameId;
+	for( const auto &name : RoomNames )
+	{
+		auto new_session = std::make_shared< ChatRoomSession >();
 
-	auto session = FindRoom( gameId );
-	if( !session )
-		return;
+		new_session->m_name = name;
+		new_session->m_type = ChatRoomSession::RoomType::Public;
+		new_session->m_index = m_roomIndex;
+		new_session->m_banner = L"";
 
-	//auto owner = session->m_owner.lock();
-	//if( !owner )
-	//{
-	//	Log::Error( "Game session owner not found! [%d]", gameId );
-	//	ForceTerminateChat( gameId );
-	//	return;
-	//}
-	//
-	//if( owner->m_sessionId == user->m_sessionId )
-	//{
-	//	Log::Info( "Game session owner disconnected! [%d]", gameId );
-	//	ForceTerminateChat( gameId );
-	//}
+		m_chatSessionList[ m_roomIndex++ ] = new_session;
+	}
 }
 
-bool ChatRoomManager::CreatePublicChatSession( sptr_user owner, std::wstring gameName )
+std::vector<sptr_chat_room_session> ChatRoomManager::GetPublicRoomList() const
 {
-	auto new_session = std::make_shared< ChatRoomSession >();
+	std::vector< sptr_chat_room_session > result;
 
-	new_session->m_type = ChatRoomSession::GameType::Public;
-	new_session->m_gameIndex = m_chatIndex;
-	new_session->m_gameName = L"";
-	
-	std::lock_guard< std::mutex > lock( m_mutex );
-	m_chatSessionList.push_back( new_session );
+	for( const auto &chatSession : m_chatSessionList )
+	{
+		if( chatSession.second->m_type == ChatRoomSession::RoomType::Public )
+		{
+			result.push_back( chatSession.second );
+		}
+	}
 
-	m_chatIndex++;
+	return result;
+}
+
+bool ChatRoomManager::JoinRoom( sptr_user user, const std::wstring &roomName )
+{
+	if( roomName.empty() || !user )
+		return false;
+
+	auto chatSession = FindRoom( roomName );
+	if( !chatSession )
+	{
+		Log::Error( "Chat room [{}] not found", roomName );
+		return false;
+	}
+
+	if( !chatSession->AddMember( user ) )
+	{
+		Log::Error( "Failed to add user [{}] to chat room [{}]", user->m_username, roomName );
+		return false;
+	}
+
+	if( chatSession->m_type == ChatRoomSession::RoomType::Public )
+	{
+		user->m_publicRoomId = chatSession->m_index;
+	}
+	else
+	{
+		user->m_privateRoomId = chatSession->m_index;
+
+		SendMessageToRoom( roomName, L"", L"User '" + user->m_chatHandle + L"' has joined the room." );
+	}
+
+	Log::Info( "User [{}] joined chat room [{}]", user->m_username, roomName );
 
 	return true;
 }
 
-bool ChatRoomManager::CreatePrivateChatSession( sptr_user owner, std::wstring roomName )
+bool ChatRoomManager::LeaveRoom( sptr_user user, const std::wstring &roomName )
 {
-	for( auto &chatSession : m_chatSessionList )
-	{
-		if( chatSession->m_type != ChatRoomSession::GameType::Private )
-			continue;
+	if( !user || roomName.empty() )
+		return false;
 
-		if( chatSession->m_gameName == roomName )
+	auto chatSession = FindRoom( roomName );
+	if( !chatSession )
+	{
+		Log::Error( "Chat room [{}] not found", roomName );
+		return false;
+	}
+
+	if( !chatSession->RemoveMember( user ) )
+	{
+		Log::Error( "Failed to remove user [{}] from chat room [{}]", user->m_username, roomName );
+		return false;
+	}
+
+	if( chatSession->m_type == ChatRoomSession::RoomType::Private )
+	{
+		if( chatSession->m_members.empty() && chatSession->m_moderators.empty() )
 		{
-			Log::Error( "Game name is already in use! [%S]", roomName.c_str() );
+			m_chatSessionList.erase( chatSession->m_index );
+
+			Log::Debug( "Private chat room [{}] deleted", roomName );
+		}
+
+		user->m_privateRoomId = -1;
+	}
+	else
+	{
+		user->m_publicRoomId = -1;
+	}
+
+	Log::Info( "User [{}] left chat room [{}]", user->m_username, roomName );
+	return true;
+}
+
+bool ChatRoomManager::LeaveRoom( sptr_user user, const int32_t roomId )
+{
+	if( !user || roomId < 0 )
+		return false;
+
+	const auto chatSession = FindRoom( roomId );
+	if( !chatSession )
+	{
+		Log::Error( "Chat room with ID [{}] not found", roomId );
+		return false;
+	}
+
+	if( !chatSession->RemoveMember( user ) )
+	{
+		Log::Error( "Failed to remove user [{}] from chat room with ID [{}]", user->m_username, roomId );
+		return false;
+	}
+
+	if( chatSession->m_type == ChatRoomSession::RoomType::Private )
+	{
+		if( chatSession->m_members.empty() && chatSession->m_moderators.empty() )
+		{
+			m_chatSessionList.erase( roomId );
+			Log::Info( "Private chat room with ID [{}] deleted", roomId );
+		}
+
+		user->m_privateRoomId = -1;
+	}
+	else
+	{
+		user->m_publicRoomId = -1;
+	}
+
+	Log::Info( "User [{}] left chat room with ID [{}]", user->m_username, roomId );
+
+	return true;
+}
+
+void ChatRoomManager::OnDisconnectUser( sptr_user user )
+{
+	if( !user )	return;
+
+	LeaveRoom( user, user->m_publicRoomId );
+	LeaveRoom( user, user->m_privateRoomId );
+}
+
+bool ChatRoomManager::CreateGameChatSession( sptr_user owner, std::wstring roomName )
+{
+	for( const auto &chatSession : m_chatSessionList )
+	{
+		if( chatSession.second->m_name == roomName )
+		{
+			Log::Error( "Chat Room name is already in use! [{}]", roomName );
 			return false;
 		}
 	}
 
 	auto new_session = std::make_shared< ChatRoomSession >();
 
-	new_session->m_type = ChatRoomSession::GameType::Private;
-	new_session->m_gameIndex = m_chatIndex;
-	new_session->m_gameName = roomName;
-	
-	std::lock_guard< std::mutex > lock( m_mutex );
-	m_chatSessionList.push_back( new_session );
+	new_session->m_type = ChatRoomSession::RoomType::Private;
+	new_session->m_name = roomName;
+	new_session->m_owner = owner;
+	new_session->m_banner = L"";
+	new_session->m_index = m_roomIndex;
 
-	m_chatIndex++;
+	new_session->AddMember( owner );
+	owner->m_privateRoomId = m_roomIndex;
+
+	m_chatSessionList[ m_roomIndex++ ] = new_session;
 
 	return true;
 }
 
-bool ChatRoomManager::ForceTerminateChat( const int32_t gameId )
+bool ChatRoomManager::CloseGameChatSession( const std::wstring roomName )
 {
-	if( gameId < 0 )
+	if( roomName.empty() )
+		return false;
+
+	const auto it = std::find_if( m_chatSessionList.begin(), m_chatSessionList.end(),
+								  [ &roomName ]( const auto &pair )
 	{
+		return pair.second->m_name == roomName;
+	} );
+
+	if( it == m_chatSessionList.end() )
+	{
+		Log::Error( "Chat room [{}] not found", roomName );
 		return false;
 	}
 
-	std::lock_guard< std::mutex > lock( m_mutex );
-
-	auto it = std::find_if( m_chatSessionList.begin(), m_chatSessionList.end(), [ &gameId ]( sptr_chat_room_session chatSession )
+	auto &chatSession = it->second;
+	if( chatSession->m_type != ChatRoomSession::RoomType::Private )
 	{
-		return chatSession->m_gameIndex == gameId;
-	} );
-
-	if( it != m_chatSessionList.end() )
-	{
-		m_chatSessionList.erase( it );
-		return true;
+		Log::Error( "Chat room [{}] is not a private room", roomName );
+		return false;
 	}
 
-	return false;
+	for( const auto &member : chatSession->m_members )
+	{
+		if( auto user = member.lock() )
+		{
+			user->m_privateRoomId = -1;
+		}
+	}
+
+	m_chatSessionList.erase( it );
+
+	Log::Info( "Chat room [{}] closed", roomName );
+
+	return true;
 }
 
-sptr_chat_room_session ChatRoomManager::FindRoom( const int32_t gameId )
+void ChatRoomManager::SendMessageToRoom( std::wstring roomName, std::wstring handle, std::wstring message )
 {
-	if( gameId < 0 ) return nullptr;
+	if( roomName.empty() || message.empty() )
+		return;
 
-	std::lock_guard< std::mutex > lock( m_mutex );
-
-	for( auto &chatSession : m_chatSessionList )
+	auto chatSession = FindRoom( roomName );
+	if( !chatSession )
 	{
-		if( chatSession->m_gameIndex == gameId )
+		Log::Error( "Chat room [{}] not found", roomName );
+		return;
+	}
+
+	NotifyRoomMessage notifyMessage( roomName, handle, message );
+	for( const auto &m : chatSession->m_members )
+	{
+		if( auto member = m.lock() )
 		{
-			return chatSession;
+			member->sock->send( notifyMessage );
+		}
+	}
+}
+
+sptr_chat_room_session ChatRoomManager::FindRoom( const std::wstring &gameName )
+{
+	if( gameName.empty() )
+		return nullptr;
+
+	for( const auto &chatSession : m_chatSessionList )
+	{
+		if( chatSession.second->m_name == gameName )
+		{
+			return chatSession.second;
 		}
 	}
 
 	return nullptr;
 }
 
-sptr_chat_room_session ChatRoomManager::FindRoom( const std::wstring &gameName )
+sptr_chat_room_session ChatRoomManager::FindRoom( const int32_t roomId )
 {
-	if( gameName.empty() ) return nullptr;
+	if( roomId < 0 )
+		return nullptr;
 
-	std::lock_guard< std::mutex > lock( m_mutex );
+	auto it = m_chatSessionList.find( roomId );
 
-	for( auto &chatSession : m_chatSessionList )
+	if( it != m_chatSessionList.end() )
 	{
-		if( chatSession->m_gameName == gameName )
-		{
-			return chatSession;
-		}
+		return it->second;
 	}
 
+	Log::Error( "Chat room with ID [{}] not found", roomId );
 	return nullptr;
 }

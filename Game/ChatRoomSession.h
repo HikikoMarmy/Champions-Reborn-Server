@@ -2,6 +2,8 @@
 
 #include <memory>
 #include <string>
+#include <vector>
+
 #include "RealmUser.h"
 
 class ChatRoomSession {
@@ -9,16 +11,26 @@ public:
 	ChatRoomSession();
 	~ChatRoomSession();
 
-	enum class GameType
-	{
+	bool AddMember( sptr_user user );
+	bool RemoveMember( sptr_user user );
+	bool IsMember( sptr_user user );
+	bool IsPublic() const;
+	bool IsPrivate() const;
+
+	enum class RoomType {
 		Public,
 		Private
-	} m_type;
+	};
 
-	int32_t m_gameIndex;
-	std::wstring m_gameName;
+	RoomType m_type;
+	int32_t m_index;
 
-	std::weak_ptr< RealmUser > m_owner;
+	std::wstring m_name;
+	std::wstring m_banner;
+
+	wptr_user m_owner;
+	std::vector< wptr_user > m_members;
+	std::vector< wptr_user > m_moderators;
 };
 
 typedef std::shared_ptr< ChatRoomSession > sptr_chat_room_session;
