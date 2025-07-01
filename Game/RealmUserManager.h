@@ -8,31 +8,35 @@
 
 #include "RealmUser.h"
 
-class RealmUserManager {
+class UserManager {
 private:
 
 public:
-	static RealmUserManager &Get()
+	static UserManager &Get()
 	{
-		static RealmUserManager instance;
+		static UserManager instance;
 		return instance;
 	}
 
-	RealmUserManager( const RealmUserManager & ) = delete;
-	RealmUserManager &operator=( const RealmUserManager & ) = delete;
-	RealmUserManager();
-	~RealmUserManager();
+	UserManager( const UserManager & ) = delete;
+	UserManager &operator=( const UserManager & ) = delete;
+	UserManager();
+	~UserManager();
 
 	std::wstring GenerateSessionId();
 	sptr_user CreateUser( sptr_socket socket, RealmGameType clientType );
 	void RemoveUser( sptr_user user );
 	void RemoveUser( const std::wstring &sessionId );
 	void RemoveUser( const sptr_socket socket );
-	void DisconnectUser( sptr_user user, const std::string reason );
+	void Disconnect( sptr_socket socket, const std::string reason );
+	void Disconnect( sptr_user user, const std::string reason );
+
 
 	sptr_user FindUserBySessionId( const std::wstring &sessionId );
 	sptr_user FindUserBySocket( const sptr_socket &socket );
+	sptr_user RecoverUserBySession( const std::wstring &sessionId, const sptr_socket& socket );
 	int32_t GetUserCount() const;
+	std::vector< sptr_user > GetUserList();
 
 private:
 	std::mutex m_mutex;
