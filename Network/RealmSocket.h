@@ -40,6 +40,7 @@ public:
 		bool disconnected_wait;
 		bool disconnected_forced;
 		bool is_listener;
+		bool is_gateway;
 		bool want_more_read_data;
 		bool want_more_write_data;
 	} flag;
@@ -51,8 +52,8 @@ public:
 	std::string remote_ip;
 	uint32_t remote_port;
 	uint32_t last_write_position;
-
 	uint64_t latency;
+
 	std::chrono::steady_clock::time_point last_recv_time;
 	std::chrono::steady_clock::time_point last_send_time;
 

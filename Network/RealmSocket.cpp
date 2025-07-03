@@ -14,6 +14,7 @@ RealmSocket::RealmSocket()
 	flag.disconnected_wait = 0;
 	flag.disconnected_forced = 0;
 	flag.is_listener = 0;
+	flag.is_gateway = 0;
 	flag.want_more_read_data = 0;
 	flag.want_more_write_data = 0;
 
@@ -43,6 +44,7 @@ RealmSocket::~RealmSocket()
 	flag.disconnected_wait = 0;
 	flag.disconnected_forced = 0;
 	flag.is_listener = 0;
+	flag.is_gateway = 0;
 	flag.want_more_read_data = 0;
 	flag.want_more_write_data = 0;
 

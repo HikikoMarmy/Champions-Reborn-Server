@@ -9,20 +9,16 @@
 
 #include "../Game/RealmUserManager.h"
 #include "../Network/Events.h"
-#include "../Network/Event/NotifyForcedLogout.h"
+#include "../../configuration.h"
 #include "../../logging.h"
 
 LobbyServer::LobbyServer()
 {
 	m_running = false;
-	m_conSocket = INVALID_SOCKET;
-	m_rtaSocket = INVALID_SOCKET;
+	m_conSocket.reset();
+	m_rtaSocket.reset();
 
-	for( int i = 0; i < 8; i++ )
-	{
-		m_conGatewaySocket[ i ] = INVALID_SOCKET;
-		m_rtaGatewaySocket[ i ] = INVALID_SOCKET;
-	}
+	m_gatewaySockets.clear();
 
 	m_clientSockets.clear();
 	m_recvBuffer.resize( 1024 );
@@ -40,38 +36,39 @@ LobbyServer::~LobbyServer()
 		}
 	}
 
-	for( auto &sock : m_conGatewaySocket )
+	for( auto &socket : m_gatewaySockets )
 	{
-		if( sock != INVALID_SOCKET )
+		if( socket->fd != INVALID_SOCKET )
 		{
-			closesocket( sock );
-		}
-	}
-
-	for( auto &sock : m_rtaGatewaySocket )
-	{
-		if( sock != INVALID_SOCKET )
-		{
-			closesocket( sock );
+			closesocket( socket->fd );
 		}
 	}
 }
 
 void LobbyServer::Start( std::string ip )
 {
+	// Champions of Norrath Gateway Sockets
 	for( int i = 0; i < 8; i++ )
 	{
-		m_conGatewaySocket[ i ] = OpenNetworkSocket( ip, 40800 + i );
-		if( m_conGatewaySocket[ i ] == INVALID_SOCKET )
-			return;
+		auto gatewaySocket = OpenListenerSocket( ip, 40800 + i, RealmGameType::CHAMPIONS_OF_NORRATH );
+		if( nullptr == gatewaySocket ) return;
 
-		m_rtaGatewaySocket[ i ] = OpenNetworkSocket( ip, 40810 + i );
-		if( m_rtaGatewaySocket[ i ] == INVALID_SOCKET )
-			return;
+		gatewaySocket->flag.is_gateway = true;
+		m_gatewaySockets.push_back( gatewaySocket );
 	}
 
-	m_conSocket = OpenNetworkSocket( ip, 40900 );
-	m_rtaSocket = OpenNetworkSocket( ip, 40910 );
+	// Return to Arms Gateway Sockets
+	for( int i = 0; i < 8; i++ )
+	{
+		auto gatewaySocket = OpenListenerSocket( ip, 40810 + i, RealmGameType::RETURN_TO_ARMS );
+		if( nullptr == gatewaySocket ) return;
+
+		gatewaySocket->flag.is_gateway = true;
+		m_gatewaySockets.push_back( gatewaySocket );
+	}
+
+	m_conSocket = OpenListenerSocket( ip, Config::con_lobby_port, RealmGameType::CHAMPIONS_OF_NORRATH );
+	m_rtaSocket = OpenListenerSocket( ip, Config::rta_lobby_port, RealmGameType::RETURN_TO_ARMS );
 
 	m_running = true;
 	m_thread = std::thread( &LobbyServer::Run, this );
@@ -95,13 +92,13 @@ void LobbyServer::Stop()
 	}
 }
 
-SOCKET LobbyServer::OpenNetworkSocket( std::string ip, int32_t port )
+sptr_socket LobbyServer::OpenListenerSocket( std::string ip, int32_t port, RealmGameType type )
 {
 	SOCKET sock = ::WSASocket( AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED );
 	if( sock == INVALID_SOCKET )
 	{
 		Log::Error( "WSASocket() failed on port {}", port );
-		return INVALID_SOCKET;
+		return nullptr;
 	}
 
 	sockaddr_in service{};
@@ -116,26 +113,33 @@ SOCKET LobbyServer::OpenNetworkSocket( std::string ip, int32_t port )
 	{
 		Log::Error( "Invalid IP address format: {}", ip );
 		closesocket( sock );
-		return INVALID_SOCKET;
+		return nullptr;
 	}
 
 	if( bind( sock, reinterpret_cast< SOCKADDR * >( &service ), sizeof( service ) ) == SOCKET_ERROR )
 	{
 		Log::Error( "bind() failed on port {}", port );
 		closesocket( sock );
-		return INVALID_SOCKET;
+		return nullptr;
 	}
 
 	if( listen( sock, SOMAXCONN ) == SOCKET_ERROR )
 	{
 		Log::Error( "listen() failed on port {}", port );
 		closesocket( sock );
-		return INVALID_SOCKET;
+		return nullptr;
 	}
+
+	auto realmSocket = std::make_shared< RealmSocket >();
+	realmSocket->fd = sock;
+	realmSocket->remote_ip = ip;
+	realmSocket->remote_port = port;
+	realmSocket->gameType = type;
+	realmSocket->flag.is_listener = true;
 
 	Log::Info( "Socket Opened on {}:{}", ip, port );
 
-	return sock;
+	return realmSocket;
 }
 
 void LobbyServer::Run()
@@ -150,22 +154,14 @@ void LobbyServer::Run()
 		FD_ZERO( &readSet );
 		FD_ZERO( &writeSet );
 
-		FD_SET( m_conSocket, &readSet );
-		FD_SET( m_rtaSocket, &readSet );
+		FD_SET( m_conSocket->fd, &readSet );
+		FD_SET( m_rtaSocket->fd, &readSet );
 
-		for( const auto &sock : m_conGatewaySocket )
+		for( const auto &sock : m_gatewaySockets )
 		{
-			if( sock != INVALID_SOCKET )
+			if( sock != nullptr && sock->fd != INVALID_SOCKET )
 			{
-				FD_SET( sock, &readSet );
-			}
-		}
-
-		for( const auto &sock : m_rtaGatewaySocket )
-		{
-			if( sock != INVALID_SOCKET )
-			{
-				FD_SET( sock, &readSet );
+				FD_SET( sock->fd, &readSet );
 			}
 		}
 
@@ -185,30 +181,25 @@ void LobbyServer::Run()
 			continue;
 		}
 
-		for( auto &sock : m_conGatewaySocket )
+		for( auto &sock : m_gatewaySockets )
 		{
-			if( sock != INVALID_SOCKET && FD_ISSET( sock, &readSet ) )
+			if( sock == nullptr || sock->fd == INVALID_SOCKET )
+				continue;
+
+			if( FD_ISSET( sock->fd, &readSet ) )
 			{
-				AcceptGateway( sock, RealmGameType::CHAMPIONS_OF_NORRATH );
+				AcceptConnection( sock );
 			}
 		}
 
-		for( auto &sock : m_rtaGatewaySocket )
+		if( FD_ISSET( m_conSocket->fd, &readSet ) )
 		{
-			if( sock != INVALID_SOCKET && FD_ISSET( sock, &readSet ) )
-			{
-				AcceptGateway( sock, RealmGameType::RETURN_TO_ARMS );
-			}
+			AcceptConnection( m_conSocket );
 		}
 
-		if( FD_ISSET( m_conSocket, &readSet ) )
+		if( FD_ISSET( m_rtaSocket->fd, &readSet ) )
 		{
-			AcceptClient( m_conSocket, RealmGameType::CHAMPIONS_OF_NORRATH );
-		}
-
-		if( FD_ISSET( m_rtaSocket, &readSet ) )
-		{
-			AcceptClient( m_rtaSocket, RealmGameType::RETURN_TO_ARMS );
+			AcceptConnection( m_rtaSocket );
 		}
 
 		for( auto &client : m_clientSockets )
@@ -261,12 +252,12 @@ void LobbyServer::CheckSocketProblem()
 	}
 }
 
-void LobbyServer::AcceptGateway( SOCKET socket, RealmGameType gameType )
+void LobbyServer::AcceptConnection( sptr_socket srcSocket )
 {
 	sockaddr_in clientInfo{};
 	int32_t addrSize = sizeof( clientInfo );
 
-	SOCKET clientSocket = accept( socket, ( SOCKADDR * )&clientInfo, &addrSize );
+	SOCKET clientSocket = accept( srcSocket->fd, ( SOCKADDR * )&clientInfo, &addrSize );
 	if( clientSocket == INVALID_SOCKET )
 	{
 		Log::Error( "accept() failed" );
@@ -274,6 +265,8 @@ void LobbyServer::AcceptGateway( SOCKET socket, RealmGameType gameType )
 	}
 
 	auto new_socket = std::make_shared< RealmSocket >();
+	auto gameType = srcSocket->gameType;
+
 	new_socket->fd = clientSocket;
 	new_socket->remote_addr = clientInfo;
 	new_socket->remote_ip = Util::IPFromAddr( clientInfo );
@@ -281,30 +274,10 @@ void LobbyServer::AcceptGateway( SOCKET socket, RealmGameType gameType )
 	new_socket->gameType = gameType;
 	m_clientSockets.push_back( new_socket );
 
-	Log::Info( "New Gateway Client Connected : ({})", new_socket->remote_ip );
-}
-
-void LobbyServer::AcceptClient( SOCKET socket, RealmGameType gameType )
-{
-	sockaddr_in clientInfo{};
-	int32_t addrSize = sizeof( clientInfo );
-
-	SOCKET clientSocket = accept( socket, ( SOCKADDR * )&clientInfo, &addrSize );
-	if( clientSocket == INVALID_SOCKET )
+	if( !srcSocket->flag.is_gateway )
 	{
-		Log::Error( "accept() failed" );
-		return;
+		UserManager::Get().CreateUser( new_socket, gameType );
 	}
-
-	auto new_socket = std::make_shared< RealmSocket >();
-	new_socket->fd = clientSocket;
-	new_socket->remote_addr = clientInfo;
-	new_socket->remote_ip = Util::IPFromAddr( clientInfo );
-	new_socket->remote_port = ntohs( clientInfo.sin_port );
-	new_socket->gameType = gameType;
-	m_clientSockets.push_back( new_socket );
-
-	UserManager::Get().CreateUser( new_socket, gameType );
 
 	Log::Info( "New Client Connected : ({})", new_socket->remote_ip );
 }
@@ -445,14 +418,6 @@ void LobbyServer::HandleRequest( sptr_socket socket, sptr_byte_stream stream )
 	}
 
 	auto request = it->second();
-	//auto user = RealmUserManager::Get().FindUserBySocket( socket );
-	//
-	//if( user == nullptr )
-	//{
-	//	Log::Error( "User not found!" );
-	//	socket->flag.disconnected_wait = true;
-	//	return;
-	//}
 
 	if( auto res = request->ProcessRequest( socket, stream ) )
 	{

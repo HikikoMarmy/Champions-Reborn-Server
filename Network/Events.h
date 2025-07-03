@@ -29,6 +29,7 @@
 
 /* 0027 */	#include "Event/RequestGetEncryptionKey.h"
 
+/* 0041 */	#include "Event/NotifyForcedLogout.h"
 /* 0042 */	#include "Event/RequestGetRules.h"
 /* 0043 */	#include "Event/RequestGetServerAddress.h"
 /* 0044 */	#include "Event/RequestUpdateGameData.h"

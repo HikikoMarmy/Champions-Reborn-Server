@@ -41,25 +41,18 @@ public:
 	}
 
 private:
-	// These are the main sockets for the lobby server
-	SOCKET m_conSocket;
-	SOCKET m_rtaSocket;
-
-	// Gateway sockets. 1 port per region.
-	std::array< SOCKET, 8 > m_conGatewaySocket;
-	std::array< SOCKET, 8 > m_rtaGatewaySocket;
-
-	// Connected client sockets
+	sptr_socket m_conSocket;
+	sptr_socket m_rtaSocket;
+	std::vector< sptr_socket > m_gatewaySockets;
 	std::vector< sptr_socket > m_clientSockets;
 
 	std::vector< uint8_t > m_recvBuffer;
 
-	SOCKET OpenNetworkSocket( std::string ip, int32_t port );
+	sptr_socket OpenListenerSocket( std::string ip, int32_t port, RealmGameType type );
 
 	void Run();
 	void CheckSocketProblem();
-	void AcceptGateway( SOCKET socket, RealmGameType clientType );
-	void AcceptClient( SOCKET socket, RealmGameType clientType );
+	void AcceptConnection( sptr_socket srcSocket );
 	void ReadSocket( sptr_socket socket );
 	void WriteSocket( sptr_socket socket );
 	void HandleRequest( sptr_socket socket, sptr_byte_stream stream );
