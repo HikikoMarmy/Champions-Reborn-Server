@@ -158,18 +158,22 @@ void Database::DeleteOldSessions()
 	{
 		auto stmt = m_statements[ QueryID::DeleteOldSessions ];
 
-		sqlite3_reset( stmt );
-		sqlite3_clear_bindings( stmt );
-
-		int64_t currentTime = time( nullptr );
-		sqlite3_bind_int64( stmt, 1, currentTime );
-
-		if( sqlite3_step( stmt ) != SQLITE_DONE )
+		SQLiteTransaction tx( m_db );
 		{
-			throw std::runtime_error( "Delete old sessions failed: " + std::string( sqlite3_errmsg( m_db ) ) );
-		}
+			sqlite3_reset( stmt );
+			sqlite3_clear_bindings( stmt );
 
-		Log::Info( "Old sessions deleted successfully." );
+			int64_t currentTime = time( nullptr );
+			sqlite3_bind_int64( stmt, 1, currentTime );
+
+			if( sqlite3_step( stmt ) != SQLITE_DONE )
+			{
+				throw std::runtime_error( "Delete old sessions failed: " + std::string( sqlite3_errmsg( m_db ) ) );
+			}
+
+			Log::Info( "Old sessions deleted successfully." );
+		}
+		tx.commit();
 	}
 	catch( const std::exception &e )
 	{
@@ -188,19 +192,23 @@ int64_t Database::CreateNewAccount( const std::string &username,
 		auto hashedPassword = HashPassword( password, 1000, 32 );
 		auto stmt = m_statements[ QueryID::CreateAccount ];
 
-		sqlite3_reset( stmt );
-		sqlite3_clear_bindings( stmt );
-
-		sqlite3_bind_text( stmt, 1, username.c_str(), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_text( stmt, 2, hashedPassword.c_str(), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_text( stmt, 3, email_address.c_str(), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_text( stmt, 4, date_of_birth.c_str(), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_text( stmt, 5, chat_handle.c_str(), -1, SQLITE_TRANSIENT );
-
-		if( sqlite3_step( stmt ) != SQLITE_DONE )
+		SQLiteTransaction tx( m_db );
 		{
-			throw std::runtime_error( "Insert failed: " + std::string( sqlite3_errmsg( m_db ) ) );
+			sqlite3_reset( stmt );
+			sqlite3_clear_bindings( stmt );
+
+			sqlite3_bind_text( stmt, 1, username.c_str(), -1, SQLITE_TRANSIENT );
+			sqlite3_bind_text( stmt, 2, hashedPassword.c_str(), -1, SQLITE_TRANSIENT );
+			sqlite3_bind_text( stmt, 3, email_address.c_str(), -1, SQLITE_TRANSIENT );
+			sqlite3_bind_text( stmt, 4, date_of_birth.c_str(), -1, SQLITE_TRANSIENT );
+			sqlite3_bind_text( stmt, 5, chat_handle.c_str(), -1, SQLITE_TRANSIENT );
+
+			if( sqlite3_step( stmt ) != SQLITE_DONE )
+			{
+				throw std::runtime_error( "Insert failed: " + std::string( sqlite3_errmsg( m_db ) ) );
+			}
 		}
+		tx.commit();
 
 		return sqlite3_last_insert_rowid( m_db );
 	}
@@ -312,20 +320,24 @@ bool Database::CreateSession( const int64_t account_id, const std::wstring &sess
 		auto stmt = m_statements[ QueryID::CreateSession ];
 		auto sessionId = Util::WideToUTF8( session_id );
 
-		sqlite3_reset( stmt );
-		sqlite3_clear_bindings( stmt );
-
-		sqlite3_bind_int64( stmt, 1, account_id );
-		sqlite3_bind_text( stmt, 2, sessionId.c_str(), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_int( stmt, 3, 0 );
-		sqlite3_bind_text( stmt, 4, ip_address.c_str(), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_int64( stmt, 5, time( nullptr ) + 300 ); // Session expires in 5 minutes
-
-		if( sqlite3_step( stmt ) != SQLITE_DONE )
+		SQLiteTransaction tx( m_db );
 		{
-			Log::Error( "SQLite insert failed: {}", sqlite3_errmsg( m_db ) );
-			return false;
+			sqlite3_reset( stmt );
+			sqlite3_clear_bindings( stmt );
+
+			sqlite3_bind_int64( stmt, 1, account_id );
+			sqlite3_bind_text( stmt, 2, sessionId.c_str(), -1, SQLITE_TRANSIENT );
+			sqlite3_bind_int( stmt, 3, 0 );
+			sqlite3_bind_text( stmt, 4, ip_address.c_str(), -1, SQLITE_TRANSIENT );
+			sqlite3_bind_int64( stmt, 5, time( nullptr ) + 300 ); // Session expires in 5 minutes
+
+			if( sqlite3_step( stmt ) != SQLITE_DONE )
+			{
+				Log::Error( "SQLite insert failed: {}", sqlite3_errmsg( m_db ) );
+				return false;
+			}
 		}
+		tx.commit();
 
 		return true;
 	}
@@ -344,18 +356,22 @@ bool Database::UpdateSession( const std::wstring &session_id, const uint32_t cha
 		auto stmt = m_statements[ QueryID::UpdateSession ];
 		auto sessionId = Util::WideToUTF8( session_id );
 
-		sqlite3_reset( stmt );
-		sqlite3_clear_bindings( stmt );
-
-		sqlite3_bind_int64( stmt, 1, time( nullptr ) + 300 ); // Extend session by 5 minutes
-		sqlite3_bind_int( stmt, 2, character_id );
-		sqlite3_bind_text( stmt, 3, sessionId.c_str(), -1, SQLITE_TRANSIENT );
-
-		if( sqlite3_step( stmt ) != SQLITE_DONE )
+		SQLiteTransaction tx( m_db );
 		{
-			Log::Error( "SQLite update failed: {}", sqlite3_errmsg( m_db ) );
-			return false;
+			sqlite3_reset( stmt );
+			sqlite3_clear_bindings( stmt );
+
+			sqlite3_bind_int64( stmt, 1, time( nullptr ) + 300 ); // Extend session by 5 minutes
+			sqlite3_bind_int( stmt, 2, character_id );
+			sqlite3_bind_text( stmt, 3, sessionId.c_str(), -1, SQLITE_TRANSIENT );
+
+			if( sqlite3_step( stmt ) != SQLITE_DONE )
+			{
+				Log::Error( "SQLite update failed: {}", sqlite3_errmsg( m_db ) );
+				return false;
+			}
 		}
+		tx.commit();
 
 		Log::Debug( "Session updated: {}", session_id );
 		return true;
@@ -375,16 +391,20 @@ bool Database::DeleteSession( const std::wstring &session_id )
 		auto stmt = m_statements[ QueryID::DeleteSession ];
 		auto sessionId = Util::WideToUTF8( session_id );
 
-		sqlite3_reset( stmt );
-		sqlite3_clear_bindings( stmt );
-
-		sqlite3_bind_text( stmt, 1, sessionId.c_str(), -1, SQLITE_TRANSIENT );
-
-		if( sqlite3_step( stmt ) != SQLITE_DONE )
+		SQLiteTransaction tx( m_db );
 		{
-			Log::Error( "SQLite delete failed: {}", sqlite3_errmsg( m_db ) );
-			return false;
+			sqlite3_reset( stmt );
+			sqlite3_clear_bindings( stmt );
+
+			sqlite3_bind_text( stmt, 1, sessionId.c_str(), -1, SQLITE_TRANSIENT );
+
+			if( sqlite3_step( stmt ) != SQLITE_DONE )
+			{
+				Log::Error( "SQLite delete failed: {}", sqlite3_errmsg( m_db ) );
+				return false;
+			}
 		}
+		tx.commit();
 
 		Log::Debug( "Session deleted: {}", session_id );
 		return true;
@@ -451,19 +471,23 @@ uint32_t Database::CreateNewCharacter( const int64_t account_id, const Character
 		auto stmt = m_statements[ QueryID::CreateNewCharacter ];
 		const auto meta_data = meta.Serialize();
 
-		sqlite3_reset( stmt );
-		sqlite3_clear_bindings( stmt );
-
-		sqlite3_bind_int64( stmt, 1, account_id );
-		sqlite3_bind_blob( stmt, 2, meta_data.data(), static_cast< int >( meta_data.size() ), SQLITE_STATIC );
-		sqlite3_bind_blob( stmt, 3, blob.data(), static_cast< int >( blob.size() ), SQLITE_STATIC );
-
-		int rc = sqlite3_step( stmt );
-		if( rc != SQLITE_DONE )
+		SQLiteTransaction tx( m_db );
 		{
-			Log::Error( "SQLite insert failed: {}", sqlite3_errmsg( m_db ) );
-			return 0;
+			sqlite3_reset( stmt );
+			sqlite3_clear_bindings( stmt );
+
+			sqlite3_bind_int64( stmt, 1, account_id );
+			sqlite3_bind_blob( stmt, 2, meta_data.data(), static_cast< int >( meta_data.size() ), SQLITE_STATIC );
+			sqlite3_bind_blob( stmt, 3, blob.data(), static_cast< int >( blob.size() ), SQLITE_STATIC );
+
+			int rc = sqlite3_step( stmt );
+			if( rc != SQLITE_DONE )
+			{
+				Log::Error( "SQLite insert failed: {}", sqlite3_errmsg( m_db ) );
+				return 0;
+			}
 		}
+		tx.commit();
 
 		uint32_t character_id = static_cast< uint32_t >( sqlite3_last_insert_rowid( m_db ) );
 
@@ -490,18 +514,22 @@ bool Database::SaveCharacter( const int64_t account_id, const int32_t character_
 		auto stmt = m_statements[ QueryID::SaveCharacter ];
 		const auto meta_data = meta.Serialize();
 
-		sqlite3_reset( stmt );
-		sqlite3_clear_bindings( stmt );
-
-		sqlite3_bind_blob( stmt, 1, meta_data.data(), static_cast< int >( meta_data.size() ), SQLITE_STATIC );
-		sqlite3_bind_blob( stmt, 2, blob.data(), static_cast< int >( blob.size() ), SQLITE_STATIC );
-		sqlite3_bind_int64( stmt, 3, account_id );
-		sqlite3_bind_int( stmt, 4, character_id );
-
-		if( sqlite3_step( stmt ) != SQLITE_DONE )
+		SQLiteTransaction tx( m_db );
 		{
-			throw std::runtime_error( "Update failed: " + std::string( sqlite3_errmsg( m_db ) ) );
+			sqlite3_reset( stmt );
+			sqlite3_clear_bindings( stmt );
+
+			sqlite3_bind_blob( stmt, 1, meta_data.data(), static_cast< int >( meta_data.size() ), SQLITE_STATIC );
+			sqlite3_bind_blob( stmt, 2, blob.data(), static_cast< int >( blob.size() ), SQLITE_STATIC );
+			sqlite3_bind_int64( stmt, 3, account_id );
+			sqlite3_bind_int( stmt, 4, character_id );
+
+			if( sqlite3_step( stmt ) != SQLITE_DONE )
+			{
+				throw std::runtime_error( "Update failed: " + std::string( sqlite3_errmsg( m_db ) ) );
+			}
 		}
+		tx.commit();
 
 		return true;
 	}

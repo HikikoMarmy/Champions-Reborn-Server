@@ -8,6 +8,7 @@
 #include <map>
 
 #include <sqlite3.h>
+#include "Transaction.h"
 #include "../../Game/RealmCharacter.h"
 #include "../../Game/RealmCharacterMetaKV.h"
 
