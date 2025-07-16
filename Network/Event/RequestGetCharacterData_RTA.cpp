@@ -53,6 +53,11 @@ sptr_generic_response RequestGetNetCharacterData_RTA::SendCharacterData( sptr_so
 
 		const int32_t isFinalChunk = ( position + chunk_size >= data_size );
 
+		if( isFinalChunk && chunk_data.size() < 1024 )
+		{
+			chunk_data.resize( 1024, 0 );
+		}
+
 		auto response = std::make_shared<ResultGetNetCharacterData_RTA>( this, SUCCESS, std::move( chunk_data ), isFinalChunk );
 
 		if( isFinalChunk )
