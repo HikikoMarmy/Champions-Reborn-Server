@@ -227,9 +227,6 @@
     <ClInclude Include="Network\Event\NotifyClientRequestConnect_RTA.h">
       <Filter>Header Files\Network\Event</Filter>
     </ClInclude>
-    <ClInclude Include="Network\Event\NotifyReserveUserSlot_RTA.h">
-      <Filter>Header Files\Network\Event</Filter>
-    </ClInclude>
     <ClInclude Include="Network\Event\RequestGetCharacterData_RTA.h">
       <Filter>Header Files\Network\Event</Filter>
     </ClInclude>
@@ -292,6 +289,9 @@
     </ClInclude>
     <ClInclude Include="Network\Event\RequestGetGame_RTA.h">
       <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Database\Transaction.h">
+      <Filter>Header Files\Database</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -440,9 +440,6 @@
       <Filter>Source Files\Network\Event</Filter>
     </ClCompile>
     <ClCompile Include="Network\Event\NotifyClientRequestConnect_RTA.cpp">
-      <Filter>Source Files\Network\Event</Filter>
-    </ClCompile>
-    <ClCompile Include="Network\Event\NotifyReserveUserSlot_RTA.cpp">
       <Filter>Source Files\Network\Event</Filter>
     </ClCompile>
     <ClCompile Include="Network\Event\RequestGetCharacterData_RTA.cpp">

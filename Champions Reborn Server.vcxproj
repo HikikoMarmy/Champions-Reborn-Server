@@ -83,6 +83,7 @@
     <OutDir>.\bin\</OutDir>
     <TargetName>Server_64</TargetName>
     <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
+    <IntDir>$(SolutionDir)obj\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -93,6 +94,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <TargetName>Server_64</TargetName>
+    <IntDir>$(SolutionDir)obj\$(Configuration)\</IntDir>
+    <OutDir>.\bin\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -199,6 +202,7 @@
     <ClInclude Include="Crypto\RealmCrypt.h" />
     <ClInclude Include="Crypto\rijndael.h" />
     <ClInclude Include="Database\Database.h" />
+    <ClInclude Include="Database\Transaction.h" />
     <ClInclude Include="Discovery Server\DiscoveryServer.h" />
     <ClInclude Include="Game\CharacterSaveManager.h" />
     <ClInclude Include="Game\ChatRoomSession.h" />
@@ -220,7 +224,6 @@
     <ClInclude Include="Network\Event\NotifyGameDiscovered.h" />
     <ClInclude Include="Network\Event\Notify_4C.h" />
     <ClInclude Include="Network\Event\NotifyClientRequestConnect_RTA.h" />
-    <ClInclude Include="Network\Event\NotifyReserveUserSlot_RTA.h" />
     <ClInclude Include="Network\Event\NotifyRoomMessage.h" />
     <ClInclude Include="Network\Event\RequestCancelGame.h" />
     <ClInclude Include="Network\Event\RequestCancelGame_RTA.h" />
@@ -295,7 +298,6 @@
     <ClCompile Include="Network\Event\NotifyGameDiscovered.cpp" />
     <ClCompile Include="Network\Event\Notify_4C.cpp" />
     <ClCompile Include="Network\Event\NotifyClientRequestConnect_RTA.cpp" />
-    <ClCompile Include="Network\Event\NotifyReserveUserSlot_RTA.cpp" />
     <ClCompile Include="Network\Event\NotifyRoomMessage.cpp" />
     <ClCompile Include="Network\Event\RequestCancelGame.cpp" />
     <ClCompile Include="Network\Event\RequestCancelGame_RTA.cpp" />
