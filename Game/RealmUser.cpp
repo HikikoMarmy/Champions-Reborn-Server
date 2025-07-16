@@ -18,7 +18,6 @@ RealmUser::RealmUser()
 
 	m_isLoggedIn = false;
 	m_isHost = false;
-	m_memberId = -1;
 	m_gameId = -1;
 	m_publicRoomId = -1;
 	m_privateRoomId = -1;
@@ -45,7 +44,6 @@ RealmUser::~RealmUser()
 
 	m_isLoggedIn = false;
 	m_isHost = false;
-	m_memberId = 0;
 	m_gameId = 0;
 	m_publicRoomId = -1;
 	m_privateRoomId = -1;

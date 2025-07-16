@@ -37,7 +37,6 @@ public:
 
 	bool			m_isLoggedIn;	// True if the user has successfully authenticated and logged in
 	bool			m_isHost;		// True if this user is the host of a realm
-	int8_t			m_memberId;
 	int32_t			m_gameId;		// Unique ID of the realm
 
 	int32_t			m_publicRoomId;		// Used for public chat rooms

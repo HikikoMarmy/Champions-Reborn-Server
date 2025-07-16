@@ -302,8 +302,6 @@ bool GameSessionManager::RequestJoin( sptr_user join_user )
 		return false;
 	}
 
-	join_user->m_isHost = false;
-
 	if( host_user->m_gameType == RealmGameType::CHAMPIONS_OF_NORRATH )
 	{
 		ProcessJoinNorrath( join_user, host_user );

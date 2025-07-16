@@ -8,6 +8,7 @@ GameSession::GameSession( uint32_t index ) : m_gameId( index )
 {
 	m_members.fill( std::weak_ptr< RealmUser >() );
 
+	m_type = GameType::Public;
 	m_state = GameState::NotReady;
 	m_currentPlayers = 0;
 	m_maximumPlayers = 4;
@@ -19,6 +20,7 @@ GameSession::GameSession( uint32_t index ) : m_gameId( index )
 	m_networkSave = 0;
 
 	m_hostNatPort = 0;
+	m_hostLocalPort = 0;
 	m_hostLocalAddr.clear();
 	m_hostExternalAddr.clear();
 	m_gameName.clear();
@@ -56,16 +58,13 @@ bool GameSession::IsJoinable( sptr_user user ) const
 {
 	if( user )
 	{
-		if( user->m_memberId >= 0 )
-			return false;
-
 		for( const auto &m : m_members )
 		{
 			if( m.expired() )
 				continue;
 
 			const auto &member = m.lock();
-			if( member->m_sessionId == user->m_sessionId )
+			if( member == user )
 			{
 				return false;
 			}
@@ -129,8 +128,7 @@ std::vector<sptr_user> GameSession::GetMembers() const
 
 bool GameSession::AddMember( sptr_user user )
 {
-	if( !user || user->m_memberId >= 0 )
-		return false;
+	if( !user ) return false;
 
 	int8_t freeIndex = -1;
 
@@ -155,7 +153,6 @@ bool GameSession::AddMember( sptr_user user )
 		return false;
 	}
 
-	user->m_memberId = freeIndex;
 	user->m_gameId = m_gameId;
 
 	m_members[ freeIndex ] = user;
@@ -169,27 +166,22 @@ bool GameSession::AddMember( sptr_user user )
 
 bool GameSession::RemoveMember( sptr_user user )
 {
-	if( !user || user->m_memberId < 0 || user->m_memberId >= static_cast< int8_t >( m_members.size() ) )
-		return false;
+	if( !user ) return false;
 
-	int8_t index = static_cast< int8_t >( user->m_memberId );
-	auto memberPtr = m_members[ index ].lock();
-
-	if( !memberPtr || memberPtr->m_sessionId != user->m_sessionId )
+	for( int8_t i = 0; i < static_cast< int8_t >( m_members.size() ); ++i )
 	{
-		Log::Error( "User [{}] not found in game session [{}] at index {}",
-					user->m_username, m_gameName, index );
-		return false;
+		auto memberPtr = m_members[ i ].lock();
+		if( memberPtr && memberPtr == user )
+		{
+			user->m_gameId = -1;
+			m_members[ i ].reset();
+			break;
+		}
 	}
 
-	user->m_memberId = -1;
-	user->m_gameId = -1;
-	
-	m_members[ index ].reset();
 	m_currentPlayers--;
 
-	Log::Info( "Removed user [{}] from game session [{}] at index {}",
-			   user->m_username, m_gameName, index );
+	Log::Info( "Removed user [{}] from game session [{}]", user->m_username, m_gameName );
 
 	return true;
 }
