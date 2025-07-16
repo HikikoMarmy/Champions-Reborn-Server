@@ -17,9 +17,9 @@ void NotifyClientRequestConnect_RTA::Serialize( ByteBuffer &out ) const
 	out.write_u16( m_packetId );
 	out.write_u32( 0 );
 
-	out.write_utf8( this->m_remoteAddr );
-	out.write_u32( this->m_remotePort );
-
 	out.write_utf8( this->m_localAddr );
 	out.write_u32( this->m_localPort );
+
+	out.write_utf8( this->m_remoteAddr );
+	out.write_u32( this->m_remotePort );
 }

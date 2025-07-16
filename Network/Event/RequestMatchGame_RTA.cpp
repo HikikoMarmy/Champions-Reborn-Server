@@ -67,27 +67,27 @@ void ResultMatchGame_RTA::Serialize( ByteBuffer &out ) const
 		out.write_u32( 0 );	// Size
 	}
 
-	out.write_u32(publicGameCount);
+	out.write_u32( publicGameCount );
 	{
-		for (const auto& game : publicGameList)
-			out.write_utf16(Util::UTF8ToWide(game->m_hostExternalAddr));
+		for( const auto &game : publicGameList )
+			out.write_utf16( Util::UTF8ToWide( game->m_hostLocalAddr ) );
 	}
 
-	out.write_u32(publicGameCount);
+	out.write_u32( publicGameCount );
 	{
-		for (const auto& game : publicGameList)
-			out.write_u32(game->m_hostNatPort);
+		for( const auto &game : publicGameList )
+			out.write_u32( game->m_hostLocalPort );
 	}
 
-	out.write_u32(publicGameCount);
+	out.write_u32( publicGameCount );
 	{
-		for (const auto& game : publicGameList)
-			out.write_utf16(Util::UTF8ToWide(game->m_hostLocalAddr));
+		for( const auto &game : publicGameList )
+			out.write_utf16( Util::UTF8ToWide( game->m_hostExternalAddr ) );
 	}
 
-	out.write_u32(publicGameCount);
+	out.write_u32( publicGameCount );
 	{
-		for (const auto& game : publicGameList)
-			out.write_u32(game->m_hostLocalPort);
+		for( const auto &game : publicGameList )
+			out.write_u32( game->m_hostNatPort );
 	}
 }
