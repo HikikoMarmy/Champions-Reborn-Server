@@ -19,8 +19,6 @@ sptr_generic_response RequestCreatePrivateGame_RTA::ProcessRequest( sptr_socket 
 {
 	Deserialize( stream );
 
-	Log::Packet( stream->get_buffer(), stream->get_length(), false );
-
 	auto user = UserManager::Get().FindUserBySocket( socket );
 	if( user == nullptr )
 	{

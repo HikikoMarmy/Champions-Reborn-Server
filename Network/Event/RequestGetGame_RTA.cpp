@@ -15,8 +15,6 @@ void RequestGetGame_RTA::Deserialize( sptr_byte_stream stream )
 
 sptr_generic_response RequestGetGame_RTA::ProcessRequest( sptr_socket socket, sptr_byte_stream stream )
 {
-	Log::Packet( stream->get_buffer(), stream->get_length(), false );
-
 	Deserialize( stream );
 
 	auto user = UserManager::Get().FindUserBySocket( socket );

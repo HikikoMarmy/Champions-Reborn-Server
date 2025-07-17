@@ -405,10 +405,6 @@ void LobbyServer::HandleRequest( sptr_socket socket, sptr_byte_stream stream )
 	auto packetId = stream->read< uint16_t >();
 	stream->set_position( 0 );
 
-	//Log::Debug( "Event Request {}", packetId );
-
-	//Log::Packet( stream->m_buffer, stream->m_buffer.size(), false );
-
 	auto it = REQUEST_EVENT.find( packetId );
 	if( it == REQUEST_EVENT.end() )
 	{

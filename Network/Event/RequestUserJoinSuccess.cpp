@@ -18,8 +18,6 @@ sptr_generic_response RequestUserJoinSuccess::ProcessRequest( sptr_socket socket
 {
 	Deserialize( stream );
 
-	Log::Packet( stream->get_buffer(), stream->get_length(), false );
-
 	auto user = UserManager::Get().FindUserBySocket( socket );
 	if( user == nullptr )
 	{

@@ -17,8 +17,6 @@ sptr_generic_response RequestGetRoom::ProcessRequest( sptr_socket socket, sptr_b
 {
 	Deserialize( stream );
 
-	Log::Packet( stream->get_buffer(), stream->get_length(), false );
-
 	const auto user = UserManager::Get().FindUserBySocket( socket );
 	if( !user )
 	{
