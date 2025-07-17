@@ -7,14 +7,7 @@ The server is currently a work in progress.
 | Game                          | Status             |
 |-------------------------------|--------------------|
 | Champions of Norrath          | ✅ Supported       |
-| Champions: Return To Arms     | ⚠️ ~90% Supported  |
-
----
-Return To Arms TODO:
-- ~Online Character Saves~
-- ~Chat Room~
-- Friends List
-- Ignore List
+| Champions: Return To Arms     | ✅ Supported       |
 
 ---
 
