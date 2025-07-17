@@ -23,9 +23,11 @@ enum class QueryID {
 	LoadCharacter,
 
 	SaveFriend,
+	RemoveFriend,
 	LoadFriendList,
 
 	SaveIgnore,
+	RemoveIgnore,
 	LoadIgnoreList,
 };
 
@@ -78,9 +80,11 @@ public:
 	sptr_realm_character LoadCharacterData( const int64_t account_id, const int32_t character_id );
 
 	bool SaveFriend( const int64_t account_id, const std::wstring &friend_handle );
+	bool RemoveFriend( const int64_t account_id, const std::wstring &friend_handle );
 	std::vector< std::wstring > LoadFriends( const int64_t account_id );
 
 	bool SaveIgnore( const int64_t account_id, const std::wstring &ignore_handle );
+	bool RemoveIgnore( const int64_t account_id, const std::wstring &ignore_handle );
 	std::vector< std::wstring > LoadIgnores( const int64_t account_id );
 
 private:

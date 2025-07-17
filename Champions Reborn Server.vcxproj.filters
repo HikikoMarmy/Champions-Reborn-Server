@@ -308,6 +308,12 @@
     <ClInclude Include="Network\Event\NotifyInstantMessage.h">
       <Filter>Header Files\Network\Event</Filter>
     </ClInclude>
+    <ClInclude Include="Network\Event\RequestRemoveFriend.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestRemoveIgnore.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -527,6 +533,12 @@
       <Filter>Source Files\Network\Event</Filter>
     </ClCompile>
     <ClCompile Include="Network\Event\NotifyInstantMessage.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestRemoveFriend.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestRemoveIgnore.cpp">
       <Filter>Source Files\Network\Event</Filter>
     </ClCompile>
   </ItemGroup>

@@ -98,11 +98,17 @@ void Database::PrepareStatements()
 		{ QueryID::SaveFriend,
 		"INSERT OR IGNORE INTO UserFriendList ( account_id, friend_handle ) VALUES ( ?, ? );" },
 
+		{ QueryID::RemoveFriend,
+		"DELETE FROM UserFriendList WHERE account_id = ? AND friend_handle = ?;" },
+
 		{ QueryID::LoadFriendList,
 		"SELECT friend_handle FROM UserFriendList WHERE account_id = ?;" },
 
 		{ QueryID::SaveIgnore,
 		"INSERT OR IGNORE INTO UserIgnoredList ( account_id, ignore_handle ) VALUES ( ?, ? );" },
+
+		{ QueryID::RemoveIgnore,
+		"DELETE FROM UserIgnoredList WHERE account_id = ? AND ignore_handle = ?;" },
 
 		{ QueryID::LoadIgnoreList,
 		"SELECT ignore_handle FROM UserIgnoredList WHERE account_id = ?;" }
@@ -453,6 +459,39 @@ bool Database::SaveFriend( const int64_t account_id, const std::wstring &friend_
 	return false;
 }
 
+bool Database::RemoveFriend( const int64_t account_id, const std::wstring &friend_handle )
+{
+	if( account_id <= 0 || friend_handle.empty() )
+	{
+		Log::Error( "Invalid parameters for RemoveFriend" );
+		return false;
+	}
+
+	try
+	{
+		auto stmt = m_statements[ QueryID::RemoveFriend ];
+		auto friendHandle = Util::WideToUTF8( friend_handle );
+
+		sqlite3_reset( stmt );
+		sqlite3_clear_bindings( stmt );
+		sqlite3_bind_int64( stmt, 1, account_id );
+		sqlite3_bind_text( stmt, 2, friendHandle.c_str(), -1, SQLITE_TRANSIENT );
+
+		if( sqlite3_step( stmt ) != SQLITE_DONE )
+		{
+			Log::Error( "SQLite delete failed: {}", sqlite3_errmsg( m_db ) );
+			return false;
+		}
+
+		return true;
+	}
+	catch( const std::exception &e )
+	{
+		Log::Error( "Database error: {}", std::string( e.what() ) );
+	}
+	return false;
+}
+
 std::vector<std::wstring> Database::LoadFriends( const int64_t account_id )
 {
 	std::vector<std::wstring> friend_list;
@@ -508,6 +547,39 @@ bool Database::SaveIgnore( const int64_t account_id, const std::wstring &ignore_
 		}
 
 		tx.commit();
+		return true;
+	}
+	catch( const std::exception &e )
+	{
+		Log::Error( "Database error: {}", std::string( e.what() ) );
+	}
+	return false;
+}
+
+bool Database::RemoveIgnore( const int64_t account_id, const std::wstring &ignore_handle )
+{
+	if( account_id <= 0 || ignore_handle.empty() )
+	{
+		Log::Error( "Invalid parameters for RemoveIgnore" );
+		return false;
+	}
+
+	try
+	{
+		auto stmt = m_statements[ QueryID::RemoveIgnore ];
+		auto ignoreHandle = Util::WideToUTF8( ignore_handle );
+
+		sqlite3_reset( stmt );
+		sqlite3_clear_bindings( stmt );
+		sqlite3_bind_int64( stmt, 1, account_id );
+		sqlite3_bind_text( stmt, 2, ignoreHandle.c_str(), -1, SQLITE_TRANSIENT );
+
+		if( sqlite3_step( stmt ) != SQLITE_DONE )
+		{
+			Log::Error( "SQLite delete failed: {}", sqlite3_errmsg( m_db ) );
+			return false;
+		}
+
 		return true;
 	}
 	catch( const std::exception &e )

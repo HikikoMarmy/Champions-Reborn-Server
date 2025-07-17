@@ -256,6 +256,8 @@
     <ClInclude Include="Network\Event\RequestMatchGame.h" />
     <ClInclude Include="Network\Event\RequestMatchGame_RTA.h" />
     <ClInclude Include="Network\Event\RequestCreateNewCharacter_RTA.h" />
+    <ClInclude Include="Network\Event\RequestRemoveFriend.h" />
+    <ClInclude Include="Network\Event\RequestRemoveIgnore.h" />
     <ClInclude Include="Network\Event\RequestSaveCharacter_RTA.h" />
     <ClInclude Include="Network\Event\RequestSendInstantMessage.h" />
     <ClInclude Include="Network\Event\RequestSendRoomMessage.h" />
@@ -332,6 +334,8 @@
     <ClCompile Include="Network\Event\RequestLogout.cpp" />
     <ClCompile Include="Network\Event\RequestMatchGame.cpp" />
     <ClCompile Include="Network\Event\RequestCreateNewCharacter_RTA.cpp" />
+    <ClCompile Include="Network\Event\RequestRemoveFriend.cpp" />
+    <ClCompile Include="Network\Event\RequestRemoveIgnore.cpp" />
     <ClCompile Include="Network\Event\RequestSaveCharacter_RTA.cpp" />
     <ClCompile Include="Network\Event\RequestSendInstantMessage.cpp" />
     <ClCompile Include="Network\Event\RequestSendRoomMessage.cpp" />
