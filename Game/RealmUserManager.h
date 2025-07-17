@@ -31,12 +31,13 @@ public:
 	void Disconnect( sptr_socket socket, const std::string reason );
 	void Disconnect( sptr_user user, const std::string reason );
 
-
 	sptr_user FindUserBySessionId( const std::wstring &sessionId );
 	sptr_user FindUserBySocket( const sptr_socket &socket );
-	sptr_user RecoverUserBySession( const std::wstring &sessionId, const sptr_socket& socket );
+	sptr_user FindUserByChatHandle( const std::wstring &handle );
 	int32_t GetUserCount() const;
 	std::vector< sptr_user > GetUserList();
+
+	void NotifyFriendsOnlineStatus( const sptr_user &user, bool onlineStatus );
 
 private:
 	std::mutex m_mutex;

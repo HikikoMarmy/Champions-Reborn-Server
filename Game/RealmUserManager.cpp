@@ -3,8 +3,9 @@
 #include "ChatRoomManager.h"
 
 #include "../Network/Event/NotifyForcedLogout.h"
-#include "../Common/Constant.h"
+#include "../Network/Event/NotifyFriendStatus.h"
 #include "../Database/Database.h"
+#include "../Common/Constant.h"
 #include "../logging.h"
 
 UserManager::UserManager()
@@ -59,9 +60,10 @@ void UserManager::RemoveUser( sptr_user user )
 		return;
 	}
 
-	Database::Get().DeleteSession( user->m_sessionId );
 	GameSessionManager::Get().OnDisconnectUser( user );
 	ChatRoomManager::Get().OnDisconnectUser( user );
+
+	NotifyFriendsOnlineStatus( user, false );
 
 	Log::Debug( "RemoveUser : [{}][{}]", user->m_username, user->m_sessionId );
 
@@ -71,26 +73,18 @@ void UserManager::RemoveUser( sptr_user user )
 
 void UserManager::RemoveUser( const std::wstring &sessionId )
 {
-	auto user = FindUserBySessionId( sessionId );
-	if( !user )
+	if( auto user = FindUserBySessionId( sessionId ) )
 	{
-		Log::Error( "RemoveUser : [{}] not found", sessionId );
-		return;
+		RemoveUser( user );
 	}
-
-	RemoveUser( user );
 }
 
 void UserManager::RemoveUser( const sptr_socket socket )
 {
-	auto user = FindUserBySocket( socket );
-	if( !user )
+	if( auto user = FindUserBySocket( socket ) )
 	{
-		Log::Error( "RemoveUser : [{}] not found", socket->remote_ip );
-		return;
+		RemoveUser( user );
 	}
-
-	RemoveUser( user );
 }
 
 void UserManager::Disconnect( sptr_socket socket, const std::string reason )
@@ -146,37 +140,14 @@ sptr_user UserManager::FindUserBySocket( const sptr_socket &socket )
 	return ( it != m_users.end() ) ? *it : nullptr;
 }
 
-sptr_user UserManager::RecoverUserBySession( const std::wstring &sessionId, const sptr_socket &socket )
+sptr_user UserManager::FindUserByChatHandle( const std::wstring &handle )
 {
-	auto user = FindUserBySocket( socket );
-
-	if( user == nullptr )
+	std::lock_guard<std::mutex> lock( m_mutex );
+	auto it = std::find_if( m_users.begin(), m_users.end(), [ & ]( const sptr_user &user )
 	{
-		Log::Error( "RecoverUserBySession: User not found for socket: {}", socket->remote_ip );
-		return nullptr;
-	}
-
-	if( sessionId.empty() )
-	{
-		Log::Error( "RecoverUserBySession: Empty session ID provided." );
-		return nullptr;
-	}
-
-	const auto [account_id, character_id] = Database::Get().GetSession( sessionId, socket->remote_ip );
-
-	if( account_id < 0 )
-	{
-		Log::Error( "RecoverUserBySession: Failed to get session for account ID: {}, session ID: {}", account_id, sessionId );
-		return nullptr;
-	}
-
-	user->m_accountId = account_id;
-	user->m_sessionId = sessionId;
-	user->m_character = Database::Get().LoadCharacterData( account_id, character_id );
-
-	Log::Debug( "RecoverUserBySession: User recovered with session ID: {}, account ID: {}", sessionId, account_id );
-
-	return user;
+		return user->m_chatHandle == handle;
+	} );
+	return ( it != m_users.end() ) ? *it : nullptr;
 }
 
 int32_t UserManager::GetUserCount() const
@@ -188,4 +159,22 @@ std::vector<sptr_user> UserManager::GetUserList()
 {
 	std::lock_guard<std::mutex> lock( m_mutex );
 	return m_users;
+}
+
+void UserManager::NotifyFriendsOnlineStatus( const sptr_user &user, bool onlineStatus )
+{
+	if( !user || user->m_friendList.empty() )
+	{
+		return;
+	}
+
+	const auto notifyFriend = NotifyFriendStatus( user->m_chatHandle, onlineStatus );
+	for( const auto &friendHandle : user->m_friendList )
+	{
+		auto friendUser = FindUserByChatHandle( friendHandle );
+		if( friendUser && friendUser->sock )
+		{
+			friendUser->sock->send( notifyFriend );
+		}
+	}
 }

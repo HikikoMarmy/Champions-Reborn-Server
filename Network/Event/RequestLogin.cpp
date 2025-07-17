@@ -42,7 +42,7 @@ sptr_generic_response RequestLogin::ProcessLoginRTA( sptr_user user )
 	auto &Database = Database::Get();
 
 	// Verify the account exists
-	auto accountId = Database.VerifyAccount( m_username, m_password );
+	auto [ result, accountId, chatHandle ] = Database.VerifyAccount( m_username, m_password );
 
 	if( accountId < 0 )
 	{
@@ -59,19 +59,21 @@ sptr_generic_response RequestLogin::ProcessLoginRTA( sptr_user user )
 		}
 	}
 
-	auto [result, chatHandle] = Database.LoadAccount( accountId );
-
 	// Login Success
 	user->m_isLoggedIn = true;
 	user->m_username = m_username;
 	user->m_accountId = accountId;
 	user->m_chatHandle = chatHandle;
 	user->m_sessionId = UserManager.GenerateSessionId();
-	
-	Database.CreateSession(
-		user->m_accountId,
-		user->m_sessionId,
-		user->sock->remote_ip );
+
+	// Load Friend List
+	user->m_friendList = Database.LoadFriends( accountId );
+
+	// Load Ignore List
+	user->m_ignoreList = Database.LoadIgnores( accountId );
+
+	// Notify friends about the user's online status
+	UserManager.NotifyFriendsOnlineStatus( user, true );
 
 	return std::make_shared< ResultLogin >( this, SUCCESS, user->m_sessionId );
 }
