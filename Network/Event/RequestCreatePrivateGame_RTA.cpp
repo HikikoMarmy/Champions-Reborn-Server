@@ -25,14 +25,14 @@ sptr_generic_response RequestCreatePrivateGame_RTA::ProcessRequest( sptr_socket 
 	if( user == nullptr )
 	{
 		Log::Error( "User not found! [{}]", m_sessionId );
-		return std::make_shared< ResultCreatePrivateGame_RTA >( this, CREATE_REPLY::FATAL_ERROR, "", 0 );
+		return std::make_shared< ResultCreatePrivateGame_RTA >( this, FATAL_ERROR, "", 0 );
 	}
 
 	auto result = GameSessionManager::Get().CreateGameSession_RTA( user, L"", m_gameName, {}, true);
 	if( !result )
 	{
 		Log::Error( "RequestCreatePrivateGame2::ProcessRequest() - Failed to create private game session!" );
-		return std::make_shared< ResultCreatePrivateGame_RTA >( this, CREATE_REPLY::GENERAL_ERROR, "", 0 );
+		return std::make_shared< ResultCreatePrivateGame_RTA >( this, GENERAL_ERROR, "", 0 );
 	}
 
 	user->m_localAddr = m_localAddr;
@@ -40,7 +40,7 @@ sptr_generic_response RequestCreatePrivateGame_RTA::ProcessRequest( sptr_socket 
 
 	Log::Info( "[{}] Create Private Game: {}", m_sessionId, m_gameName );
 
-	return std::make_shared< ResultCreatePrivateGame_RTA >( this, CREATE_REPLY::SUCCESS, Config::service_ip, Config::discovery_port );
+	return std::make_shared< ResultCreatePrivateGame_RTA >( this, SUCCESS, Config::service_ip, Config::discovery_port );
 }
 
 ResultCreatePrivateGame_RTA::ResultCreatePrivateGame_RTA( GenericRequest *request, int32_t reply, std::string discoveryIp, int32_t discoveryPort ) : GenericResponse( *request )

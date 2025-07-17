@@ -12,7 +12,7 @@ private:
 	std::wstring m_sessionId;
 	std::wstring m_ownerSessionId;
 
-	enum CREATE_REPLY {
+	enum ERROR_CODE {
 		SUCCESS = 0,
 		FATAL_ERROR,
 		GENERAL_ERROR,

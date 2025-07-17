@@ -12,7 +12,7 @@
 class RequestGetNetCharacterList_RTA : public GenericRequest
 {
 private:
-	enum CREATE_REPLY {
+	enum ERROR_CODE {
 		SUCCESS = 0,
 		FATAL_ERROR,
 		GENERAL_ERROR,

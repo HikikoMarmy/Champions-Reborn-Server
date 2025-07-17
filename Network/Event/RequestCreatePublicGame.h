@@ -17,7 +17,7 @@ private:
 	int32_t m_minimumLevel;
 	int32_t m_maximumLevel;
 
-	enum CREATE_REPLY {
+	enum ERROR_CODE {
 		SUCCESS = 0,
 		FATAL_ERROR,
 		GENERAL_ERROR,

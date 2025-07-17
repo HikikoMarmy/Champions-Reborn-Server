@@ -18,7 +18,7 @@ private:
 
 	std::array< int8_t, 5 > m_attributes;
 
-	enum CREATE_REPLY {
+	enum ERROR_CODE {
 		SUCCESS = 0,
 		FATAL_ERROR,
 		GENERAL_ERROR,

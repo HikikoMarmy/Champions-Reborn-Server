@@ -77,14 +77,14 @@ sptr_generic_response RequestCreatePublicGame_RTA::ProcessRequest( sptr_socket s
 	if( user == nullptr )
 	{
 		Log::Error( "User not found! [{}]", m_sessionId );
-		return std::make_shared< ResultCreatePublicGame_RTA >( this, CREATE_REPLY::GENERAL_ERROR, "", 0 );
+		return std::make_shared< ResultCreatePublicGame_RTA >( this, GENERAL_ERROR, "", 0 );
 	}
 
 	auto result = GameSessionManager::Get().CreateGameSession_RTA( user, m_gameInfo, m_gameName, m_attributes, false );
 	if( !result )
 	{
 		Log::Error( "RequestCreatePublicGame::ProcessRequest() - Failed to create public game session!" );
-		return std::make_shared< ResultCreatePublicGame_RTA >( this, CREATE_REPLY::GENERAL_ERROR, "", 0 );
+		return std::make_shared< ResultCreatePublicGame_RTA >( this, GENERAL_ERROR, "", 0 );
 	}
 
 	user->m_localAddr = m_localAddr;
@@ -92,7 +92,7 @@ sptr_generic_response RequestCreatePublicGame_RTA::ProcessRequest( sptr_socket s
 
 	Log::Info( "[{}] Create Public Game: {}", user->m_username, m_gameInfo );
 
-	return std::make_shared< ResultCreatePublicGame_RTA >( this, CREATE_REPLY::SUCCESS, Config::service_ip, Config::discovery_port );
+	return std::make_shared< ResultCreatePublicGame_RTA >( this, SUCCESS, Config::service_ip, Config::discovery_port );
 }
 
 // Result

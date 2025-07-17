@@ -11,7 +11,7 @@ class RequestStartGame : public GenericRequest
 private:
 	std::vector< uint8_t > m_data;
 
-	enum CREATE_REPLY {
+	enum ERROR_CODE {
 		SUCCESS = 0,
 		FATAL_ERROR,
 		GENERAL_ERROR,

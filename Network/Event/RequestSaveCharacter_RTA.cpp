@@ -35,16 +35,7 @@ sptr_generic_response RequestSaveCharacter_RTA::ProcessRequest( sptr_socket sock
 	auto user = userManager.FindUserBySocket( socket );
 	if( user == nullptr || user->m_accountId == -1 )
 	{
-		// Try to recover the user through session records.
-		user = UserManager::Get().RecoverUserBySession( m_sessionId, socket );
-
-		if( user == nullptr )
-		{
-			Log::Error( "Failed to recover user by session ID: {}", m_sessionId );
-			return std::make_shared< ResultSaveCharacter_RTA >( this, FATAL_ERROR );
-		}
-
-		Log::Debug( "Recovered user by session ID: {}", m_sessionId );
+		return std::make_shared< ResultSaveCharacter_RTA >( this, FATAL_ERROR );
 	}
 
 	sptr_user targetUser = user;
