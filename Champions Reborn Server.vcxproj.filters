@@ -131,9 +131,6 @@
     <ClInclude Include="Network\Event\RequestAppendCharacterData.h">
       <Filter>Header Files\Network\Event</Filter>
     </ClInclude>
-    <ClInclude Include="Network\Event\RequestGetFriendList.h">
-      <Filter>Header Files\Network\Event</Filter>
-    </ClInclude>
     <ClInclude Include="Network\Event\RequestCancelGame.h">
       <Filter>Header Files\Network\Event</Filter>
     </ClInclude>
@@ -218,9 +215,6 @@
     <ClInclude Include="Network\Event\RequestGetRoom.h">
       <Filter>Header Files\Network\Event</Filter>
     </ClInclude>
-    <ClInclude Include="Network\Event\Notify_4C.h">
-      <Filter>Header Files\Network\Event</Filter>
-    </ClInclude>
     <ClInclude Include="Network\Event\NotifyForcedLogout.h">
       <Filter>Header Files\Network\Event</Filter>
     </ClInclude>
@@ -293,6 +287,27 @@
     <ClInclude Include="Database\Transaction.h">
       <Filter>Header Files\Database</Filter>
     </ClInclude>
+    <ClInclude Include="Network\Event\RequestAddFriend.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestAddIgnore.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\NotifyFriendStatus.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestGetSocialListUpdate.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestGetSocialListInitial.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\RequestSendInstantMessage.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Event\NotifyInstantMessage.h">
+      <Filter>Header Files\Network\Event</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -355,7 +370,7 @@
     <ClCompile Include="Network\Event\RequestMatchGame_RTA.cpp">
       <Filter>Source Files\Network\Event</Filter>
     </ClCompile>
-    <ClCompile Include="Network\Event\RequestGetFriendList.cpp">
+    <ClCompile Include="Network\Event\RequestGetSocialListInitial.cpp">
       <Filter>Source Files\Network\Event</Filter>
     </ClCompile>
     <ClCompile Include="Network\Event\RequestCancelGame.cpp">
@@ -433,9 +448,6 @@
     <ClCompile Include="Network\Event\RequestGetRoom.cpp">
       <Filter>Source Files\Network\Event</Filter>
     </ClCompile>
-    <ClCompile Include="Network\Event\Notify_4C.cpp">
-      <Filter>Source Files\Network\Event</Filter>
-    </ClCompile>
     <ClCompile Include="Network\Event\NotifyForcedLogout.cpp">
       <Filter>Source Files\Network\Event</Filter>
     </ClCompile>
@@ -498,6 +510,24 @@
     </ClCompile>
     <ClCompile Include="Network\GenericNetRequest.cpp">
       <Filter>Source Files\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestAddFriend.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestAddIgnore.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\NotifyFriendStatus.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestGetSocialListUpdate.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\RequestSendInstantMessage.cpp">
+      <Filter>Source Files\Network\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Event\NotifyInstantMessage.cpp">
+      <Filter>Source Files\Network\Event</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
