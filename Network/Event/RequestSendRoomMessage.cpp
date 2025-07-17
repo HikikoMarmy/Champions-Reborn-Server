@@ -19,8 +19,6 @@ sptr_generic_response RequestSendRoomMessage::ProcessRequest( sptr_socket socket
 {
 	Deserialize( stream );
 
-	Log::Packet( stream->get_buffer(), stream->get_length(), false );
-
 	const auto user = UserManager::Get().FindUserBySocket( socket );
 	if( !user )
 	{
@@ -49,6 +47,11 @@ sptr_generic_response RequestSendRoomMessage::ProcessRequest( sptr_socket socket
 		auto memberUser = member.lock();
 		if( !memberUser )
 			continue; 
+
+		if( memberUser->IsIgnored( user->m_chatHandle ) )
+		{
+			continue; // Skip sending to ignored users
+		}
 
 		memberUser->sock->send( msg );
 	}
