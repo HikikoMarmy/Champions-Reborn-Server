@@ -34,8 +34,6 @@ void Database::Process()
 	m_lastMaintenance = now;
 
 	Log::Info( "Performing database maintenance..." );
-
-	DeleteOldSessions();
 }
 
 void Database::CreateTables()
@@ -61,6 +59,16 @@ void Database::CreateTables()
 			 "ip_address   TEXT NOT NULL,"
 			 "expire_time  INTEGER NOT NULL,"
 			 "PRIMARY KEY(session_id))" );
+
+	Execute( "CREATE TABLE IF NOT EXISTS UserFriendList ("
+			 "account_id    INTEGER NOT NULL,"
+			 "friend_handle TEXT NOT NULL,"
+			 "PRIMARY KEY(account_id, friend_handle))" );
+
+	Execute( "CREATE TABLE IF NOT EXISTS UserIgnoredList ("
+			 "account_id    INTEGER NOT NULL,"
+			 "ignore_handle TEXT NOT NULL,"
+			 "PRIMARY KEY(account_id, ignore_handle))" );
 }
 
 void Database::PrepareStatements()
@@ -70,25 +78,10 @@ void Database::PrepareStatements()
 		"INSERT INTO RealmUsers ( username, password, email_address, date_of_birth, chat_handle ) VALUES ( ?, ?, ?, ?, ? );" },
 
 		{ QueryID::VerifyAccount,
-		"SELECT account_id, username, password FROM RealmUsers WHERE username = ?;" },
+		"SELECT account_id, username, password, chat_handle FROM RealmUsers WHERE username = ?;" },
 
 		{ QueryID::LoadAccount,
 		"SELECT chat_handle FROM RealmUsers WHERE account_id = ?;" },
-
-		{ QueryID::CreateSession,
-		"INSERT INTO RealmSession ( account_id, session_id, character_id, ip_address, expire_time ) VALUES ( ?, ?, ?, ?, ? );" },
-
-		{ QueryID::UpdateSession,
-		"UPDATE RealmSession SET expire_time = ?, character_id = ? WHERE session_id = ?;" },
-
-		{ QueryID::DeleteSession,
-		"DELETE FROM RealmSession WHERE session_id = ?;" },
-
-		{ QueryID::GetSession,
-		"SELECT account_id, character_id, expire_time FROM RealmSession WHERE session_id = ? AND ip_address = ?;" },
-
-		{ QueryID::DeleteOldSessions,
-		"DELETE FROM RealmSession WHERE expire_time < ?" },
 
 		{ QueryID::CreateNewCharacter,
 		"INSERT INTO RealmCharacters ( account_id, meta_data, character_data ) VALUES ( ?, ?, ? );" },
@@ -100,7 +93,19 @@ void Database::PrepareStatements()
 		"SELECT character_id, meta_data, character_data FROM RealmCharacters WHERE account_id = ? AND character_id = ?;" },
 
 		{ QueryID::LoadCharacterSlots,
-		"SELECT character_id, meta_data FROM RealmCharacters WHERE account_id = ? ORDER BY character_id;" }
+		"SELECT character_id, meta_data FROM RealmCharacters WHERE account_id = ? ORDER BY character_id;" },
+
+		{ QueryID::SaveFriend,
+		"INSERT OR IGNORE INTO UserFriendList ( account_id, friend_handle ) VALUES ( ?, ? );" },
+
+		{ QueryID::LoadFriendList,
+		"SELECT friend_handle FROM UserFriendList WHERE account_id = ?;" },
+
+		{ QueryID::SaveIgnore,
+		"INSERT OR IGNORE INTO UserIgnoredList ( account_id, ignore_handle ) VALUES ( ?, ? );" },
+
+		{ QueryID::LoadIgnoreList,
+		"SELECT ignore_handle FROM UserIgnoredList WHERE account_id = ?;" }
 	};
 
 	try
@@ -152,35 +157,6 @@ void Database::Execute( const char *sql )
 	}
 }
 
-void Database::DeleteOldSessions()
-{
-	try
-	{
-		auto stmt = m_statements[ QueryID::DeleteOldSessions ];
-
-		SQLiteTransaction tx( m_db );
-		{
-			sqlite3_reset( stmt );
-			sqlite3_clear_bindings( stmt );
-
-			int64_t currentTime = time( nullptr );
-			sqlite3_bind_int64( stmt, 1, currentTime );
-
-			if( sqlite3_step( stmt ) != SQLITE_DONE )
-			{
-				throw std::runtime_error( "Delete old sessions failed: " + std::string( sqlite3_errmsg( m_db ) ) );
-			}
-
-			Log::Info( "Old sessions deleted successfully." );
-		}
-		tx.commit();
-	}
-	catch( const std::exception &e )
-	{
-		Log::Error( "Database error: {}", std::string( e.what() ) );
-	}
-}
-
 int64_t Database::CreateNewAccount( const std::string &username,
 									const std::string &password,
 									const std::string &email_address,
@@ -220,7 +196,8 @@ int64_t Database::CreateNewAccount( const std::string &username,
 	return 0;
 }
 
-int64_t Database::VerifyAccount( const std::wstring &username, const std::wstring &password )
+std::tuple< bool, int64_t, std::wstring >
+Database::VerifyAccount( const std::wstring &username, const std::wstring &password )
 {
 	try
 	{
@@ -239,21 +216,22 @@ int64_t Database::VerifyAccount( const std::wstring &username, const std::wstrin
 			int64_t accountId = sqlite3_column_int64( stmt, 0 );
 			const char *dbUsername = reinterpret_cast< const char * >( sqlite3_column_text( stmt, 1 ) );
 			const char *dbPassword = reinterpret_cast< const char * >( sqlite3_column_text( stmt, 2 ) );
+			const char *dbChatHandle = reinterpret_cast< const char * >( sqlite3_column_text( stmt, 3 ) );
 
 			if( username_utf8 == dbUsername && VerifyPassword( password_utf8, dbPassword ) )
 			{
 				Log::Debug( "Account verified: {} (ID: {})", username, accountId );
-				return accountId;
+				return std::make_tuple( true, accountId, Util::UTF8ToWide( dbChatHandle ) );
 			}
 			else
 			{
 				Log::Error( "Invalid credentials for account ID: {}", accountId );
-				return -1;
+				return std::make_tuple( false, -1, L"" );
 			}
 		}
 		else if( sqlite3_step( stmt ) == SQLITE_DONE )
 		{
-			return -1; // No matching account found
+			return std::make_tuple( false, -1, L"" ); // No matching account found
 		}
 		else
 		{
@@ -265,197 +243,7 @@ int64_t Database::VerifyAccount( const std::wstring &username, const std::wstrin
 		Log::Error( "Database error: {}", std::string( e.what() ) );
 	}
 
-	return -1;
-}
-
-std::tuple< bool, std::wstring > Database::LoadAccount( const int64_t account_id )
-{
-	try
-	{
-		auto stmt = m_statements[ QueryID::LoadAccount ];
-
-		sqlite3_reset( stmt );
-		sqlite3_clear_bindings( stmt );
-
-		sqlite3_bind_int64( stmt, 1, account_id );
-
-		if( sqlite3_step( stmt ) == SQLITE_ROW )
-		{
-			const char *chatHandle = reinterpret_cast< const char * >( sqlite3_column_text( stmt, 0 ) );
-			if( chatHandle )
-			{
-				Log::Debug( "Account loaded: ID: {}, Chat Handle: {}", account_id, chatHandle );
-				return std::make_tuple( true, Util::UTF8ToWide( chatHandle ) );
-			}
-			else
-			{
-				Log::Error( "Chat handle not found for account ID: {}", account_id );
-				return std::make_tuple( false, L"" );
-			}
-		}
-		else if( sqlite3_step( stmt ) == SQLITE_DONE )
-		{
-			Log::Error( "No account found for ID: {}", account_id );
-			return std::make_tuple( false, L"" );
-		}
-		else
-		{
-			throw std::runtime_error( "Query failed: " + std::string( sqlite3_errmsg( m_db ) ) );
-		}
-
-	}
-	catch( const std::exception & )
-	{
-
-	}
-
-	Log::Error( "Database error while loading account ID: {}", account_id );
-	return std::make_tuple( false, L"" );
-}
-
-bool Database::CreateSession( const int64_t account_id, const std::wstring &session_id, const std::string &ip_address )
-{
-	try
-	{
-		auto stmt = m_statements[ QueryID::CreateSession ];
-		auto sessionId = Util::WideToUTF8( session_id );
-
-		SQLiteTransaction tx( m_db );
-		{
-			sqlite3_reset( stmt );
-			sqlite3_clear_bindings( stmt );
-
-			sqlite3_bind_int64( stmt, 1, account_id );
-			sqlite3_bind_text( stmt, 2, sessionId.c_str(), -1, SQLITE_TRANSIENT );
-			sqlite3_bind_int( stmt, 3, 0 );
-			sqlite3_bind_text( stmt, 4, ip_address.c_str(), -1, SQLITE_TRANSIENT );
-			sqlite3_bind_int64( stmt, 5, time( nullptr ) + 300 ); // Session expires in 5 minutes
-
-			if( sqlite3_step( stmt ) != SQLITE_DONE )
-			{
-				Log::Error( "SQLite insert failed: {}", sqlite3_errmsg( m_db ) );
-				return false;
-			}
-		}
-		tx.commit();
-
-		return true;
-	}
-	catch( const std::exception &e )
-	{
-		Log::Error( "Database error: {}", std::string( e.what() ) );
-	}
-
-	return false;
-}
-
-bool Database::UpdateSession( const std::wstring &session_id, const uint32_t character_id )
-{
-	try
-	{
-		auto stmt = m_statements[ QueryID::UpdateSession ];
-		auto sessionId = Util::WideToUTF8( session_id );
-
-		SQLiteTransaction tx( m_db );
-		{
-			sqlite3_reset( stmt );
-			sqlite3_clear_bindings( stmt );
-
-			sqlite3_bind_int64( stmt, 1, time( nullptr ) + 300 ); // Extend session by 5 minutes
-			sqlite3_bind_int( stmt, 2, character_id );
-			sqlite3_bind_text( stmt, 3, sessionId.c_str(), -1, SQLITE_TRANSIENT );
-
-			if( sqlite3_step( stmt ) != SQLITE_DONE )
-			{
-				Log::Error( "SQLite update failed: {}", sqlite3_errmsg( m_db ) );
-				return false;
-			}
-		}
-		tx.commit();
-
-		Log::Debug( "Session updated: {}", session_id );
-		return true;
-	}
-	catch( const std::exception &e )
-	{
-		Log::Error( "Database error: {}", std::string( e.what() ) );
-	}
-
-	return false;
-}
-
-bool Database::DeleteSession( const std::wstring &session_id )
-{
-	try
-	{
-		auto stmt = m_statements[ QueryID::DeleteSession ];
-		auto sessionId = Util::WideToUTF8( session_id );
-
-		SQLiteTransaction tx( m_db );
-		{
-			sqlite3_reset( stmt );
-			sqlite3_clear_bindings( stmt );
-
-			sqlite3_bind_text( stmt, 1, sessionId.c_str(), -1, SQLITE_TRANSIENT );
-
-			if( sqlite3_step( stmt ) != SQLITE_DONE )
-			{
-				Log::Error( "SQLite delete failed: {}", sqlite3_errmsg( m_db ) );
-				return false;
-			}
-		}
-		tx.commit();
-
-		Log::Debug( "Session deleted: {}", session_id );
-		return true;
-	}
-	catch( const std::exception &e )
-	{
-		Log::Error( "Database error: {}", std::string( e.what() ) );
-	}
-	return false;
-}
-
-std::tuple< int64_t, uint32_t > Database::GetSession( const std::wstring &session_id, const std::string &ip_address )
-{
-	try
-	{
-		auto stmt = m_statements[ QueryID::GetSession ];
-		auto sessionId = Util::WideToUTF8( session_id );
-
-		sqlite3_reset( stmt );
-		sqlite3_clear_bindings( stmt );
-
-		sqlite3_bind_text( stmt, 1, sessionId.c_str(), -1, SQLITE_TRANSIENT );
-		sqlite3_bind_text( stmt, 2, ip_address.c_str(), -1, SQLITE_TRANSIENT );
-
-		if( sqlite3_step( stmt ) == SQLITE_ROW )
-		{
-			uint64_t account_id = sqlite3_column_int64( stmt, 0 );
-			uint32_t character_id = sqlite3_column_int( stmt, 1 );
-			uint64_t expire_time = sqlite3_column_int64( stmt, 2 );
-
-			if( expire_time > time( nullptr ) )
-			{
-				Log::Debug( "Session found: {} for account ID: {}", session_id, account_id );
-				return std::make_tuple( account_id, character_id );
-			}
-		}
-		else if( sqlite3_step( stmt ) == SQLITE_DONE )
-		{
-			Log::Error( "No session found for ID: {}", session_id );
-		}
-		else
-		{
-			throw std::runtime_error( "Query failed: " + std::string( sqlite3_errmsg( m_db ) ) );
-		}
-	}
-	catch( const std::exception &e )
-	{
-		Log::Error( "Database error: {}", std::string( e.what() ) );
-	}
-
-	return std::make_tuple( -1, -1 );
+	return std::make_tuple( false, -1, L"" );
 }
 
 uint32_t Database::CreateNewCharacter( const int64_t account_id, const CharacterSlotData meta, const std::vector< uint8_t > &blob )
@@ -628,4 +416,131 @@ sptr_realm_character Database::LoadCharacterData( const int64_t account_id, cons
 	}
 
 	return nullptr;
+}
+
+bool Database::SaveFriend( const int64_t account_id, const std::wstring &friend_handle )
+{
+	if( account_id <= 0 || friend_handle.empty() )
+	{
+		Log::Error( "Invalid parameters for SaveFriend" );
+		return false;
+	}
+
+	try
+	{
+		auto stmt = m_statements[ QueryID::SaveFriend ];
+		auto friendHandle = Util::WideToUTF8( friend_handle );
+		SQLiteTransaction tx( m_db );
+		{
+			sqlite3_reset( stmt );
+			sqlite3_clear_bindings( stmt );
+			sqlite3_bind_int64( stmt, 1, account_id );
+			sqlite3_bind_text( stmt, 2, friendHandle.c_str(), -1, SQLITE_TRANSIENT );
+
+			if( sqlite3_step( stmt ) != SQLITE_DONE )
+			{
+				Log::Error( "SQLite insert failed: {}", sqlite3_errmsg( m_db ) );
+				return false;
+			}
+		}
+		tx.commit();
+		return true;
+	}
+	catch( const std::exception &e )
+	{
+		Log::Error( "Database error: {}", std::string( e.what() ) );
+	}
+	return false;
+}
+
+std::vector<std::wstring> Database::LoadFriends( const int64_t account_id )
+{
+	std::vector<std::wstring> friend_list;
+
+	try
+	{
+		auto stmt = m_statements[ QueryID::LoadFriendList ];
+		sqlite3_reset( stmt );
+		sqlite3_clear_bindings( stmt );
+		sqlite3_bind_int64( stmt, 1, account_id );
+
+		while( sqlite3_step( stmt ) == SQLITE_ROW )
+		{
+			const char *friendHandle = reinterpret_cast< const char * >( sqlite3_column_text( stmt, 0 ) );
+			if( friendHandle )
+			{
+				friend_list.push_back( Util::UTF8ToWide( friendHandle ) );
+			}
+		}
+	}
+	catch( const std::exception &e )
+	{
+		Log::Error( "Database error: {}", std::string( e.what() ) );
+	}
+
+	return friend_list;
+}
+
+bool Database::SaveIgnore( const int64_t account_id, const std::wstring &ignore_handle )
+{
+	if( account_id <= 0 || ignore_handle.empty() )
+	{
+		Log::Error( "Invalid parameters for SaveIgnore" );
+		return false;
+	}
+
+	try
+	{
+		auto stmt = m_statements[ QueryID::SaveIgnore ];
+		auto friendHandle = Util::WideToUTF8( ignore_handle );
+		SQLiteTransaction tx( m_db );
+		{
+			sqlite3_reset( stmt );
+			sqlite3_clear_bindings( stmt );
+			sqlite3_bind_int64( stmt, 1, account_id );
+			sqlite3_bind_text( stmt, 2, friendHandle.c_str(), -1, SQLITE_TRANSIENT );
+
+			if( sqlite3_step( stmt ) != SQLITE_DONE )
+			{
+				Log::Error( "SQLite insert failed: {}", sqlite3_errmsg( m_db ) );
+				return false;
+			}
+		}
+
+		tx.commit();
+		return true;
+	}
+	catch( const std::exception &e )
+	{
+		Log::Error( "Database error: {}", std::string( e.what() ) );
+	}
+	return false;
+}
+
+std::vector<std::wstring> Database::LoadIgnores( const int64_t account_id )
+{
+	std::vector<std::wstring> ignore_list;
+
+	try
+	{
+		auto stmt = m_statements[ QueryID::LoadIgnoreList ];
+		sqlite3_reset( stmt );
+		sqlite3_clear_bindings( stmt );
+		sqlite3_bind_int64( stmt, 1, account_id );
+
+		while( sqlite3_step( stmt ) == SQLITE_ROW )
+		{
+			const char *ignoreHandle = reinterpret_cast< const char * >( sqlite3_column_text( stmt, 0 ) );
+			if( ignoreHandle )
+			{
+				ignore_list.push_back( Util::UTF8ToWide( ignoreHandle ) );
+			}
+		}
+	}
+	catch( const std::exception &e )
+	{
+		Log::Error( "Database error: {}", std::string( e.what() ) );
+	}
+
+	return ignore_list;
 }

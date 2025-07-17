@@ -39,7 +39,7 @@ public:
 	{
 		if( this != &other )
 		{
-			commitOrRollback();
+			rollbackOnError();
 			m_db = other.m_db;
 			m_committed = other.m_committed;
 			other.m_db = nullptr;
@@ -58,7 +58,7 @@ public:
 	}
 
 private:
-	void commitOrRollback()
+	void rollbackOnError()
 	{
 		if( m_committed || !m_db )
 			return;

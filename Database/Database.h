@@ -17,17 +17,16 @@ enum class QueryID {
 	VerifyAccount,
 	LoadAccount,
 
-	CreateSession,
-	UpdateSession,
-	DeleteSession,
-	GetSession,
-	DeleteOldSessions,
-
 	LoadCharacterSlots,
-
 	CreateNewCharacter,
 	SaveCharacter,
 	LoadCharacter,
+
+	SaveFriend,
+	LoadFriendList,
+
+	SaveIgnore,
+	LoadIgnoreList,
 };
 
 class Database {
@@ -63,14 +62,7 @@ public:
 							  const std::string &date_of_birth,
 							  const std::string &chat_handle );
 
-	int64_t VerifyAccount( const std::wstring &username, const std::wstring &password );
-	std::tuple< bool, std::wstring > LoadAccount( const int64_t account_id );
-
-	bool CreateSession( const int64_t account_id, const std::wstring &session_id, const std::string &ip_address );
-	bool UpdateSession( const std::wstring &session_id, const uint32_t character_id );
-	bool DeleteSession( const std::wstring &session_id );
-
-	std::tuple< int64_t, uint32_t > GetSession( const std::wstring &session_id, const std::string &ip_address );
+	std::tuple< bool, int64_t, std::wstring > VerifyAccount( const std::wstring &username, const std::wstring &password );
 
 	uint32_t CreateNewCharacter( const int64_t account_id,
 								 const CharacterSlotData meta,
@@ -85,11 +77,15 @@ public:
 
 	sptr_realm_character LoadCharacterData( const int64_t account_id, const int32_t character_id );
 
+	bool SaveFriend( const int64_t account_id, const std::wstring &friend_handle );
+	std::vector< std::wstring > LoadFriends( const int64_t account_id );
+
+	bool SaveIgnore( const int64_t account_id, const std::wstring &ignore_handle );
+	std::vector< std::wstring > LoadIgnores( const int64_t account_id );
+
 private:
 	void CreateTables();
 	void PrepareStatements();
 	void FinalizeStatements();
 	void Execute( const char *sql );
-
-	void DeleteOldSessions();
 };
