@@ -30,26 +30,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -81,7 +81,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>.\bin\</OutDir>
-    <TargetName>Server_64</TargetName>
+    <TargetName>Server_64_dbg</TargetName>
     <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
     <IntDir>$(SolutionDir)obj\$(Configuration)\</IntDir>
   </PropertyGroup>
@@ -129,7 +129,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.\Dependency\sqlite\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\Include;.\Dependency\sqlite\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -138,7 +138,7 @@
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>.\lib</AdditionalLibraryDirectories>
-      <OutputFile>.\bin\Server_64.exe</OutputFile>
+      <OutputFile>.\bin\Server_64_dbg.exe</OutputFile>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -177,13 +177,15 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.\Dependency\sqlite\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\Include;.\Dependency\sqlite\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <OutputFile>.\bin\Server_64.exe</OutputFile>
+      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -191,166 +193,166 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Common\ByteBufferReader.hpp" />
-    <ClInclude Include="Common\ByteStream.h" />
-    <ClInclude Include="Common\Constant.h" />
-    <ClInclude Include="Common\ForwardDecl.h" />
-    <ClInclude Include="Common\RLEZ.hpp" />
-    <ClInclude Include="Common\Utility.h" />
-    <ClInclude Include="configuration.h" />
-    <ClInclude Include="Crypto\PasswordHash.h" />
-    <ClInclude Include="Crypto\RealmCrypt.h" />
-    <ClInclude Include="Crypto\rijndael.h" />
-    <ClInclude Include="Database\Database.h" />
-    <ClInclude Include="Database\Transaction.h" />
-    <ClInclude Include="Discovery Server\DiscoveryServer.h" />
-    <ClInclude Include="Game\CharacterSaveManager.h" />
-    <ClInclude Include="Game\ChatRoomSession.h" />
-    <ClInclude Include="Game\ChatRoomManager.h" />
-    <ClInclude Include="Game\RealmCharacter.h" />
-    <ClInclude Include="Game\RealmCharacterMetaKV.h" />
-    <ClInclude Include="Game\CharacterSaveTask.h" />
-    <ClInclude Include="Game\RealmUser.h" />
-    <ClInclude Include="Game\RealmUserManager.h" />
-    <ClInclude Include="Game\GameSession.h" />
-    <ClInclude Include="Game\GameSessionManager.h" />
-    <ClInclude Include="Lobby Server\LobbyServer.h" />
-    <ClInclude Include="logging.h" />
-    <ClInclude Include="Network\Events.h" />
-    <ClInclude Include="Network\Event\NotifyClientDiscovered.h" />
-    <ClInclude Include="Network\Event\NotifyClientDiscovered_RTA.h" />
-    <ClInclude Include="Network\Event\NotifyClientRequestConnect.h" />
-    <ClInclude Include="Network\Event\NotifyForcedLogout.h" />
-    <ClInclude Include="Network\Event\NotifyFriendStatus.h" />
-    <ClInclude Include="Network\Event\NotifyGameDiscovered.h" />
-    <ClInclude Include="Network\Event\NotifyClientRequestConnect_RTA.h" />
-    <ClInclude Include="Network\Event\NotifyInstantMessage.h" />
-    <ClInclude Include="Network\Event\NotifyRoomMessage.h" />
-    <ClInclude Include="Network\Event\RequestAddFriend.h" />
-    <ClInclude Include="Network\Event\RequestAddIgnore.h" />
-    <ClInclude Include="Network\Event\RequestCancelGame.h" />
-    <ClInclude Include="Network\Event\RequestCancelGame_RTA.h" />
-    <ClInclude Include="Network\Event\RequestCreateAccount.h" />
-    <ClInclude Include="Network\Event\RequestCreatePrivateGame.h" />
-    <ClInclude Include="Network\Event\RequestCreatePrivateGame_RTA.h" />
-    <ClInclude Include="Network\Event\RequestCreatePrivateRoom.h" />
-    <ClInclude Include="Network\Event\RequestCreatePublicGame.h" />
-    <ClInclude Include="Network\Event\RequestCreatePublicGame_RTA.h" />
-    <ClInclude Include="Network\Event\RequestDoClientDiscovery.h" />
-    <ClInclude Include="Network\Event\RequestEnterRoom.h" />
-    <ClInclude Include="Network\Event\RequestGetCharacterData_RTA.h" />
-    <ClInclude Include="Network\Event\RequestGetEncryptionKey.h" />
-    <ClInclude Include="Network\Event\RequestGetGame.h" />
-    <ClInclude Include="Network\Event\RequestDoClientDiscovery_RTA.h" />
-    <ClInclude Include="Network\Event\RequestGetGame_RTA.h" />
-    <ClInclude Include="Network\Event\RequestGetPublicRooms.h" />
-    <ClInclude Include="Network\Event\RequestGetRealmStats.h" />
-    <ClInclude Include="Network\Event\RequestGetRoom.h" />
-    <ClInclude Include="Network\Event\RequestGetRules.h" />
-    <ClInclude Include="Network\Event\RequestGetServerAddress.h" />
-    <ClInclude Include="Network\Event\RequestGetSocialListInitial.h" />
-    <ClInclude Include="Network\Event\RequestGetSocialListUpdate.h" />
-    <ClInclude Include="Network\Event\RequestLeaveRoom.h" />
-    <ClInclude Include="Network\Event\RequestLogin.h" />
-    <ClInclude Include="Network\Event\RequestLogout.h" />
-    <ClInclude Include="Network\Event\RequestMatchGame.h" />
-    <ClInclude Include="Network\Event\RequestMatchGame_RTA.h" />
-    <ClInclude Include="Network\Event\RequestCreateNewCharacter_RTA.h" />
-    <ClInclude Include="Network\Event\RequestRemoveFriend.h" />
-    <ClInclude Include="Network\Event\RequestRemoveIgnore.h" />
-    <ClInclude Include="Network\Event\RequestSaveCharacter_RTA.h" />
-    <ClInclude Include="Network\Event\RequestSendInstantMessage.h" />
-    <ClInclude Include="Network\Event\RequestSendRoomMessage.h" />
-    <ClInclude Include="Network\Event\RequestStartGame.h" />
-    <ClInclude Include="Network\Event\RequestTouchSession.h" />
-    <ClInclude Include="Network\Event\RequestUpdateGameData.h" />
-    <ClInclude Include="Network\Event\RequestGetNetCharacterList_RTA.h" />
-    <ClInclude Include="Network\Event\RequestAppendCharacterData.h" />
-    <ClInclude Include="Network\Event\RequestUserJoinSuccess.h" />
-    <ClInclude Include="Network\GenericNetMessage.h" />
-    <ClInclude Include="Network\GenericNetRequest.h" />
-    <ClInclude Include="Network\GenericNetResponse.h" />
-    <ClInclude Include="network\RealmSocket.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="targetver.h" />
+    <ClInclude Include="Include\Common\ByteBufferReader.hpp" />
+    <ClInclude Include="Include\Common\ByteStream.hpp" />
+    <ClInclude Include="Include\Common\Constant.hpp" />
+    <ClInclude Include="Include\Common\ForwardDecl.hpp" />
+    <ClInclude Include="Include\Common\RLEZ.hpp" />
+    <ClInclude Include="Include\Common\Utility.hpp" />
+    <ClInclude Include="Include\configuration.hpp" />
+    <ClInclude Include="Include\Crypto\PasswordHash.hpp" />
+    <ClInclude Include="Include\Crypto\RealmCrypt.hpp" />
+    <ClInclude Include="Include\Crypto\rijndael.hpp" />
+    <ClInclude Include="Include\Database\Database.hpp" />
+    <ClInclude Include="Include\Database\Transaction.hpp" />
+    <ClInclude Include="Include\Discovery Server\DiscoveryServer.hpp" />
+    <ClInclude Include="Include\Game\CharacterSaveManager.hpp" />
+    <ClInclude Include="Include\Game\ChatRoomSession.hpp" />
+    <ClInclude Include="Include\Game\ChatRoomManager.hpp" />
+    <ClInclude Include="Include\Game\RealmCharacter.hpp" />
+    <ClInclude Include="Include\Game\RealmCharacterMetaKV.hpp" />
+    <ClInclude Include="Include\Game\CharacterSaveTask.hpp" />
+    <ClInclude Include="Include\Game\RealmUser.hpp" />
+    <ClInclude Include="Include\Game\RealmUserManager.hpp" />
+    <ClInclude Include="Include\Game\GameSession.hpp" />
+    <ClInclude Include="Include\Game\GameSessionManager.hpp" />
+    <ClInclude Include="Include\Lobby Server\LobbyServer.hpp" />
+    <ClInclude Include="Include\logging.hpp" />
+    <ClInclude Include="Include\Network\Events.hpp" />
+    <ClInclude Include="Include\Network\Event\NotifyClientDiscovered.hpp" />
+    <ClInclude Include="Include\Network\Event\NotifyClientDiscovered_RTA.hpp" />
+    <ClInclude Include="Include\Network\Event\NotifyClientRequestConnect.hpp" />
+    <ClInclude Include="Include\Network\Event\NotifyForcedLogout.hpp" />
+    <ClInclude Include="Include\Network\Event\NotifyFriendStatus.hpp" />
+    <ClInclude Include="Include\Network\Event\NotifyGameDiscovered.hpp" />
+    <ClInclude Include="Include\Network\Event\NotifyClientRequestConnect_RTA.hpp" />
+    <ClInclude Include="Include\Network\Event\NotifyInstantMessage.hpp" />
+    <ClInclude Include="Include\Network\Event\NotifyRoomMessage.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestAddFriend.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestAddIgnore.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestCancelGame.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestCancelGame_RTA.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestCreateAccount.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestCreatePrivateGame.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestCreatePrivateGame_RTA.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestCreatePrivateRoom.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestCreatePublicGame.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestCreatePublicGame_RTA.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestDoClientDiscovery.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestEnterRoom.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestGetCharacterData_RTA.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestGetEncryptionKey.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestGetGame.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestDoClientDiscovery_RTA.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestGetGame_RTA.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestGetPublicRooms.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestGetRealmStats.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestGetRoom.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestGetRules.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestGetServerAddress.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestGetSocialListInitial.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestGetSocialListUpdate.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestLeaveRoom.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestLogin.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestLogout.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestMatchGame.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestMatchGame_RTA.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestCreateNewCharacter_RTA.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestRemoveFriend.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestRemoveIgnore.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestSaveCharacter_RTA.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestSendInstantMessage.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestSendRoomMessage.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestStartGame.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestTouchSession.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestUpdateGameData.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestGetNetCharacterList_RTA.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestAppendCharacterData.hpp" />
+    <ClInclude Include="Include\Network\Event\RequestUserJoinSuccess.hpp" />
+    <ClInclude Include="Include\Network\GenericNetMessage.hpp" />
+    <ClInclude Include="Include\Network\GenericNetRequest.hpp" />
+    <ClInclude Include="Include\Network\GenericNetResponse.hpp" />
+    <ClInclude Include="Include\network\RealmSocket.hpp" />
+    <ClInclude Include="Include\resource.h" />
+    <ClInclude Include="Include\stdafx.h" />
+    <ClInclude Include="Include\targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Common\ByteStream.cpp" />
-    <ClCompile Include="Common\Utility.cpp" />
-    <ClCompile Include="configuration.cpp" />
-    <ClCompile Include="Crypto\PasswordHash.cpp" />
-    <ClCompile Include="Crypto\RealmCrypt.cpp" />
-    <ClCompile Include="Crypto\rijndael.cpp" />
-    <ClCompile Include="Database\Database.cpp" />
     <ClCompile Include="Dependency\sqlite\sqlite3.c" />
-    <ClCompile Include="Discovery Server\DiscoveryServer.cpp" />
-    <ClCompile Include="Game\CharacterSaveManager.cpp" />
-    <ClCompile Include="Game\ChatRoom.cpp" />
-    <ClCompile Include="Game\ChatRoomManager.cpp" />
-    <ClCompile Include="Game\RealmCharacter.cpp" />
-    <ClCompile Include="Game\RealmCharacterMetaKV.cpp" />
-    <ClCompile Include="Game\RealmCharacterSaveTask.cpp" />
-    <ClCompile Include="Game\RealmUser.cpp" />
-    <ClCompile Include="Game\RealmUserManager.cpp" />
-    <ClCompile Include="Game\GameSession.cpp" />
-    <ClCompile Include="Game\GameSessionManager.cpp" />
-    <ClCompile Include="Lobby Server\LobbyServer.cpp" />
-    <ClCompile Include="logging.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="Network\Event\NotifyClientDiscovered.cpp" />
-    <ClCompile Include="Network\Event\NotifyClientDiscovered_RTA.cpp" />
-    <ClCompile Include="Network\Event\NotifyClientRequestConnect.cpp" />
-    <ClCompile Include="Network\Event\NotifyForcedLogout.cpp" />
-    <ClCompile Include="Network\Event\NotifyFriendStatus.cpp" />
-    <ClCompile Include="Network\Event\NotifyGameDiscovered.cpp" />
-    <ClCompile Include="Network\Event\NotifyClientRequestConnect_RTA.cpp" />
-    <ClCompile Include="Network\Event\NotifyInstantMessage.cpp" />
-    <ClCompile Include="Network\Event\NotifyRoomMessage.cpp" />
-    <ClCompile Include="Network\Event\RequestAddFriend.cpp" />
-    <ClCompile Include="Network\Event\RequestAddIgnore.cpp" />
-    <ClCompile Include="Network\Event\RequestCancelGame.cpp" />
-    <ClCompile Include="Network\Event\RequestCancelGame_RTA.cpp" />
-    <ClCompile Include="Network\Event\RequestCreateAccount.cpp" />
-    <ClCompile Include="Network\Event\RequestCreatePrivateGame.cpp" />
-    <ClCompile Include="Network\Event\RequestCreatePrivateGame_RTA.cpp" />
-    <ClCompile Include="Network\Event\RequestCreatePrivateRoom.cpp" />
-    <ClCompile Include="Network\Event\RequestCreatePublicGame.cpp" />
-    <ClCompile Include="Network\Event\RequestCreatePublicGame_RTA.cpp" />
-    <ClCompile Include="Network\Event\RequestDoClientDiscovery.cpp" />
-    <ClCompile Include="Network\Event\RequestEnterRoom.cpp" />
-    <ClCompile Include="Network\Event\RequestGetCharacterData_RTA.cpp" />
-    <ClCompile Include="Network\Event\RequestGetEncryptionKey.cpp" />
-    <ClCompile Include="Network\Event\RequestGetGame.cpp" />
-    <ClCompile Include="Network\Event\RequestDoClientDiscovery_RTA.cpp" />
-    <ClCompile Include="Network\Event\RequestGetGame_RTA.cpp" />
-    <ClCompile Include="Network\Event\RequestGetRealmStats.cpp" />
-    <ClCompile Include="Network\Event\RequestGetRoom.cpp" />
-    <ClCompile Include="Network\Event\RequestGetRules.cpp" />
-    <ClCompile Include="Network\Event\RequestGetServerAddress.cpp" />
-    <ClCompile Include="Network\Event\RequestGetSocialListUpdate.cpp" />
-    <ClCompile Include="Network\Event\RequestLeaveRoom.cpp" />
-    <ClCompile Include="Network\Event\RequestLogin.cpp" />
-    <ClCompile Include="Network\Event\RequestLogout.cpp" />
-    <ClCompile Include="Network\Event\RequestMatchGame.cpp" />
-    <ClCompile Include="Network\Event\RequestCreateNewCharacter_RTA.cpp" />
-    <ClCompile Include="Network\Event\RequestRemoveFriend.cpp" />
-    <ClCompile Include="Network\Event\RequestRemoveIgnore.cpp" />
-    <ClCompile Include="Network\Event\RequestSaveCharacter_RTA.cpp" />
-    <ClCompile Include="Network\Event\RequestSendInstantMessage.cpp" />
-    <ClCompile Include="Network\Event\RequestSendRoomMessage.cpp" />
-    <ClCompile Include="Network\Event\RequestStartGame.cpp" />
-    <ClCompile Include="Network\Event\RequestTouchSession.cpp" />
-    <ClCompile Include="Network\Event\RequestUpdateGameData.cpp" />
-    <ClCompile Include="Network\Event\RequestGetPublicRooms.cpp" />
-    <ClCompile Include="Network\Event\RequestMatchGame_RTA.cpp" />
-    <ClCompile Include="Network\Event\RequestGetNetCharacterList_RTA.cpp" />
-    <ClCompile Include="Network\Event\RequestAppendCharacterData.cpp" />
-    <ClCompile Include="Network\Event\RequestUserJoinSuccess.cpp" />
-    <ClCompile Include="Network\Event\RequestGetSocialListInitial.cpp" />
-    <ClCompile Include="Network\GenericNetRequest.cpp" />
-    <ClCompile Include="network\RealmSocket.cpp" />
-    <ClCompile Include="stdafx.cpp">
+    <ClCompile Include="Source\Common\ByteStream.cpp" />
+    <ClCompile Include="Source\Common\Utility.cpp" />
+    <ClCompile Include="Source\configuration.cpp" />
+    <ClCompile Include="Source\Crypto\PasswordHash.cpp" />
+    <ClCompile Include="Source\Crypto\RealmCrypt.cpp" />
+    <ClCompile Include="Source\Crypto\rijndael.cpp" />
+    <ClCompile Include="Source\Database\Database.cpp" />
+    <ClCompile Include="Source\Discovery Server\DiscoveryServer.cpp" />
+    <ClCompile Include="Source\Game\CharacterSaveManager.cpp" />
+    <ClCompile Include="Source\Game\ChatRoom.cpp" />
+    <ClCompile Include="Source\Game\ChatRoomManager.cpp" />
+    <ClCompile Include="Source\Game\RealmCharacter.cpp" />
+    <ClCompile Include="Source\Game\RealmCharacterMetaKV.cpp" />
+    <ClCompile Include="Source\Game\RealmCharacterSaveTask.cpp" />
+    <ClCompile Include="Source\Game\RealmUser.cpp" />
+    <ClCompile Include="Source\Game\RealmUserManager.cpp" />
+    <ClCompile Include="Source\Game\GameSession.cpp" />
+    <ClCompile Include="Source\Game\GameSessionManager.cpp" />
+    <ClCompile Include="Source\Lobby Server\LobbyServer.cpp" />
+    <ClCompile Include="Source\logging.cpp" />
+    <ClCompile Include="Source\main.cpp" />
+    <ClCompile Include="Source\Network\Event\NotifyClientDiscovered.cpp" />
+    <ClCompile Include="Source\Network\Event\NotifyClientDiscovered_RTA.cpp" />
+    <ClCompile Include="Source\Network\Event\NotifyClientRequestConnect.cpp" />
+    <ClCompile Include="Source\Network\Event\NotifyForcedLogout.cpp" />
+    <ClCompile Include="Source\Network\Event\NotifyFriendStatus.cpp" />
+    <ClCompile Include="Source\Network\Event\NotifyGameDiscovered.cpp" />
+    <ClCompile Include="Source\Network\Event\NotifyClientRequestConnect_RTA.cpp" />
+    <ClCompile Include="Source\Network\Event\NotifyInstantMessage.cpp" />
+    <ClCompile Include="Source\Network\Event\NotifyRoomMessage.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestAddFriend.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestAddIgnore.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestCancelGame.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestCancelGame_RTA.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestCreateAccount.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestCreatePrivateGame.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestCreatePrivateGame_RTA.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestCreatePrivateRoom.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestCreatePublicGame.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestCreatePublicGame_RTA.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestDoClientDiscovery.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestEnterRoom.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestGetCharacterData_RTA.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestGetEncryptionKey.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestGetGame.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestDoClientDiscovery_RTA.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestGetGame_RTA.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestGetRealmStats.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestGetRoom.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestGetRules.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestGetServerAddress.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestGetSocialListUpdate.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestLeaveRoom.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestLogin.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestLogout.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestMatchGame.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestCreateNewCharacter_RTA.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestRemoveFriend.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestRemoveIgnore.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestSaveCharacter_RTA.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestSendInstantMessage.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestSendRoomMessage.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestStartGame.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestTouchSession.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestUpdateGameData.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestGetPublicRooms.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestMatchGame_RTA.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestGetNetCharacterList_RTA.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestAppendCharacterData.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestUserJoinSuccess.cpp" />
+    <ClCompile Include="Source\Network\Event\RequestGetSocialListInitial.cpp" />
+    <ClCompile Include="Source\Network\GenericNetRequest.cpp" />
+    <ClCompile Include="Source\network\RealmSocket.cpp" />
+    <ClCompile Include="Source\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -358,10 +360,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Champions Server.rc" />
+    <Image Include="icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="C:\Users\Adam\Desktop\icon.ico" />
+    <ResourceCompile Include="Include\Champions Server.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
