@@ -17,11 +17,11 @@ sptr_generic_response RequestGetServerAddress::ProcessRequest( sptr_socket socke
 
 	if( socket->gameType == RealmGameType::RETURN_TO_ARMS )
 	{
-		return std::make_shared< ResultGetServerAddress >( this, Config::service_ip, Config::rta_lobby_port, socket->gameType );
+		return std::make_shared< ResultGetServerAddress >( this, Config::public_ip, Config::rta_lobby_port, socket->gameType );
 	}
 	else
 	{
-		return std::make_shared< ResultGetServerAddress >( this, Config::service_ip, Config::con_lobby_port, socket->gameType );
+		return std::make_shared< ResultGetServerAddress >( this, Config::public_ip, Config::con_lobby_port, socket->gameType );
 	}
 }
 

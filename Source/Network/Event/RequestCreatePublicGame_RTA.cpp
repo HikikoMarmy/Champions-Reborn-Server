@@ -92,7 +92,7 @@ sptr_generic_response RequestCreatePublicGame_RTA::ProcessRequest( sptr_socket s
 
 	Log::Info( "[{}] Create Public Game: {}", user->m_username, m_gameInfo );
 
-	return std::make_shared< ResultCreatePublicGame_RTA >( this, SUCCESS, Config::service_ip, Config::discovery_port );
+	return std::make_shared< ResultCreatePublicGame_RTA >( this, SUCCESS, Config::public_ip, Config::discovery_port );
 }
 
 // Result

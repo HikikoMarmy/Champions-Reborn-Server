@@ -40,7 +40,7 @@ sptr_generic_response RequestCreatePrivateGame::ProcessRequest( sptr_socket sock
 
 	Log::Info( "[{}] Create Private Game: {}", m_sessionId, m_gameName );
 
-	return std::make_shared< ResultCreatePrivateGame >( this, SUCCESS, Config::service_ip, Config::discovery_port );
+	return std::make_shared< ResultCreatePrivateGame >( this, SUCCESS, Config::public_ip, Config::discovery_port );
 }
 
 ResultCreatePrivateGame::ResultCreatePrivateGame( GenericRequest *request, int32_t reply, std::string discoveryIp, int32_t discoveryPort ) : GenericResponse( *request )

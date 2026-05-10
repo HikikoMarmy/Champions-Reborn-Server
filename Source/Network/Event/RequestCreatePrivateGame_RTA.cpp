@@ -38,7 +38,7 @@ sptr_generic_response RequestCreatePrivateGame_RTA::ProcessRequest( sptr_socket 
 
 	Log::Info( "[{}] Create Private Game: {}", m_sessionId, m_gameName );
 
-	return std::make_shared< ResultCreatePrivateGame_RTA >( this, SUCCESS, Config::service_ip, Config::discovery_port );
+	return std::make_shared< ResultCreatePrivateGame_RTA >( this, SUCCESS, Config::public_ip, Config::discovery_port );
 }
 
 ResultCreatePrivateGame_RTA::ResultCreatePrivateGame_RTA( GenericRequest *request, int32_t reply, std::string discoveryIp, int32_t discoveryPort ) : GenericResponse( *request )
