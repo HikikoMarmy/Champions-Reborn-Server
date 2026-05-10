@@ -37,7 +37,7 @@ sptr_generic_response RequestDoClientDiscovery::ProcessRequest( sptr_socket sock
 	user->m_gameId = m_gameId;
 	user->m_isHost = false;
 
-	return std::make_shared< ResultDoClientDiscovery >( this, DISCOVERY_REPLY::SUCCESS, Config::service_ip, Config::discovery_port );
+	return std::make_shared< ResultDoClientDiscovery >( this, DISCOVERY_REPLY::SUCCESS, Config::public_ip, Config::discovery_port );
 }
 
 ResultDoClientDiscovery::ResultDoClientDiscovery( GenericRequest *request, int32_t reply, std::string ip, int32_t port ) : GenericResponse( *request )

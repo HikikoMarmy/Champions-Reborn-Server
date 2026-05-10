@@ -74,7 +74,7 @@ sptr_generic_response RequestCreatePublicGame::ProcessRequest( sptr_socket socke
 	user->m_discoveryAddr = "";
 	user->m_discoveryPort = 0;
 
-	return std::make_shared< ResultCreatePublicGame >( this, SUCCESS, Config::service_ip, Config::discovery_port );
+	return std::make_shared< ResultCreatePublicGame >( this, SUCCESS, Config::public_ip, Config::discovery_port );
 }
 
 // Result

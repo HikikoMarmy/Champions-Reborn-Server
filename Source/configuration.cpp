@@ -3,6 +3,7 @@
 bool Config::Load( std::string filename )
 {
 	service_ip = "0.0.0.0";
+	public_ip = "";
 	con_lobby_port = 40900;
 	rta_lobby_port = 40910;
 	discovery_port = 10101;
@@ -36,6 +37,10 @@ bool Config::Load( std::string filename )
 		{
 			service_ip = value;
 		}
+		else if( key == "public_ip" )
+		{
+			public_ip = value;
+		}
 		else if( key == "con_lobby_port" )
 		{
 			con_lobby_port = std::stoi( value );
@@ -48,6 +53,14 @@ bool Config::Load( std::string filename )
 		{
 			discovery_port = std::stoi( value );
 		}
+	}
+
+	// If public_ip is not explicitly set, fall back to service_ip.
+	// Note: service_ip can be 0.0.0.0 (bind-all), which is not routable by clients.
+	// Set public_ip in config.ini to the server's external/LAN IP when service_ip is 0.0.0.0.
+	if( public_ip.empty() )
+	{
+		public_ip = service_ip;
 	}
 
 	return true;

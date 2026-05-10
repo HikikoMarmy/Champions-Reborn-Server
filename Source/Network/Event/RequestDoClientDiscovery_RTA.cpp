@@ -38,7 +38,7 @@ sptr_generic_response RequestDoClientDiscovery_RTA::ProcessRequest( sptr_socket 
 	user->m_localAddr = Util::WideToUTF8(m_localAddr);
 	user->m_localPort = m_localPort;
 
-	return std::make_shared< ResultDoClientDiscovery_RTA >( this, SUCCESS, Config::service_ip, Config::discovery_port );
+	return std::make_shared< ResultDoClientDiscovery_RTA >( this, SUCCESS, Config::public_ip, Config::discovery_port );
 }
 
 ResultDoClientDiscovery_RTA::ResultDoClientDiscovery_RTA( GenericRequest *request, int32_t reply, std::string discoveryIp, int32_t discoveryPort ) : GenericResponse( *request )
