@@ -21,6 +21,7 @@ enum class QueryID {
 	CreateNewCharacter,
 	SaveCharacter,
 	LoadCharacter,
+	DeleteCharacter,
 
 	SaveFriend,
 	RemoveFriend,
@@ -71,6 +72,7 @@ public:
 						const int32_t character_id,
 						const CharacterSlotData meta,
 						const std::vector< uint8_t > &blob );
+	bool DeleteCharacter(const int64_t account_id, const int32_t character_id);
 
 	std::map< uint32_t, CharacterSlotData > LoadCharacterSlots( const int64_t account_id );
 

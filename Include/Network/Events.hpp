@@ -47,6 +47,7 @@
 /* 0057 */	#include "Event/RequestGetGame_RTA.hpp"
 
 /* 0058 */	#include "Event/RequestCreateNewCharacter_RTA.hpp"
+/* 005A */	#include "Event/RequestDeleteCharacter_RTA.hpp"
 /* 005B */	#include "Event/RequestGetNetCharacterList_RTA.hpp"
 /* 005C */	#include "Event/RequestGetCharacterData_RTA.hpp"
 /* 005D */	#include "Event/RequestAppendCharacterData.hpp"
@@ -220,6 +221,11 @@ const std::map< int16_t, std::function< std::unique_ptr< GenericRequest >() > > 
 		{
 			return std::make_unique< RequestCreateNewCharacter_RTA >();
 		}
+	},
+	{ 0x005A, []() -> std::unique_ptr< GenericRequest >
+	{
+		return std::make_unique< RequestDeleteCharacter_RTA >();
+	}
 	},
 	{ 0x005B, []() -> std::unique_ptr< GenericRequest >
 		{

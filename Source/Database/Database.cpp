@@ -95,6 +95,9 @@ void Database::PrepareStatements()
 		{ QueryID::SaveCharacter,
 		"UPDATE RealmCharacters SET meta_data = ?, character_data = ? WHERE account_id = ? AND character_id = ?;" },
 
+		{ QueryID::DeleteCharacter,
+		"DELETE FROM RealmCharacters WHERE account_id = ? AND character_id = ?;" },
+
 		{ QueryID::LoadCharacter,
 		"SELECT character_id, meta_data, character_data FROM RealmCharacters WHERE account_id = ? AND character_id = ?;" },
 
@@ -237,7 +240,7 @@ Database::VerifyAccount( const std::wstring &username, const std::wstring &passw
 			}
 			else
 			{
-				Log::Debug( "Invalid credentials for account ID: {}", accountId );
+				Log::Error( "Invalid credentials for account ID: {}", accountId );
 				return std::make_tuple( false, -1, L"" );
 			}
 		}
@@ -336,6 +339,43 @@ bool Database::SaveCharacter( const int64_t account_id, const int32_t character_
 	catch( const std::exception &e )
 	{
 		Log::Error( "Database error: {}", std::string( e.what() ) );
+	}
+
+	return false;
+}
+
+bool Database::DeleteCharacter(const int64_t account_id, const int32_t character_id)
+{
+	if (account_id <= 0 || character_id <= 0 )
+	{
+		Log::Error("Invalid parameters for DeleteCharacter");
+		return false;
+	}
+
+	try
+	{
+		auto stmt = m_statements[QueryID::DeleteCharacter];
+
+		SQLiteTransaction tx(m_db);
+		{
+			sqlite3_reset(stmt);
+			sqlite3_clear_bindings(stmt);
+
+			sqlite3_bind_int64(stmt, 1, account_id);
+			sqlite3_bind_int(stmt, 2, character_id);
+
+			if (sqlite3_step(stmt) != SQLITE_DONE)
+			{
+				throw std::runtime_error("Update failed: " + std::string(sqlite3_errmsg(m_db)));
+			}
+		}
+		tx.commit();
+
+		return true;
+	}
+	catch (const std::exception& e)
+	{
+		Log::Error("Database error: {}", std::string(e.what()));
 	}
 
 	return false;

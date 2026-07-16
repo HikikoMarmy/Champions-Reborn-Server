@@ -314,6 +314,9 @@
     <ClInclude Include="Include\targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Network\Event\RequestDeleteCharacter_RTA.hpp">
+      <Filter>Header Files\Network\Events</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\stdafx.cpp">
@@ -540,6 +543,9 @@
     </ClCompile>
     <ClCompile Include="Dependency\sqlite\sqlite3.c">
       <Filter>Dependency\sqlite3</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Network\Event\RequestDeleteCharacter_RTA.cpp">
+      <Filter>Source Files\Network\Event</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
