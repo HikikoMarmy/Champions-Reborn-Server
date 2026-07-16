@@ -58,7 +58,7 @@ public:
 	int8_t m_difficulty;
 	int8_t m_gameMode;
 	int8_t m_mission;
-	int8_t m_unknown;
+	int8_t m_arenaKillCount;
 	int8_t m_networkSave;
 };
 

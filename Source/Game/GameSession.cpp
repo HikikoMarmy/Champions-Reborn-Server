@@ -15,7 +15,7 @@ GameSession::GameSession( uint32_t index ) : m_gameId( index )
 	m_difficulty = 0;
 	m_gameMode = 0;
 	m_mission = 0;
-	m_unknown = 0;
+	m_arenaKillCount = 0;
 	m_networkSave = 0;
 
 	m_hostNatPort = 0;
@@ -41,7 +41,7 @@ GameSession::~GameSession()
 	m_difficulty = 0;
 	m_gameMode = 0;
 	m_mission = 0;
-	m_unknown = 0;
+	m_arenaKillCount = 0;
 	m_networkSave = 0;
 
 	m_hostNatPort = 0;

@@ -110,7 +110,7 @@ bool GameSessionManager::CreateGameSession_RTA(
 		new_session->m_gameData = Util::WideToUTF8( gameInfo );
 		new_session->m_difficulty = attributes[ 0 ];
 		new_session->m_gameMode = attributes[ 1 ];
-		new_session->m_unknown = attributes[ 2 ];
+		new_session->m_arenaKillCount = attributes[ 2 ];
 		new_session->m_mission = attributes[ 3 ];
 		new_session->m_networkSave = attributes[ 4 ];
 	}
